@@ -1,3 +1,4 @@
+*.swp
 dist
 cabal-dev
 *.o

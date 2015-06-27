@@ -1,0 +1,92 @@
+Name:                JuicyPixels
+Version:             3.2.5.2
+Synopsis:            Picture loading/serialization (in png, jpeg, bitmap, gif, tga, tiff and radiance)
+Description:
+    <<data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADABAMAAACg8nE0AAAAElBMVEUAAABJqDSTWEL/qyb///8AAABH/1GTAAAAAXRSTlMAQObYZgAAAN5JREFUeF7s1sEJgFAQxFBbsAV72v5bEVYWPwT/XDxmCsi7zvHXavYREBDI3XP2GgICqBBYuwIC+/rVayPUAyAg0HvIXBcQoDFDGnUBgWQQ2Bx3AYFaRoBpAQHWb3bt2ARgGAiCYFFuwf3X5HA/McgGJWI2FdykCv4aBYzmKwDwvl6NVmUAAK2vlwEALK7fo88GANB6HQsAAAAAAAAA7P94AQCzswEAAAAAAAAAAAAAAAAAAICzh4UAO4zWAYBfRutHA4Bn5C69JhowAMGoBaMWDG0wCkbBKBgFo2AUAACPmegUST/IJAAAAABJRU5ErkJggg==>>
+    .
+    This library can load and store images in PNG,Bitmap, Jpeg, Radiance, Tiff and Gif images.
+
+homepage:            https://github.com/Twinside/Juicy.Pixels
+License:             BSD3
+License-file:        LICENSE
+Author:              Vincent Berthoux
+Maintainer:          vincent.berthoux@gmail.com
+Category:            Codec, Graphics, Image
+Stability:           Stable
+Build-type:          Simple
+
+-- Constraint on the version of Cabal needed to build this package.
+Cabal-version:       >= 1.10
+
+extra-source-files: changelog, docimages/*.png, docimages/*.svg, README.md
+extra-doc-files: docimages/*.png, docimages/*.svg
+
+Source-Repository head
+    Type:      git
+    Location:  git://github.com/Twinside/Juicy.Pixels.git
+
+Source-Repository this
+    Type:      git
+    Location:  git://github.com/Twinside/Juicy.Pixels.git
+    Tag:       v3.2.5.2
+
+Flag Mmap
+    Description: Enable the file loading via mmap (memory map)
+    Default: False
+
+Library
+  hs-source-dirs: src
+  Default-Language: Haskell2010
+  Exposed-modules:  Codec.Picture,
+                    Codec.Picture.Bitmap,
+                    Codec.Picture.Gif,
+                    Codec.Picture.Png,
+                    Codec.Picture.Jpg,
+                    Codec.Picture.Jpg.Types,
+                    Codec.Picture.Jpg.DefaultTable,
+                    Codec.Picture.HDR,
+                    Codec.Picture.Tga,
+                    Codec.Picture.Tiff,
+                    Codec.Picture.Tiff.Types,
+                    Codec.Picture.Metadata,
+                    Codec.Picture.Metadata.Exif,
+                    Codec.Picture.Saving,
+                    Codec.Picture.Types,
+                    Codec.Picture.ColorQuant
+
+  Ghc-options: -O3 -Wall
+  Ghc-prof-options: -rtsopts -Wall -prof -auto-all
+  Build-depends: base                >= 4.5     && < 5,
+                 bytestring          >= 0.9     && < 0.11,
+                 mtl                 >= 1.1     && < 2.3,
+                 binary              >= 0.5     && < 0.8,
+                 zlib                >= 0.5.3.1 && < 0.7,
+                 transformers        >= 0.2,
+                 vector              >= 0.9     && < 0.11,
+                 primitive           >= 0.4     && < 0.7,
+                 deepseq             >= 1.1     && < 1.5,
+                 containers          >= 0.4.2   && < 0.6
+
+  if flag(Mmap)
+    Build-depends: mmap
+    CC-Options: "-DWITH_MMAP_BYTESTRING"
+
+  -- Modules not exported by this package.
+  Other-modules: Codec.Picture.Jpg.Metadata,
+                 Codec.Picture.Jpg.FastIdct,
+                 Codec.Picture.Jpg.FastDct,
+                 Codec.Picture.Jpg.Common,
+                 Codec.Picture.Jpg.Progressive,
+                 Codec.Picture.Gif.LZW,
+                 Codec.Picture.Gif.LZWEncoding,
+                 Codec.Picture.Png.Export,
+                 Codec.Picture.Png.Type,
+                 Codec.Picture.Png.Metadata,
+                 Codec.Picture.Tiff.Metadata,
+                 Codec.Picture.BitWriter,
+                 Codec.Picture.InternalHelper,
+                 Codec.Picture.VectorByteConversion
+
+  Install-Includes: src/Codec/Picture/ConvGraph.hs
+  Include-Dirs: src/Codec/Picture
+
