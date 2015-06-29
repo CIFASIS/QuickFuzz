@@ -7,10 +7,8 @@ import Control.Monad.Zip
 import Control.Exception
 import Data.Binary( Binary(..), encode )
 
-import Codec.Picture.Jpg.Types
-import Codec.Picture.Tiff.Types
-import Codec.Picture.Jpg.DefaultTable
-import Codec.Picture.Metadata.Exif
+import Codec.Archive.Zip
+
 import qualified Data.ByteString.Lazy as L
 import Data.DeriveTH
 import Data.Word(Word8, Word16, Word32)
@@ -54,18 +52,18 @@ instance Arbitrary (VS.Vector Word16) where
      l <- listOf (arbitrary :: Gen Word16)
      return $ VS.fromList l
 
-instance Arbitrary (MacroBlock Int16) where
-    arbitrary = do 
-     l <- listOf (arbitrary :: Gen Int16)
-     return $ VS.fromList l
-
 instance Arbitrary (V.Vector (VU.Vector Word8)) where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word8)
      return $ V.replicate 32 (VU.fromList l)
 
-derive makeArbitrary ''ExifTag
-derive makeArbitrary ''IfdType
+
+derive makeArbitrary ''Archive
+derive makeArbitrary ''Entry
+derive makeArbitrary ''CompressionMethod
+
+
+{-
 derive makeArbitrary ''ExifData
 derive makeArbitrary ''JpgAdobeApp14
 derive makeArbitrary ''JFifUnit
@@ -85,22 +83,25 @@ derive makeArbitrary ''JpgComponent
 derive makeArbitrary ''JpgFrameHeader
 derive makeArbitrary ''JpgFrame
 derive makeArbitrary ''JpgImage
+-}
 
-filenames = take 11 (repeat "buggy.jpg")
+filenames = take 11 (repeat "buggy.zip")
 
 handler :: SomeException -> IO ()
 handler _ = return ()
  
 main = do
-  jpgs  <- sample' (arbitrary :: Gen JpgImage)
-  mapM_ (\(filename,jpg) -> 
+  zips  <- sample' (arbitrary :: Gen Archive)
+  mapM_ (\(filename,zipf) -> 
       do
-       catch (L.writeFile filename (encode jpg)) handler
-       ret <- rawSystem "/usr/bin/zzuf" ["-s", "0:1000","-c", "-q", "-S", "-T", "3", "/usr/bin/jpeginfo","buggy.jpeg"]
-       case ret of
-        ExitFailure x -> ( do 
-                            putStrLn (show x) 
-                            exitWith ret)
-        _             -> return ()
-     ) (zip filenames jpgs)
+       catch (L.writeFile filename (encode zipf)) handler
+       ret <- rawSystem "/usr/bin/zzuf" ["-s", "0:100", "-c", "-S", "-q", "-T", "3", "/usr/bin/unzip", "-l", "buggy.zip"]
+       --case ret of
+       -- ExitFailure x -> ( do 
+       --                     putStrLn (show x) 
+       --                     exitWith ret)
+       -- _             -> return ()
+       return ()
+ 
+     ) (zip filenames zips)
   main
