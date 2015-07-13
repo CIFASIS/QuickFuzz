@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances#-}
 
 import Test.QuickCheck
-import Test.QuickCheck.Instances
+--import Test.QuickCheck.Instances
 
 import Control.Monad.Zip
 import Control.Exception
@@ -20,7 +20,14 @@ import qualified Data.Vector.Storable as VS
 
 import System.Process
 import System.Exit
+import System.Posix
 
+import System.Random
+
+getFileSize :: String -> IO FileOffset
+getFileSize path = do
+    stat <- getFileStatus path
+    return (fileSize stat)
 
 instance Arbitrary (V.Vector Word32) where
    arbitrary = do 
@@ -57,6 +64,12 @@ instance Arbitrary (V.Vector (VU.Vector Word8)) where
      l <- listOf (arbitrary :: Gen Word8)
      return $ V.replicate 32 (VU.fromList l)
 
+instance Arbitrary L.ByteString where
+   arbitrary = do 
+     l <- listOf (arbitrary :: Gen Word8)
+     return $ L.pack l
+
+
 
 derive makeArbitrary ''Archive
 derive makeArbitrary ''Entry
@@ -91,17 +104,28 @@ handler :: SomeException -> IO ()
 handler _ = return ()
  
 main = do
-  zips  <- sample' (arbitrary :: Gen Archive)
+  zips  <- sample' (resize 100 (arbitrary :: Gen Archive))
   mapM_ (\(filename,zipf) -> 
       do
        catch (L.writeFile filename (encode zipf)) handler
-       ret <- rawSystem "/usr/bin/zzuf" ["-s", "0:100", "-c", "-S", "-q", "-T", "3", "/usr/bin/unzip", "-l", "buggy.zip"]
-       --case ret of
-       -- ExitFailure x -> ( do 
-       --                     putStrLn (show x) 
-       --                     exitWith ret)
-       -- _             -> return ()
-       return ()
+       r <- (randomIO :: IO Int) 
+       --rawSystem "/home/vagrant/.local/bin/radamsa" ["-o", "buggy.zip", "buggy_.zip"]
+       --ret <- rawSystem "/home/vagrant/.local/bin/honggfuzz" ["-q", "-N300", "-f", "buggy.zip", "--", "/usr/bin/unzip","-l","___FILE___"]
+       ret <- rawSystem "/usr/bin/zzuf" ["-s", (show (r `mod` 1024))++":"++(show (r `mod` 1024 + 10)), "-c", "-S" ,"-T", "3", "/usr/bin/advzip", "-l", "buggy.zip"]
+       --ret <- rawSystem "/usr/bin/valgrind" ["--log-file=unzip.log", "--quiet", "/usr/bin/advzip", "-l", "buggy.zip"]
+       --size <- getFileSize "unzip.log"
+       --if size > 0 then exitWith (ExitFailure 1) else return ()
+
+       case ret of
+       -- (n+1 -> ( do 
+       --           putStrLn (show size) 
+       --                     exitWith 0)
+       --
+        --ExitFailure x -> ( do 
+        --                   putStrLn (show x) 
+        --                  exitWith ret)
+        _             -> return ()
+       --return ()
  
      ) (zip filenames zips)
   main

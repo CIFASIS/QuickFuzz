@@ -73,8 +73,8 @@ instance Arbitrary (V.Vector (VU.Vector Word8)) where
      l <- listOf (arbitrary :: Gen Word8)
      return $ V.replicate 32 (VU.fromList l)
 
-instance Arbitrary String where
-    arbitrary = vectorOf 5 (oneof $ map return "abc")
+--instance Arbitrary String where
+--    arbitrary = vectorOf 5 (oneof $ map return "abc")
 
 derive makeArbitrary ''Graph
 derive makeArbitrary ''Statement
@@ -102,20 +102,20 @@ instance Arbitrary Id where
       x <- (arbitrary :: Gen Xml)
       oneof $ map return ([NameId s, StringId s, IntegerId i, FloatId 1.0, XmlId x])
 
-filenames = take 1 (repeat "buggy.dot")
+filenames = take 1 (repeat "buggy.txt")
 
 handler :: SomeException -> IO ()
 handler _ = return ()
  
 prop = do
-  zips  <- sample' (resize 4 (arbitrary :: Gen Graph))
+  zips  <- sample' (resize 50000 (arbitrary :: Gen String))
   mapM_ (\(filename,zipf) -> 
       do
-       catch (writeFile filename (renderDot zipf)) handler
+       catch (writeFile filename zipf) handler
        --ret <- rawSystem "/home/vagrant/.local/bin/honggfuzz" ["-q", "-N3000", "-f", "buggy.dot", "--", "/usr/bin/dot","___FILE___"]
        --putStrLn (renderDot zipf)
-       ret <- rawSystem "/usr/bin/zzuf" ["-s", "0:1", "-q", "-r0.0", "-c", "-S", "-I", "x","-T", "3", "-j", "4", "/usr/bin/dot","buggy.dot"]
-       --ret <- rawSystem "/usr/bin/valgrind" ["--quiet","/usr/bin/dot","buggy.dot"] 
+       --ret <- rawSystem "/usr/bin/zzuf" ["-s", "0:1", "-r0.0", "-q", "-c", "-S", "-I", "x","-T", "3", "-j", "4", "/usr/lib/cups/filter/texttopdf", "", "", "", "1", "", "buggy.txt"]
+       ret <- rawSystem "/usr/bin/valgrind" ["--quiet",  "/usr/lib/cups/filter/texttopdf", "", "", "", "1", "", "buggy.txt"] 
        case ret of
         ExitFailure x -> ( do 
                             putStrLn (show x) 

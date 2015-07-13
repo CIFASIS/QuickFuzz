@@ -1,20 +1,31 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances#-}
 
 import Test.QuickCheck
-import Test.QuickCheck.Instances
+--import Test.QuickCheck.Instances
 
 import Control.Monad.Zip
 import Control.Exception
 import Data.Binary( Binary(..), encode )
 
+import Codec.Picture.Types
+import Codec.Picture.Jpg
 import Codec.Picture.Jpg.Types
 import Codec.Picture.Tiff.Types
 import Codec.Picture.Jpg.DefaultTable
 import Codec.Picture.Metadata.Exif
+import Codec.Picture.Metadata
+
+
+
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as B
+
 import Data.DeriveTH
 import Data.Word(Word8, Word16, Word32)
 import Data.Int( Int16, Int8 )
+
+import GHC.Types
+
 
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as VU
@@ -22,6 +33,14 @@ import qualified Data.Vector.Storable as VS
 
 import System.Process
 import System.Exit
+
+import System.Random
+  ( RandomGen(..)
+  , Random(..)
+  , StdGen
+  , newStdGen
+  )
+
 
 
 instance Arbitrary (V.Vector Word32) where
@@ -61,8 +80,28 @@ instance Arbitrary (MacroBlock Int16) where
 
 instance Arbitrary (V.Vector (VU.Vector Word8)) where
    arbitrary = do 
+     l <- listOf (arbitrary :: Gen [Word8])
+     return $ V.fromList (map VU.fromList l)
+
+
+instance Arbitrary B.ByteString where
+   arbitrary = do 
      l <- listOf (arbitrary :: Gen Word8)
-     return $ V.replicate 32 (VU.fromList l)
+     return $ B.pack l
+
+instance Arbitrary L.ByteString where
+   arbitrary = do 
+     l <- listOf (arbitrary :: Gen Word8)
+     return $ L.pack l
+
+instance Arbitrary (Metadatas) where
+  arbitrary = do
+      w <- (arbitrary :: Gen Word)
+      s <- (arbitrary :: Gen String)
+      d <- (arbitrary :: Gen Double) 
+      sf <- (arbitrary :: Gen SourceFormat)
+      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> w, DpiY :=> w, Width :=> w, Height :=> w, Title :=> s] }
+
 
 derive makeArbitrary ''ExifTag
 derive makeArbitrary ''IfdType
@@ -85,18 +124,35 @@ derive makeArbitrary ''JpgComponent
 derive makeArbitrary ''JpgFrameHeader
 derive makeArbitrary ''JpgFrame
 derive makeArbitrary ''JpgImage
+derive makeArbitrary ''SourceFormat
 
-filenames = take 11 (repeat "buggy.jpg")
+
+type MJpegFile  = (Word8,Metadatas, Image PixelYCbCr8)
+
+encodeJpegFile (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
+
+filenames = take 11 (repeat "buggy_qc.jpg")
+
+instance Arbitrary (Image PixelYCbCr8) where
+   arbitrary = do
+       l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelYCbCr8))
+       w <- (arbitrary :: Gen Int)
+       h <- (arbitrary :: Gen Int)
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
 
 handler :: SomeException -> IO ()
 handler _ = return ()
  
 main = do
-  jpgs  <- sample' (arbitrary :: Gen JpgImage)
+  jpgs  <- sample' (resize 10 (arbitrary :: Gen MJpegFile))
   mapM_ (\(filename,jpg) -> 
       do
-       catch (L.writeFile filename (encode jpg)) handler
-       ret <- rawSystem "/usr/bin/zzuf" ["-s", "0:1000","-c", "-q", "-S", "-T", "3", "/usr/bin/jpeginfo","buggy.jpeg"]
+       catch (L.writeFile filename (encodeJpegFile jpg)) handler
+       --ret <- rawSystem "/usr/bin/valgrind" ["--error-exitcode=-1", "/usr/bin/jpeginfo","buggy.jpg"]
+       r <- (randomIO :: IO Int)
+       ret <- rawSystem "/usr/bin/zzuf" ["-s", (show (r `mod` 10024))++":"++(show (r `mod` 10024 + 1)), "-Ix", "-M-1", "-c", "-S", "-T", "2", "/usr/bin/file", "buggy_qc.jpg"]
+
+       --ret <- rawSystem "/usr/bin/zzuf" ["-s", "0:100","-c", "-S", "-T", "3", "/usr/bin/identify.im6", "buggy.jpg"]
        case ret of
         ExitFailure x -> ( do 
                             putStrLn (show x) 

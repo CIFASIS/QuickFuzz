@@ -11,6 +11,7 @@ module Codec.Picture.Png.Export( PngSavable( .. )
                                , writeDynamicPng
                                , encodePalettedPng
                                , encodePalettedPngWithMetadata
+                               , genericEncodePng
                                ) where
 #if !MIN_VERSION_base(4,8,0)
 import Data.Monoid( mempty )

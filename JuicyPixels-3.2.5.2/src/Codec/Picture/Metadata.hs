@@ -11,35 +11,7 @@
 --
 -- Since version 3.2.5
 --
-module Codec.Picture.Metadata( -- * Types
-                               Metadatas
-                             , Keys( .. )
-                             , Value( .. )
-                             , Elem( .. )
-                             , SourceFormat( .. )
-
-                               -- * Functions
-                             , Codec.Picture.Metadata.lookup
-                             , empty
-                             , insert
-                             , delete
-                             , singleton
-
-                               -- * Folding
-                             , foldl'
-                             , Codec.Picture.Metadata.foldMap
-
-                              -- * Helper functions
-                             , mkDpiMetadata
-                             , mkSizeMetadata
-                             , basicMetadata
-                             , simpleMetadata
-
-                               -- * Conversion functions
-                             , dotsPerMeterToDotPerInch
-                             , dotPerInchToDotsPerMeter 
-                             , dotsPerCentiMeterToDotPerInch
-                             ) where
+module Codec.Picture.Metadata where
 
 #if !MIN_VERSION_base(4,8,0)
 import Data.Monoid( Monoid, mempty, mappend )

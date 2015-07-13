@@ -5,18 +5,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 -- | Modules used for Bitmap file (.bmp) file loading and writing
-module Codec.Picture.Bitmap( -- * Functions
-                             writeBitmap
-                           , encodeBitmap
-                           , encodeBitmapWithMetadata
-                           , decodeBitmap
-                           , decodeBitmapWithMetadata
-                           , encodeDynamicBitmap 
-                           , encodeBitmapWithPaletteAndMetadata
-                           , writeDynamicBitmap 
-                             -- * Accepted format in output
-                           , BmpEncodable( )
-                           ) where
+module Codec.Picture.Bitmap where
 
 #if !MIN_VERSION_base(4,8,0)
 import Data.Monoid( mempty )

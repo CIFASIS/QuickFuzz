@@ -53,6 +53,21 @@ Library
                     Codec.Picture.Saving,
                     Codec.Picture.Types,
                     Codec.Picture.ColorQuant
+                    Codec.Picture.Jpg.Metadata,
+                    Codec.Picture.Jpg.FastIdct,
+                    Codec.Picture.Jpg.FastDct,
+                    Codec.Picture.Jpg.Common,
+                    Codec.Picture.Jpg.Progressive,
+                    Codec.Picture.Gif.LZW,
+                    Codec.Picture.Gif.LZWEncoding,
+                    Codec.Picture.Png.Export,
+                    Codec.Picture.Png.Type,
+                    Codec.Picture.Png.Metadata,
+                    Codec.Picture.Tiff.Metadata,
+                    Codec.Picture.BitWriter,
+                    Codec.Picture.InternalHelper,
+                    Codec.Picture.VectorByteConversion
+
 
   Ghc-options: -O3 -Wall
   Ghc-prof-options: -rtsopts -Wall -prof -auto-all
@@ -72,20 +87,6 @@ Library
     CC-Options: "-DWITH_MMAP_BYTESTRING"
 
   -- Modules not exported by this package.
-  Other-modules: Codec.Picture.Jpg.Metadata,
-                 Codec.Picture.Jpg.FastIdct,
-                 Codec.Picture.Jpg.FastDct,
-                 Codec.Picture.Jpg.Common,
-                 Codec.Picture.Jpg.Progressive,
-                 Codec.Picture.Gif.LZW,
-                 Codec.Picture.Gif.LZWEncoding,
-                 Codec.Picture.Png.Export,
-                 Codec.Picture.Png.Type,
-                 Codec.Picture.Png.Metadata,
-                 Codec.Picture.Tiff.Metadata,
-                 Codec.Picture.BitWriter,
-                 Codec.Picture.InternalHelper,
-                 Codec.Picture.VectorByteConversion
 
   Install-Includes: src/Codec/Picture/ConvGraph.hs
   Include-Dirs: src/Codec/Picture

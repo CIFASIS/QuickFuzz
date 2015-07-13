@@ -3,6 +3,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE CPP #-}
 -- | Module implementing GIF decoding.
+module Codec.Picture.Gif where
+
+{-
 module Codec.Picture.Gif ( -- * Reading
                            decodeGif
                          , decodeGifWithMetadata
@@ -20,7 +23,11 @@ module Codec.Picture.Gif ( -- * Reading
                          , writeGifImageWithPalette
                          , writeGifImages
                          , greyPalette
+                           -- * Internal
+                         , GifImage
+                         , GifFile
                          ) where
+-}
 
 #if !MIN_VERSION_base(4,8,0)
 import Control.Applicative( pure, (<*>), (<$>) )

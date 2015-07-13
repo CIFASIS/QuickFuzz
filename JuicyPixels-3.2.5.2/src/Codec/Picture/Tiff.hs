@@ -25,12 +25,7 @@
 --
 --   * 16 bits
 --
-module Codec.Picture.Tiff( decodeTiff
-                         , decodeTiffWithMetadata
-                         , TiffSaveable
-                         , encodeTiff
-                         , writeTiff
-                         ) where
+module Codec.Picture.Tiff where
 
 #if !MIN_VERSION_base(4,8,0)
 import Control.Applicative( (<$>), (<*>), pure )
