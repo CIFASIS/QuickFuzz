@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
+module QuickBMP where
 
 import Test.QuickCheck
 --import Test.QuickCheck.Gen
@@ -7,16 +8,13 @@ import Control.Monad.Zip
 import Control.Exception
 import Data.Binary( Binary(..), encode )
 
-
-
 import Codec.Picture.Bitmap
---import Codec.Picture.Tiff.Types
 import Codec.Picture.Types
 
 import Codec.Picture.Metadata
 
 import qualified Data.ByteString.Lazy as L
---import qualified Data.ByteString as B
+
 import Data.DeriveTH
 import Data.Word(Word8, Word16, Word32)
 import Data.Int( Int16, Int8 )
@@ -24,8 +22,6 @@ import Data.Int( Int16, Int8 )
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector.Storable as VS
-
-import Codec.Picture.VectorByteConversion( toByteString )
 
 import System.Process
 import System.Exit
@@ -47,11 +43,16 @@ import Control.Monad
 
 import Control.Monad.Reader()
 
+derive makeArbitrary ''SourceFormat
+derive makeArbitrary ''BmpPalette
+derive makeArbitrary ''BmpInfoHeader
+derive makeArbitrary ''BmpHeader
+
 instance Arbitrary (V.Vector Word32) where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word32)
      return $ V.fromList l
-
+{-
 instance Arbitrary (Metadatas) where
   arbitrary = do --return $ Title :=> "abc"
       w <- (arbitrary :: Gen Word)
@@ -59,7 +60,7 @@ instance Arbitrary (Metadatas) where
       d <- (arbitrary :: Gen Double) 
       sf <- (arbitrary :: Gen SourceFormat)
       return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> w, DpiY :=> w, Width :=> w, Height :=> w, Title :=> s] }
-
+-}
 instance Arbitrary (Image PixelRGB8) where
    arbitrary = do
        l <- listOf (arbitrary :: Gen Word8)
@@ -86,23 +87,6 @@ type BMPFile  = (BmpHeader, BmpInfoHeader, BmpPalette, Image PixelRGBA8)
 
 --encodeBMPFile (metas,pal,img) = encodeBitmapWithPaletteAndMetadata metas pal img
 encodeBMPFile (hdr, info, pal, img) = runPut $ put hdr >> put info >> putPalette pal >> bmpEncode img
-
---derive makeArbitrary ''TiffInfo
---derive makeArbitrary ''Metadatas
---derive makeArbitrary ''Predictor
---derive makeArbitrary ''ExtraSample
---derive makeArbitrary ''TiffCompression
---derive makeArbitrary ''TiffSampleFormat
---derive makeArbitrary ''TiffPlanarConfiguration
---derive makeArbitrary ''TiffColorspace
---derive makeArbitrary ''TiffHeader
---derive makeArbitrary ''Endianness
-derive makeArbitrary ''SourceFormat
-derive makeArbitrary ''BmpPalette
-derive makeArbitrary ''BmpInfoHeader
-derive makeArbitrary ''BmpHeader
-
-
 
 filenames = take 1 (repeat "buggy_qc.bmp")
 
