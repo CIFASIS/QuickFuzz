@@ -19,6 +19,6 @@ executable QuickFuzz
   main-is:             Main.hs
   -- other-modules:       
   other-extensions:    CPP, FlexibleContexts, TypeFamilies, TupleSections, ExistentialQuantification, BangPatterns, ScopedTypeVariables, TypeSynonymInstances, Rank2Types, FlexibleInstances, RankNTypes, MultiParamTypeClasses, GADTs, StandaloneDeriving, TypeOperators, GeneralizedNewtypeDeriving, FunctionalDependencies, OverloadedStrings
-  build-depends:       base >=4.8 && <4.9, bytestring >=0.10 && <0.11, containers >=0.5 && <0.6, vector >=0.11 && <0.12, primitive >=0.6 && <0.7, transformers >=0.4 && <0.5, binary >=0.7 && <0.8, QuickCheck, mtl, random, ghc-prim, process, deepseq, derive
+  build-depends:       base, bytestring >=0.10 && <0.11, containers >=0.5 && <0.6, vector >=0.11 && <0.12, primitive >=0.6 && <0.7, transformers, binary, QuickCheck, mtl, random, ghc-prim, process, deepseq, derive
   hs-source-dirs:      src
   default-language:    Haskell2010
