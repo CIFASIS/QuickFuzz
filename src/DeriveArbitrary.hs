@@ -83,9 +83,9 @@ deriveArbitrary t = do
   let mkList xs = map (fmap fixAppl)
                 [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ t con ty)) (conE name) tys'
                 | con@(NormalC name tys) <- xs, let tys' = map snd tys  ]
-  let (fcs,rcs) = partition ((==0) . branchingFactor t) constructors
+  let fcs = filter ((==0) . branchingFactor t) constructors
   [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
                => Arbitrary $(applyTo (conT t) ns) where
-                 arbitrary = (arbitrary :: Gen Int) >>= go
+                 arbitrary = sized go --(arbitrary :: Gen Int) >>= go
                    where go n | n <= 1 = oneof $(listE (mkList fcs))
-                              | otherwise = oneof $(listE (mkList rcs)) |]
+                              | otherwise = oneof $(listE (mkList constructors)) |]
