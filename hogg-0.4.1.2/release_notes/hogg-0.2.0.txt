@@ -1,0 +1,84 @@
+HOgg 0.2.0 Released
+-------------------
+
+The HOgg package provides a commandline tool for manipulating Ogg files,
+and a corresponding Haskell library.
+
+  http://snapper.kfish.org/~conrad/software/hogg/
+
+This is the initial public release. The focus is on correctness of Ogg
+parsing and production. The capabilities of the hogg commandline tool are
+roughly on par with those of the oggz* tools[0], although hogg does not
+yet provide an equivalent to oggz-validate.
+
+HOgg supports chained and multiplexed Ogg bitstreams conformant with
+RFC3533[1]. HOgg can parse headers for CMML, FLAC, OggPCM, Speex, Theora
+and Vorbis media codecs, and can read and write Ogg Skeleton bitstreams.
+
+[0] Oggz: http://www.annodex.net/software/liboggz/index.html
+[1] RFC3533: http://www.ietf.org/rfc/rfc3533.txt
+
+Installation
+------------
+
+I am very interested in hearing about problems with building or installing
+the package, particularly from people who are not yet familiar with building
+from Haskell source. You need ghc instead of gcc; it compiles to a binary:
+
+    $ ./Setup.hs configure
+    $ ./Setup.hs build
+    $ sudo ./Setup.hs install
+
+Building of this release has been tested with:
+  * GHC versions 6.4 and 6.6 [2]
+  * The Haskell build system "Cabal" versions 1.1.3, 1.1.4, 1.1.6, and the
+    current development trunk. [3]
+  * fps (Data.ByteString.Lazy) version 0.7, and development trunk. [4]
+
+Note that if you are using the recently-released GHC 6.6 then you will not
+need separate installs of Cabal or fps. You will however need to remove the
+word "fps" from the hogg.cabal file; see the README for details.
+
+The GHC and Cabal versions listed above span the packages available in most
+current distributions. I've tested on Debian unstable, Ubuntu Dapper and
+Ubuntu Edgy. I'm particularly interested to hear reports of build success or
+failure on other distributions or operating systems.
+
+[2] GHC: http://www.haskell.org/ghc/
+[3] Cabal: http://www.haskell.org/cabal/
+[4] fps: http://www.cse.unsw.edu.au/~dons/fps.html
+
+Usage
+-----
+
+$ hogg help
+
+Usage: hogg <subcommand> [options] filename ...
+
+Commands:
+  help          Display help for a specific subcommand
+
+Reporting:
+  info          Display information about the file and its bitstreams
+  dump          Hexdump packets of an Ogg file
+  pagedump      Display page structure of an Ogg file
+  dumpraw       Dump raw (unparsed) page data
+
+Extraction:
+  rip           Rip selected logical bistreams from an Ogg file (default: all)
+  reconstruct   Reconstruct an Ogg file by doing a full packet demux
+
+Editing:
+  merge         Merge, interleaving pages in order of presentation time
+  addskel       Write a Skeleton logical bitstream
+
+Source
+------
+
+Source code is available from the darcs repository at:
+
+  darcs get http://snapper.kfish.org/~conrad/software/hogg/
+
+cheers,
+
+Conrad.

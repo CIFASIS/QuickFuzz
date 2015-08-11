@@ -1,0 +1,95 @@
+Name:          hogg
+Version:       0.4.1.2
+License:       BSD3
+License-file:  LICENSE
+Copyright:     Conrad Parker, 2007-2011
+Author:        Conrad Parker
+Maintainer:    Conrad Parker <conrad@metadecks.org>
+Stability:     experimental
+Category:      Codec
+Synopsis:      Library and tools to manipulate the Ogg container format
+Description:   The HOgg package provides a commandline tool for manipulating Ogg files.
+               It supports chained and multiplexed Ogg bitstreams and Ogg Skeleton.
+               HOgg also includes a library that may be used by other packages for handling
+               the Ogg container format.
+Homepage:      http://www.kfish.org/software/hogg/
+Build-Type:    Simple
+Cabal-Version: >= 1.6
+Tested-With:   GHC==7.0.3, GHC==7.2.1, GHC==7.4.2, GHC==7.6.0
+
+Extra-source-files:  README hogg.1
+
+------------------------------------------------------------------------
+-- See the README file for information about configuring Build-Depends.
+--
+-- For GHC 6.4, we require external fps (Data.ByteString.Lazy)
+-- Build-Depends:       base, fps, mtl, HUnit
+
+flag splitBase
+  description: Choose the new smaller, split-up base package introduced with GHC 6.8.
+
+flag http
+  default: False
+  description: HTTP1 with lazy bytestring support, from:
+               <http://www.dtek.chalmers.se/~tox/site/http.php4>.
+               This is optional and off by default.
+library
+    if flag(splitBase)
+      build-depends: base >=3 && < 5, mtl, HUnit, array, bytestring, containers, random, time, old-locale
+    else
+-- For GHC 6.6, fps is built in
+      build-depends: base, mtl, HUnit, time
+
+    if flag(http)
+      build-depends: HTTP1
+
+------------------------------------------------------------------------
+    Exposed-modules: Codec.Container.Ogg.Chain
+                     Codec.Container.Ogg.Chop
+                     Codec.Container.Ogg.ContentType
+                     Codec.Container.Ogg.Granulepos
+                     Codec.Container.Ogg.Granulerate
+                     Codec.Container.Ogg.Headers
+                     Codec.Container.Ogg.RawPage
+                     Codec.Container.Ogg.Page
+                     Codec.Container.Ogg.Packet
+                     Codec.Container.Ogg.Serial
+                     Codec.Container.Ogg.Skeleton
+                     Codec.Container.Ogg.Sort
+                     Codec.Container.Ogg.Track
+                     Codec.Container.Ogg.TimeScheme
+                     Codec.Container.Ogg.Timestamp
+                     Codec.Container.Ogg.ByteFields
+                     Codec.Container.Ogg.CRC
+                     Codec.Container.Ogg.Dump
+                     Codec.Container.Ogg.List
+                     Codec.Container.Ogg.MessageHeaders
+    ghc-options:     -Wall -funbox-strict-fields
+-- ghc-options:         -prof -auto-all
+
+------------------------------------------------------------------------
+-- hogg commandline tool
+--
+Executable hogg
+    Main-Is:         hogg.hs
+    Hs-Source-Dirs:  ., tools
+
+    ghc-options:    -Wall -funbox-strict-fields
+    Extensions:     CPP
+
+    if flag(http)
+       cpp-options: -DUSE_HTTP
+
+------------------------------------------------------------------------
+-- ListMerge test program
+--
+Executable ListMergeTest
+    Main-Is:        ListMergeTest.hs
+    Hs-Source-Dirs: ., tests
+
+------------------------------------------------------------------------
+-- Git repo
+--
+source-repository head
+  type: git
+  location: git://github.com/kfish/hogg.git

@@ -1,0 +1,32 @@
+TODO for HOgg.
+
+verify skeleton
+
+anx byte offset reporting
+cmml insert
+cmml extract
+cmml -> anx
+
+rewrite flac0 as flac (is this just a matter of changing the BOS?)
+
+read/write vorbiscomments
+
+filter: subcommand to rewrite serialno, inc/dec granulepos of matching tracks
+
+optimize: remux the pages to avoid packet splitting
+
+splice/edit (concat data from different files if the encoding parms are the
+same, or cut/edit bits from the same file)
+
+web server frontend
+ - implement a mod_annodex workalike
+   with byte-range handling
+ - use for research into per-track selection
+
+Test against all files from:
+  http://www1.mplayerhq.hu/MPlayer/samples/ogg/
+
+DONE:
+anxmux (time offset gen)
+chop: extract a section [start, end] of a file
+

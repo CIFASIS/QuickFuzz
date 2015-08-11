@@ -1,0 +1,138 @@
+HOgg 0.4.1.2 Released
+---------------------
+
+The HOgg package provides a commandline tool for manipulating Ogg files,
+and a corresponding Haskell library. HOgg is in hackage, or on the web at:
+
+  http://www.kfish.org/~conrad/software/hogg/
+
+This is the fourth public release. The focus is on correctness of Ogg
+parsing, production and editing. The capabilities of the hogg commandline
+tool are roughly on par with those of the oggz* [0] tools.
+
+HOgg supports chained and multiplexed Ogg bitstreams conformant with
+RFC3533[1]. HOgg can parse headers for CELT, CMML, FLAC, OggPCM, Speex, Theora
+and Vorbis media codecs, and can read and write Ogg Skeleton bitstreams.
+
+[0] Oggz: http://www.xiph.org/oggz/
+[1] RFC3533: http://www.ietf.org/rfc/rfc3533.txt
+
+
+New in this release
+-------------------
+
+This release introduces no functionality changes. 
+
+Hackage Installation
+--------------------
+
+HOgg is in Hackage, at:
+http://hackage.haskell.org/cgi-bin/hackage-scripts/package/hogg-0.4.1.2
+
+If you have the Hackage "cabal" system installed, simply run:
+
+    $ cabal update
+    $ cabal install hogg
+
+Source Tarball Installation
+---------------------------
+
+I am very interested in hearing about problems with building or installing
+the package, particularly from people who are not yet familiar with building
+from Haskell source. You need ghc instead of gcc; it compiles to a binary:
+
+    $ cabal configure
+    $ cabal build
+    $ cabal install
+
+(A ./Setup.hs is also included, which may be used in place of the "cabal"
+command if that not present).
+
+Building of this release has been tested with:
+  * GHC versions 7.0.3, 7.2.1, 7.4.2, 7.6.0 [2]
+  * The Haskell build system "Cabal" version 1.14.0 [3]
+
+The GHC and Cabal versions listed above span the packages available in most
+current distributions. I've tested on Ubuntu 10.10. I'm particularly interested
+to hear reports of build success or failure on other distributions or operating
+systems.
+
+[2] GHC: http://www.haskell.org/ghc/
+[3] Cabal: http://www.haskell.org/cabal/
+
+
+Usage
+-----
+
+$ hogg help
+Usage: hogg <subcommand> [options] filename ...
+
+  hogg is a commandline tool for manipulating Ogg files. It supports chained 
+  and multiplexed files conformant with RFC3533. Hogg can parse headers for 
+  CELT, CMML, FLAC, PCM, Speex, Theora and Vorbis, and can read and write Ogg 
+  Skeleton logical bitstreams.
+
+Commands:
+  help          Display help for a specific subcommand (eg. "hogg help chop")
+  man           Generate Unix man page for a specific subcommand (eg. "hogg man chop")
+
+Reporting:
+  info          Display information about the specified files and their bitstreams
+  dump          Hexdump packets of an Ogg file
+  pagedump      Display page structure of an Ogg file
+  dumpraw       Dump raw (unparsed) page data
+
+Extraction:
+  rip           Rip selected logical bistreams from an Ogg file (default: all)
+  reconstruct   Reconstruct an Ogg file by doing a full packet demux
+
+Editing:
+  chop          Extract a section (specify start and/or end time)
+  merge         Merge, interleaving pages in order of presentation time
+  sort          Rewrite with correct page ordering
+  addskel       Write a Skeleton logical bitstream
+
+Miscellaneous:
+  known-codecs  List codecs known by this version of hogg
+
+Please report bugs to <ogg-dev@xiph.org>
+
+
+New subcommand man
+------------------
+
+$ hogg help man
+man: Generate Unix man page for a specific subcommand (eg. "hogg man chop")
+Usage: hogg man [options]
+
+Examples:
+  Generate a man page for the "hogg chop" subcommand:
+    hogg man chop
+
+Options:
+  -h, -?  --help     Display this help and exit
+  -V      --version  Output version information and exit
+
+$ hogg man man
+.TH HOGG 1 "December 2008" "hogg" "Annodex"
+.SH SYNOPSIS
+
+.B hogg
+.RI man
+...
+
+
+Source
+------
+
+Source code is available from the git repository at:
+
+  git clone git://github.com/kfish/hogg.git
+
+Tarballs are available from:
+
+  http://www.kfish.org/~conrad/software/hogg/
+
+cheers,
+
+Conrad.

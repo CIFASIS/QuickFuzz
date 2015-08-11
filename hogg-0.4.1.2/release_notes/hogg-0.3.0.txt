@@ -1,0 +1,123 @@
+HOgg 0.3.0 Released
+-------------------
+
+The HOgg package provides a commandline tool for manipulating Ogg files,
+and a corresponding Haskell library. HOgg is in hackage, or on the web at:
+
+  http://www.kfish.org/~conrad/software/hogg/
+
+This is the second public release. The focus is on correctness of Ogg
+parsing, production and editing. The capabilities of the hogg commandline
+tool are roughly on par with those of the oggz* [0] tools. Although hogg
+does not yet provide an equivalent to oggz-validate, it has subcommands
+for chopping out a section of a file, and for adding skeleton metadata.
+
+HOgg supports chained and multiplexed Ogg bitstreams conformant with
+RFC3533[1]. HOgg can parse headers for CMML, FLAC, OggPCM, Speex, Theora
+and Vorbis media codecs, and can read and write Ogg Skeleton bitstreams.
+
+[0] Oggz: http://www.annodex.net/software/liboggz/index.html
+[1] RFC3533: http://www.ietf.org/rfc/rfc3533.txt
+
+
+New in this release
+-------------------
+
+The hogg tool contains new subcommands: chop, addskel and list-codecs.
+Additionally, subcommands for inspecting streams (hogg dump, hogg pagedump)
+can now take start and end time options.
+
+$ hogg help chop
+chop: Extract a section (specify start and/or end time)
+Usage: hogg chop [options] filename ...
+
+Examples:
+  Extract the first minute of file.ogg:
+    hogg chop -e 1:00 file.ogg
+
+  Extract from the second to the fifth minute of file.ogg:
+    hogg chop -s 2:00 -e 5:00 -o output.ogg file.ogg
+
+  Extract only the Theora video stream, from 02:00 to 05:00, of file.ogg:
+    hogg chop -c theora -s 2:00 -e 5:00 -o output.ogg file.ogg
+
+  Extract, specifying SMPTE-25 frame offsets:
+    hogg chop -c theora -s smpte-25:00:02:03::12 -e smpte-25:00:05:02::04 -o output.ogg file.ogg
+
+Options:
+  -h, -?           --help                       Display this help and exit
+  -V               --version                    Output version information and exit
+  -c Content-Type  --content-type=Content-Type  Select the logical bitstreams for a specified content type
+  -s Timestamp     --start=Timestamp            Specify a start time
+  -e Timestamp     --end=Timestamp              Specify an end time
+  -o filename      --output=filename            Specify output filename
+
+
+Additionally, the HOgg package now contains support for building with GHC
+version 6.8, and the Codec.Container.Ogg library contains various internal
+improvements.
+
+Installation
+------------
+
+I am very interested in hearing about problems with building or installing
+the package, particularly from people who are not yet familiar with building
+from Haskell source. You need ghc instead of gcc; it compiles to a binary:
+
+    $ ./Setup.hs configure
+    $ ./Setup.hs build
+    $ sudo ./Setup.hs install
+
+Building of this release has been tested with:
+  * GHC versions 6.4, 6.6 and 6.8.1 [2]
+  * The Haskell build system "Cabal" versions 1.1.3, 1.1.4, 1.1.6, and the
+    current development trunk. [3]
+
+The GHC and Cabal versions listed above span the packages available in most
+current distributions. I've tested on Debian unstable and Ubuntu Feisty. I'm
+particularly interested to hear reports of build success or failure on other
+distributions or operating systems.
+
+[2] GHC: http://www.haskell.org/ghc/
+[3] Cabal: http://www.haskell.org/cabal/
+
+
+Usage
+-----
+
+$ hogg help
+Usage: hogg <subcommand> [options] filename ...
+
+Commands:
+  help          Display help for a specific subcommand (eg. "hogg help chop")
+
+Reporting:
+  info          Display information about the file and its bitstreams
+  dump          Hexdump packets of an Ogg file
+  pagedump      Display page structure of an Ogg file
+  dumpraw       Dump raw (unparsed) page data
+
+Extraction:
+  rip           Rip selected logical bistreams from an Ogg file (default: all)
+  reconstruct   Reconstruct an Ogg file by doing a full packet demux
+
+Editing:
+  chop          Extract a section (specify start and/or end time)
+  merge         Merge, interleaving pages in order of presentation time
+  addskel       Write a Skeleton logical bitstream
+
+Miscellaneous:
+  known-codecs  List codecs known by this version of hogg
+
+Please report bugs to <ogg-dev@xiph.org>
+
+Source
+------
+
+Source code is available from the darcs repository at:
+
+  darcs get http://www.kfish.org/~conrad/software/hogg/
+
+cheers,
+
+Conrad.
