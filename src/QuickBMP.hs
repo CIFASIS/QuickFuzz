@@ -1,11 +1,9 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
 module QuickBMP where
 
+import Check
 import Test.QuickCheck
---import Test.QuickCheck.Gen
 
-import Control.Monad.Zip
-import Control.Exception
 import Data.Binary( Binary(..), encode )
 
 import Codec.Picture.Bitmap
@@ -23,28 +21,14 @@ import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector.Storable as VS
 
-import System.Process
-import System.Exit
-
-import Data.Binary.Put( runPut )
-
 import GHC.Types
 
-import System.Random
-  ( RandomGen(..)
-  , Random(..)
-  , StdGen
-  , newStdGen
-  )
+--import Control.Monad
+--  ( liftM
+--  )
 
-import Control.Monad
-  ( liftM
-  )
-
+import Data.Binary.Put( runPut )
 import Control.Monad.Reader()
-
-import Test.QuickCheck.Monadic (assert, monadicIO, run)
-
 
 
 -- $( derive makeArbitrary ''BmpHeader, ''BmpInfoHeader )
@@ -118,21 +102,9 @@ instance Show (Image pixel0) where
 --type BMPFile  = (Metadatas, BmpPalette, Image PixelRGB8)
 type BMPFile  = (BmpHeader, BmpInfoHeader, BmpPalette, Image PixelRGBA8)
 
---encodeBMPFile (metas,pal,img) = encodeBitmapWithPaletteAndMetadata metas pal img
+encodeBMPFile :: BMPFile -> L.ByteString
 encodeBMPFile (hdr, info, pal, img) = runPut $ put hdr >> put info >> putPalette pal >> bmpEncode img
+--encodeBMPFile x = L.empty
 
-filenames = take 1 (repeat "buggy_qc.bmp")
 
-handler :: SomeException -> IO ()
-handler _ = return ()
-
-prop :: BMPFile -> Property
-prop x = monadicIO $ do
-         run $ Control.Exception.catch (L.writeFile "buggy_qc.bmp" (encodeBMPFile x)) handler
-         r <- run (randomIO :: IO Int)
-         ret <- run $ rawSystem "/usr/bin/zzuf" ["-s", (show (r `mod` 10024))++":"++(show (r `mod` 10024 + 50)), "-q", "-M", "-1", "-c", "-S", "-T", "60", "-j", "5", "/usr/bin/convert.im6", "-rotate", "90", "buggy_qc.bmp","png:-"]
-         case ret of
-            ExitFailure y -> Test.QuickCheck.Monadic.assert False 
-            _             -> Test.QuickCheck.Monadic.assert True
-
-main = quickCheckWith stdArgs { maxSuccess = 50000, maxSize = 500 } prop 
+main = quickCheckWith stdArgs { maxSuccess = 50000, maxSize = 10 } (absprop "buggy_qc.bmp" "/usr/bin/identify.im6" ["buggy_qc.bmp"] encodeBMPFile)
