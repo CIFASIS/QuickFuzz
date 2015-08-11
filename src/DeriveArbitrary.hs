@@ -56,7 +56,13 @@ countCons p ty =
 branchingFactor :: Name -> Con -> Integer
 branchingFactor tyName (NormalC _ sts) =
   sum $ map (countCons (== tyName) . snd) sts
-
+branchingFactor tyName (RecC _ vsts) =
+  sum $ map (countCons (== tyName) . proj3) vsts
+    where proj3 (x,y,z) = z
+branchingFactor tyName (InfixC (_,t1) _ (_,t2)) =
+  countCons (== tyName) t1 +   countCons (== tyName) t2
+branchingFactor tyName (ForallC _ _ c) = branchingFactor tyName c  
+  
 varNames = map (('a':) . show) [0..]
 
 paramNames :: [TyVarBndr] -> [Name]
@@ -93,11 +99,18 @@ deriveArbitrary t = do
                 [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ t con ty)) (conE name) tys'
                 | con@(NormalC name tys) <- xs, let tys' = map snd tys  ]
   let fcs = filter ((==0) . branchingFactor t) constructors
-  [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
-               => Arbitrary $(applyTo (conT t) ns) where
-                 arbitrary = sized go --(arbitrary :: Gen Int) >>= go
-                   where go n | n <= 1 = oneof $(listE (mkList fcs))
-                              | otherwise = oneof $(listE (mkList constructors)) |]
+  if length ns > 0 then
+   [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
+                => Arbitrary $(applyTo (conT t) ns) where
+                  arbitrary = sized go --(arbitrary :: Gen Int) >>= go
+                    where go n | n <= 1 = oneof $(listE (mkList fcs))
+                               | otherwise = oneof $(listE (mkList constructors)) |]
+   else
+    [d| instance Arbitrary $(applyTo (conT t) ns) where
+                   arbitrary = sized go --(arbitrary :: Gen Int) >>= go
+                     where go n | n <= 1 = oneof $(listE (mkList fcs))
+                                | otherwise = oneof $(listE (mkList constructors)) |]
+
 
 isVarT (VarT _) = True
 isVarT _ = False
