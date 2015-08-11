@@ -43,10 +43,24 @@ import Control.Monad
 
 import Control.Monad.Reader()
 
+import Test.QuickCheck.Monadic (assert, monadicIO, run)
+
+
+
+-- $( derive makeArbitrary ''BmpHeader, ''BmpInfoHeader )
+
 derive makeArbitrary ''SourceFormat
 derive makeArbitrary ''BmpPalette
 derive makeArbitrary ''BmpInfoHeader
 derive makeArbitrary ''BmpHeader
+
+--derive makeShow ''SourceFormat
+derive makeShow ''BmpPalette
+--derive makeShow ''BmpInfoHeader
+derive makeShow ''BmpHeader
+
+
+
 
 instance Arbitrary (V.Vector Word32) where
    arbitrary = do 
@@ -68,6 +82,9 @@ instance Arbitrary (Image PixelRGB8) where
        h <- (arbitrary :: Gen Int)
        return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
 
+instance Show (Image PixelRGB8) where
+   show x = ""
+ 
 instance Arbitrary (Image PixelRGBA8) where
    arbitrary = do
        l <- listOf (arbitrary :: Gen Word8)
@@ -75,12 +92,28 @@ instance Arbitrary (Image PixelRGBA8) where
        h <- (arbitrary :: Gen Int)
        return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
 
+instance Show (Image PixelRGBA8) where
+   show x = ""
+ 
+
 instance Arbitrary (Image PixelRGB16) where
    arbitrary = do
        l <- listOf (arbitrary :: Gen Word16)
        w <- (arbitrary :: Gen Int)
        h <- (arbitrary :: Gen Int)
        return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
+
+{-
+instance Arbitrary (Image pixel0) where
+   arbitrary = do
+       l <- listOf (arbitrary :: Gen pixel0)
+       w <- (arbitrary :: Gen Int)
+       h <- (arbitrary :: Gen Int)
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
+
+instance Show (Image pixel0) where
+   show x = ""
+-}
 
 --type BMPFile  = (Metadatas, BmpPalette, Image PixelRGB8)
 type BMPFile  = (BmpHeader, BmpInfoHeader, BmpPalette, Image PixelRGBA8)
@@ -92,25 +125,14 @@ filenames = take 1 (repeat "buggy_qc.bmp")
 
 handler :: SomeException -> IO ()
 handler _ = return ()
- 
-prop = do
-  zips  <- sample' (resize 10 (arbitrary :: Gen BMPFile))
-  mapM_ (\(filename,zipf) -> 
-      do
-       catch (L.writeFile filename (encodeBMPFile zipf)) handler
-       --ret <- rawSystem "/home/vagrant/.local/bin/honggfuzz" ["-q", "-N3000", "-f", "buggy.dot", "--", "/usr/bin/dot","___FILE___"]
-       --putStrLn (renderDot zipf)
-       r <- (randomIO :: IO Int)
-       ret <- rawSystem "/usr/bin/zzuf" ["-s", (show (r `mod` 10024))++":"++(show (r `mod` 10024 + 1000)), "-q", "-c", "-S", "-T", "10", "bins/test",  "buggy_qc.bmp"]
-       --ret <- rawSystem "/usr/bin/zzuf" ["-s", "0:100", "-c", "-S", "-T", "3", "/usr/bin/tiffinfo", "buggy_qc.tiff"]
-       --ret <- rawSystem "/usr/bin/valgrind" ["--quiet",  "bins/test", "buggy_qc.bmp"]
-       case ret of
-        ExitFailure x -> ( do 
-                            putStrLn (show x) 
-                            exitWith ret)
-        _             -> return ()
- 
-     ) (zip filenames zips)
-  prop
 
-main = prop
+prop :: BMPFile -> Property
+prop x = monadicIO $ do
+         run $ Control.Exception.catch (L.writeFile "buggy_qc.bmp" (encodeBMPFile x)) handler
+         r <- run (randomIO :: IO Int)
+         ret <- run $ rawSystem "/usr/bin/zzuf" ["-s", (show (r `mod` 10024))++":"++(show (r `mod` 10024 + 50)), "-q", "-M", "-1", "-c", "-S", "-T", "60", "-j", "5", "/usr/bin/convert.im6", "-rotate", "90", "buggy_qc.bmp","png:-"]
+         case ret of
+            ExitFailure y -> Test.QuickCheck.Monadic.assert False 
+            _             -> Test.QuickCheck.Monadic.assert True
+
+main = quickCheckWith stdArgs { maxSuccess = 50000, maxSize = 500 } prop 
