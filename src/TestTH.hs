@@ -6,5 +6,4 @@ import Language.Haskell.TH
 import Test.QuickCheck
 
 
-$(deriveArbitrary ''Expr)
-$(deriveArbitrary ''Tree)
+$(deriveArbitraryRec ''Expr2)

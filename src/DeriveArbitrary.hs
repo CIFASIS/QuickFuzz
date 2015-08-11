@@ -35,18 +35,27 @@ instance Arbitrary a => Arbitrary (Expr a) where
                        ,Neg <$> (go (n - 1))]
 -}
 
-countCons :: Name -> Type -> Integer
-countCons n ty =
+data Expr2 a = Var2 a
+             | Con2 Int
+             | Tr (Tree a)
+             | Add2 (Expr2 a) (Expr2 a)
+             | Mul2 (Expr2 a) (Expr2 a)
+             | Neg2 (Expr2 a)
+             deriving (Show, Eq)
+
+
+countCons :: (Name -> Bool) -> Type -> Integer
+countCons p ty =
   case ty of
-    ForallT _ _ t  -> countCons n t
-    AppT ty1 ty2   -> countCons n ty1 + countCons n ty2
-    SigT t _       -> countCons n t
-    ConT t         -> if n == t then 1 else 0
+    ForallT _ _ t  -> countCons p t
+    AppT ty1 ty2   -> countCons p ty1 + countCons p ty2
+    SigT t _       -> countCons p t
+    ConT t         -> if p t then 1 else 0
     _              -> 0
 
 branchingFactor :: Name -> Con -> Integer
 branchingFactor tyName (NormalC _ sts) =
-  sum $ map (countCons tyName . snd) sts
+  sum $ map (countCons (== tyName) . snd) sts
 
 varNames = map (('a':) . show) [0..]
 
@@ -89,3 +98,19 @@ deriveArbitrary t = do
                  arbitrary = sized go --(arbitrary :: Gen Int) >>= go
                    where go n | n <= 1 = oneof $(listE (mkList fcs))
                               | otherwise = oneof $(listE (mkList constructors)) |]
+
+isVarT (VarT _) = True
+isVarT _ = False
+
+deriveArbitraryRec t = do
+  TyConI (DataD _ _ _ constructors _) <- reify t
+  let innerTypes = [ ty | NormalC _ tys <- constructors, (_,ty) <- tys, countCons (== t) ty == 0, not (isVarT ty) ]
+  runIO $ print innerTypes
+  decs <- fmap concat $ forM innerTypes $ \ty ->
+    do q <- isInstance ''Arbitrary [ty]
+       if not q
+         then do runIO $ putStrLn ("recursively deriving Arbitrary instance for " ++ show (headOf ty))
+                 deriveArbitrary (headOf ty)
+         else return []
+  d <- deriveArbitrary t
+  return (decs ++ d)
