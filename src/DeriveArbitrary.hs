@@ -123,7 +123,7 @@ deriveArbitraryRec t = do
     do q <- isInstance ''Arbitrary [ty]
        if not q
          then do runIO $ putStrLn ("recursively deriving Arbitrary instance for " ++ show (headOf ty))
-                 deriveArbitrary (headOf ty)
+                 deriveArbitraryRec (headOf ty)
          else return []
   d <- deriveArbitrary t
   return (decs ++ d)
