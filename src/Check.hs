@@ -3,7 +3,6 @@ module Check where
 import Test.QuickCheck
 import Test.QuickCheck.Monadic (assert, monadicIO, run)
 
---import Control.Monad.Zip
 import Control.Exception
 
 import qualified Data.ByteString.Lazy as L
