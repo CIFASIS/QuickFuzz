@@ -3,10 +3,8 @@
 module QuickZip where
 
 import Test.QuickCheck
---import Test.QuickCheck.Instances
+import Check
 
-import Control.Monad.Zip
-import Control.Exception
 import Data.Binary( Binary(..), encode )
 
 import Codec.Archive.Zip
@@ -66,14 +64,15 @@ instance Arbitrary L.ByteString where
      l <- listOf (arbitrary :: Gen Word8)
      return $ L.pack l
 
-
-
 derive makeArbitrary ''Archive
 derive makeArbitrary ''Entry
 derive makeArbitrary ''CompressionMethod
 
-handler :: SomeException -> IO ()
-handler _ = return ()
+mencode :: Archive -> L.ByteString
+mencode = encode 
+
+main = quickCheckWith stdArgs { maxSuccess = 50000, maxSize = 1000 } (absprop "buggy_qc.zip" "../unzip610c19/unzip" ["-l", "buggy_qc.zip"] mencode)
+{-
 
 prop :: Archive -> Property
 prop x = monadicIO $ do
@@ -84,4 +83,5 @@ prop x = monadicIO $ do
             ExitFailure y -> Test.QuickCheck.Monadic.assert False 
             _             -> Test.QuickCheck.Monadic.assert True
 
-main = quickCheckWith stdArgs { maxSuccess = 50000, maxSize = 500 } prop 
+main = quickCheckWith stdArgs { maxSuccess = 50000, maxSize = 50 } prop 
+-}

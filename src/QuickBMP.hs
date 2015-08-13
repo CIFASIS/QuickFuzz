@@ -70,4 +70,4 @@ encodeBMPFile :: BMPFile -> L.ByteString
 encodeBMPFile (hdr, info, pal, img) = runPut $ put hdr >> put info >> putPalette pal >> bmpEncode img
 --encodeBMPFile x = L.empty
 
-main = quickCheckWith stdArgs { maxSuccess = 50000, maxSize = 10 } (absprop "buggy_qc.bmp" "/usr/bin/identify.im6" ["buggy_qc.bmp"] encodeBMPFile)
+main = quickCheckWith stdArgs { maxSuccess = 50000, maxSize = 10 } (absprop "buggy_qc.bmp" "/usr/bin/bmptoppm" ["buggy_qc.bmp"] encodeBMPFile)

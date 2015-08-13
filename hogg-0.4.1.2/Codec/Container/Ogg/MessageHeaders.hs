@@ -11,7 +11,8 @@ module Codec.Container.Ogg.MessageHeaders (
   mhEmpty,
   mhSingleton,
   mhInsert,
-  mhAppend
+  mhAppend,
+  mhAppends
 ) where
 
 import Data.Char

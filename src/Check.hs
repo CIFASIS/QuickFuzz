@@ -18,8 +18,10 @@ handler _ = return ()
 absprop filename prog args encode x = 
          monadicIO $ do
          run $ Control.Exception.catch (L.writeFile filename (encode x)) handler
-         r <- run (randomIO :: IO Int)
-         ret <- run $ rawSystem "/usr/bin/zzuf" (["-s", (show (r `mod` 10024))++":"++(show (r `mod` 10024 + 50)), "-M", "-1", "-c", "-S", "-T", "60", "-j", "5", prog] ++ args)
+         r <- run (randomRIO (0.5,0.00000001) :: IO Float)
+         seed <- run (randomIO :: IO Int)
+         ret <- run $ rawSystem "/usr/bin/zzuf" ([ "-C", "0", "-r",show r, "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 5000)), "-c", "-S", "-T", "10", "-j", "5", prog] ++ args)
+         --ret <- run $ rawSystem "/usr/bin/valgrind" (["--quiet", prog] ++ args)         
          case ret of
-            ExitFailure y -> Test.QuickCheck.Monadic.assert False 
+            ExitFailure y -> Test.QuickCheck.Monadic.assert False
             _             -> Test.QuickCheck.Monadic.assert True
