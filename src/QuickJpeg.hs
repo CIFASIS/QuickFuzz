@@ -1,7 +1,9 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances#-}
 
+module QuickJpeg where
+
 import Test.QuickCheck
---import Test.QuickCheck.Instances
+import Check
 
 import Control.Monad.Zip
 import Control.Exception
@@ -14,8 +16,6 @@ import Codec.Picture.Tiff.Types
 import Codec.Picture.Jpg.DefaultTable
 import Codec.Picture.Metadata.Exif
 import Codec.Picture.Metadata
-
-
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as B
@@ -33,14 +33,6 @@ import qualified Data.Vector.Storable as VS
 
 import System.Process
 import System.Exit
-
-import System.Random
-  ( RandomGen(..)
-  , Random(..)
-  , StdGen
-  , newStdGen
-  )
-
 
 
 instance Arbitrary (V.Vector Word32) where
@@ -102,6 +94,15 @@ instance Arbitrary (Metadatas) where
       sf <- (arbitrary :: Gen SourceFormat)
       return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> w, DpiY :=> w, Width :=> w, Height :=> w, Title :=> s] }
 
+instance Arbitrary (Image PixelYCbCr8) where
+   arbitrary = do
+       l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelYCbCr8))
+       w <- (arbitrary :: Gen Int)
+       h <- (arbitrary :: Gen Int)
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
+
+instance Show (Image PixelYCbCr8) where
+   show x = ""
 
 derive makeArbitrary ''ExifTag
 derive makeArbitrary ''IfdType
@@ -112,7 +113,6 @@ derive makeArbitrary ''AdobeTransform
 
 derive makeArbitrary ''JpgJFIFApp0
 derive makeArbitrary ''ImageFileDirectory
-
 
 derive makeArbitrary ''DctComponent
 derive makeArbitrary ''JpgQuantTableSpec
@@ -127,6 +127,20 @@ derive makeArbitrary ''JpgImage
 derive makeArbitrary ''SourceFormat
 
 
+type MJpegFile  = (Word8,Metadatas, Image PixelYCbCr8)
+
+encodeJpegFile (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
+
+mencode :: MJpegFile -> L.ByteString
+mencode = encodeJpegFile
+
+--main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 10 } (absprop "buggy_qc.jp2" "/usr/bin/j2k_to_image" ["-i", "buggy_qc.jp2","-o","/tmp/out.raw"] mencode)
+
+main = quickCheckWith stdArgs { maxSuccess = 120000, maxSize = 75 } (noShrinking $ absprop "buggy_qc.jp2" "bins/pixbuf_vuln_poc" ["buggy_qc.jp2"] mencode)
+
+
+
+{--
 type MJpegFile  = (Word8,Metadatas, Image PixelYCbCr8)
 
 encodeJpegFile (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
@@ -160,3 +174,5 @@ main = do
         _             -> return ()
      ) (zip filenames jpgs)
   main
+
+-}

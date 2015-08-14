@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
-module QuickOgg where
+module QuickByteString where
 
 import Check
 import Test.QuickCheck
@@ -27,25 +27,12 @@ import GHC.Types
 
 import Data.Binary.Put( runPut )
 
-
-derive makeArbitrary ''OggPage
-derive makeArbitrary ''Granulepos
-derive makeArbitrary ''OggTrack
-derive makeArbitrary ''Granulerate
-derive makeArbitrary ''ContentType
-
 instance Arbitrary L.ByteString where
    arbitrary = do
      l <- listOf (arbitrary :: Gen Word8)
      return $ L.pack l
 
-instance Arbitrary MessageHeaders where
-   arbitrary = do
-     y <- listOf (arbitrary :: Gen String)
-     x <- arbitrary :: Gen String
-     return $ mhAppends x y mhEmpty
-
 instance CoArbitrary L.ByteString where
    coarbitrary x = coarbitrary $ L.unpack x
 
-main = quickCheckWith stdArgs { maxSuccess = 100, maxSize = 100 } (absprop "buggy_qc.ogg" "/usr/bin/ogginfo" ["buggy_qc.ogg"] pageWrite)
+main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 1000 } (absprop "buggy_qc.zip" "/usr/bin/unzip" ["buggy_qc.zip"] id)

@@ -71,7 +71,7 @@ derive makeArbitrary ''CompressionMethod
 mencode :: Archive -> L.ByteString
 mencode = encode 
 
-main = quickCheckWith stdArgs { maxSuccess = 50000, maxSize = 1000 } (absprop "buggy_qc.zip" "../unzip610c19/unzip" ["-l", "buggy_qc.zip"] mencode)
+main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 10 } (absprop "buggy_qc.zip" "/usr/bin/unzip" ["buggy_qc.zip"] mencode)
 {-
 
 prop :: Archive -> Property
