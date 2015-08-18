@@ -3,6 +3,7 @@
 module QuickGif where
 
 import Test.QuickCheck
+import Check
 --import Test.QuickCheck.Gen
 
 import Control.Monad.Zip
@@ -42,43 +43,43 @@ import Control.Monad.Reader()
 instance Arbitrary B.ByteString where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word8)
-     return $ B.pack l
+     return $ B.pack [1]--l
 
 instance Arbitrary (V.Vector Word32) where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word32)
-     return $ V.fromList l
+     return $ V.fromList [1] --l
 
 instance Arbitrary (V.Vector Word16) where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word16)
-     return $ V.fromList l
+     return $ V.fromList [1] --l
 
 instance Arbitrary (VU.Vector Int) where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Int)
-     return $ VU.fromList l
+     return $ VU.fromList [1] --l
 
 instance Arbitrary (VU.Vector Int8) where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Int8)
-     return $ VU.fromList l
+     return $ VU.fromList [1] --l
 
 instance Arbitrary (VU.Vector Word8) where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word8)
-     return $ VU.fromList l
+     return $ VU.fromList [1] --l
 
 instance Arbitrary (VS.Vector Word16) where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word16)
-     return $ VS.fromList l
+     return $ VS.fromList [1]--l
 
 instance Arbitrary (V.Vector (VU.Vector Word8)) where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word8)
-     x <- (arbitrary :: Gen Int)
-     return $ V.replicate x (VU.fromList l)
+     --x <- (arbitrary :: Gen Int)
+     return $ V.replicate 32 (VU.fromList [1])
 
 
 instance Arbitrary (Image PixelRGB8) where
@@ -86,8 +87,16 @@ instance Arbitrary (Image PixelRGB8) where
        l <- listOf (arbitrary :: Gen Word8)
        w <- (arbitrary :: Gen Int)
        h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
+       return $ Image { imageWidth = 16, imageHeight = 16, imageData = VS.fromList [1] }
 
+instance Arbitrary (Image Word8) where
+   arbitrary = do
+       w <- (arbitrary :: Gen Int)
+       h <- (arbitrary :: Gen Int)
+       return $ Image { imageWidth = 16, imageHeight = 16, imageData = VS.fromList [1] }
+
+instance Show (Image Word8) where
+   show x = ""
 
 derive makeArbitrary ''GifFile
 derive makeShow ''GifFile
@@ -119,14 +128,17 @@ instance Show Palette where
 handler :: SomeException -> IO ()
 handler _ = return ()
 
-prop :: GifFile -> Property
-prop x = monadicIO $ do
-         run $ Control.Exception.catch (L.writeFile "buggy_qc.gif" (encode x)) handler
-         r <- run (randomIO :: IO Int)
-         ret <- run $ rawSystem "/usr/bin/zzuf" ["-s", (show (r `mod` 10024))++":"++(show (r `mod` 10024 + 500)), "-q", "-M", "-1", "-c", "-S", "-T", "60", "-j", "5", "/usr/bin/gifinfo", "buggy_qc.gif"]--"/usr/bin/convert.im6", "-rotate", "90", "buggy_qc.gif","png:-"]
-         case ret of
-            ExitFailure y -> Test.QuickCheck.Monadic.assert False 
-            _             -> Test.QuickCheck.Monadic.assert True
+fromRight           :: Either a b -> b
+fromRight (Right x)  = x
+fromRight (Left x) = error "abc"
 
-main = quickCheckWith stdArgs { maxSuccess = 50000000, maxSize = 10 } prop 
+type MGifImage  = (Image Pixel8, Palette) 
+encodeMGifImage :: MGifImage -> L.ByteString 
+encodeMGifImage (img, pal) = fromRight $ encodeGifImageWithPalette img pal
+
+mencode :: MGifImage -> L.ByteString 
+mencode = encodeMGifImage
+
+main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 20 } (absprop "buggy_qc.gif" "mplayer" ["buggy_qc.gif",  "-vo", "png"] mencode)
+--main = quickCheckWith stdArgs { maxSuccess = 50000000, maxSize = 10 } absprop 
 

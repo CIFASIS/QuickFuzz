@@ -48,4 +48,4 @@ instance Arbitrary MessageHeaders where
 instance CoArbitrary L.ByteString where
    coarbitrary x = coarbitrary $ L.unpack x
 
-main = quickCheckWith stdArgs { maxSuccess = 100, maxSize = 100 } (absprop "buggy_qc.ogg" "/usr/bin/ogginfo" ["buggy_qc.ogg"] pageWrite)
+main = quickCheckWith stdArgs { maxSuccess = 100, maxSize = 100 } (absprop "buggy_qc.ogg" "/usr/bin/oggdec" ["buggy_qc.ogg"] pageWrite)

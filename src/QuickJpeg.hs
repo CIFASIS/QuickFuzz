@@ -25,7 +25,7 @@ import Data.Word(Word8, Word16, Word32)
 import Data.Int( Int16, Int8 )
 
 import GHC.Types
-
+import GHC.Word
 
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as VU
@@ -99,7 +99,7 @@ instance Arbitrary (Image PixelYCbCr8) where
        l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelYCbCr8))
        w <- (arbitrary :: Gen Int)
        h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList [1] }
 
 instance Show (Image PixelYCbCr8) where
    show x = ""
@@ -127,16 +127,15 @@ derive makeArbitrary ''JpgImage
 derive makeArbitrary ''SourceFormat
 
 
-type MJpegFile  = (Word8,Metadatas, Image PixelYCbCr8)
+type MJpgImage  = (Word8,Metadatas, Image PixelYCbCr8)
+encodeJpgImage (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
 
-encodeJpegFile (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
+mencode :: MJpgImage -> L.ByteString
+mencode = encodeJpgImage
 
-mencode :: MJpegFile -> L.ByteString
-mencode = encodeJpegFile
+main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 50 } (absprop "buggy_qc.jp2" "/usr/bin/jpegtopnm" ["buggy_qc.jp2"] mencode)
 
---main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 10 } (absprop "buggy_qc.jp2" "/usr/bin/j2k_to_image" ["-i", "buggy_qc.jp2","-o","/tmp/out.raw"] mencode)
-
-main = quickCheckWith stdArgs { maxSuccess = 120000, maxSize = 75 } (noShrinking $ absprop "buggy_qc.jp2" "bins/pixbuf_vuln_poc" ["buggy_qc.jp2"] mencode)
+--main = quickCheckWith stdArgs { maxSuccess = 1200000, maxSize = 100 } (noShrinking $ absprop "buggy_qc.jp2" "/usr/bin/jasper" ["--input", "buggy_qc.jp2", "--output-format", "pnm"] mencode)
 
 
 
@@ -164,7 +163,7 @@ main = do
        catch (L.writeFile filename (encodeJpegFile jpg)) handler
        --ret <- rawSystem "/usr/bin/valgrind" ["--error-exitcode=-1", "/usr/bin/jpeginfo","buggy.jpg"]
        r <- (randomIO :: IO Int)
-       ret <- rawSystem "/usr/bin/zzuf" ["-s", (show (r `mod` 10024))++":"++(show (r `mod` 10024 + 1)), "-Ix", "-M-1", "-c", "-S", "-T", "2", "/usr/bin/file", "buggy_qc.jpg"]
+       ret <- rawSystem "/usr/bin/zzuf" ["-q", "-s", (show (r `mod` 10024))++":"++(show (r `mod` 10024 + 1)), "-Ix", "-M-1", "-c", "-S", "-T", "2", "/usr/bin/file", "buggy_qc.jpg"]
 
        --ret <- rawSystem "/usr/bin/zzuf" ["-s", "0:100","-c", "-S", "-T", "3", "/usr/bin/identify.im6", "buggy.jpg"]
        case ret of

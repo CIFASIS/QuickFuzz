@@ -1,7 +1,10 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances#-}
 
+module QuickTar where
+
 import Test.QuickCheck
-import Test.QuickCheck.Instances
+--import Test.QuickCheck.Instances
+import Check
 
 import Control.Monad.Zip
 import Control.Exception
@@ -69,6 +72,10 @@ derive makeArbitrary ''LinkTarget
 derive makeArbitrary ''Format
 derive makeArbitrary ''Ownership
 derive makeArbitrary ''Permissions
+
+
+main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 50 } (absprop "buggy_qc.tar" "/bin/tar" ["-vf", "buggy_qc.tar"] mencode)
+
 
 --instance Arbitrary Permissions where
 --   arbitrary = do
