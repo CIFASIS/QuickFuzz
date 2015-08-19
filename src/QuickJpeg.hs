@@ -130,10 +130,10 @@ derive makeArbitrary ''SourceFormat
 type MJpgImage  = (Word8,Metadatas, Image PixelYCbCr8)
 encodeJpgImage (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
 
-mencode :: MJpgImage -> L.ByteString
-mencode = encodeJpgImage
+mencode :: JpgImage -> L.ByteString
+mencode = encode--JpgImage
 
-main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 50 } (absprop "buggy_qc.jp2" "/usr/bin/jpegtopnm" ["buggy_qc.jp2"] mencode)
+main = quickCheckWith stdArgs { maxSuccess = 120, maxSize = 50 } (absprop "buggy_qc.jp2" "" [] mencode)
 
 --main = quickCheckWith stdArgs { maxSuccess = 1200000, maxSize = 100 } (noShrinking $ absprop "buggy_qc.jp2" "/usr/bin/jasper" ["--input", "buggy_qc.jp2", "--output-format", "pnm"] mencode)
 

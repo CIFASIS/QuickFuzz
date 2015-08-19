@@ -8,4 +8,4 @@ import qualified QuickZip as Zip
 import qualified QuickByteString as ByteString
 import qualified QuickJpeg as Jpg
 
-main = Ogg.main
+main = Jpg.main
