@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ViewPatterns #-}
 module DeriveArbitrary where
 
 import Language.Haskell.TH
@@ -15,7 +16,8 @@ data Tree a = Leaf a
 {-
 instance Arbitrary a => Arbitrary (Tree a) where
   arbitrary = (arbitrary :: Gen Int) >>= go
-    where go n | n <= 1 = Leaf <$> arbitrary
+    where go n | n <= 1 = Lyy
+eaf <$> arbitrary
                | otherwise =
                  Node <$> (go (n `div` 2)) <*> arbitrary <*> (go (n `div` 2))
 -}
@@ -35,14 +37,20 @@ instance Arbitrary a => Arbitrary (Expr a) where
                        ,Neg <$> (go (n - 1))]
 -}
 
+data Point = L | H deriving (Show, Eq)
+
 data Expr2 a = Var2 a
              | Con2 Int
-             | Tr (Tree a)
+             | Tr [Point]
              | Add2 (Expr2 a) (Expr2 a)
              | Mul2 (Expr2 a) (Expr2 a)
              | Neg2 (Expr2 a)
              deriving (Show, Eq)
 
+
+data ConView = SimpleCon Name Integer [Type]
+
+bf (SimpleCon _ n _) = n
 
 countCons :: (Name -> Bool) -> Type -> Integer
 countCons p ty =
@@ -52,7 +60,7 @@ countCons p ty =
     SigT t _       -> countCons p t
     ConT t         -> if p t then 1 else 0
     _              -> 0
-
+{-
 branchingFactor :: Name -> Con -> Integer
 branchingFactor tyName (NormalC _ sts) =
   sum $ map (countCons (== tyName) . snd) sts
@@ -62,7 +70,8 @@ branchingFactor tyName (RecC _ vsts) =
 branchingFactor tyName (InfixC (_,t1) _ (_,t2)) =
   countCons (== tyName) t1 +   countCons (== tyName) t2
 branchingFactor tyName (ForallC _ _ c) = branchingFactor tyName c  
-  
+-}
+
 varNames = map (('a':) . show) [0..]
 
 paramNames :: [TyVarBndr] -> [Name]
@@ -77,47 +86,71 @@ applyTo c ns =
 fixAppl :: Exp -> Exp
 fixAppl (UInfixE e1@(UInfixE {}) op e2) = UInfixE (fixAppl e1) op e2
 fixAppl (UInfixE con op e) = UInfixE con (VarE '(<$>)) e
-
+fixAppl e = AppE (VarE 'return) e
+                                          
 headOf :: Type -> Name
+headOf (AppT ListT ty) = headOf ty
+headOf (AppT (TupleT n) ty) = headOf ty 
 headOf (AppT ty1 ty2) = headOf ty1
 headOf (SigT ty _) = headOf ty
 headOf (ConT n) = n
 headOf (VarT n) = n
-                                          
-chooseExpQ :: Name -> Con -> Type -> ExpQ
-chooseExpQ t c ty | headOf ty /= t = varE 'arbitrary
-chooseExpQ t c _ =
-  case branchingFactor t c of
+
+chooseExpQ :: Name -> Integer -> Type -> ExpQ
+chooseExpQ t bf ty | headOf ty /= t = varE 'arbitrary
+chooseExpQ t bf ty =
+  case bf of
     0  -> varE 'arbitrary
     1  -> appE (varE (mkName "go")) [| ($(varE (mkName "n")) - 1) |]
     bf -> appE (varE (mkName "go")) [| ($(varE (mkName "n")) `div` bf) |]
-                                          
+
+simpleConView :: Name -> Con -> ConView
+simpleConView tyName c =
+  let count = sum . map (countCons (== tyName))
+  in case c of
+  NormalC n sts -> let ts = map snd sts
+                   in SimpleCon n (count ts) ts
+  RecC n vsts   -> let ts = map proj3 vsts
+                       proj3 (x,y,z) = z
+                   in SimpleCon n (count ts) ts
+  InfixC (_,t1) n (_,t2) ->
+    SimpleCon n (countCons (== tyName) t1 + countCons (== tyName) t2) [t1,t2]
+  ForallC _ _ innerCon -> simpleConView tyName innerCon
+                                              
+
 deriveArbitrary t = do
   TyConI (DataD _ _ params constructors _) <- reify t
-  let ns = map varT $ paramNames params
   let mkList xs = map (fmap fixAppl)
-                [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ t con ty)) (conE name) tys'
-                | con@(NormalC name tys) <- xs, let tys' = map snd tys  ]
-  let fcs = filter ((==0) . branchingFactor t) constructors
+                  [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ t bf ty)) (conE name) tys' | SimpleCon name bf tys' <- xs]
+  let ns  = map varT $ paramNames params
+      scons = map (simpleConView t) constructors
+      fcs = filter ((==0) . bf) scons
   if length ns > 0 then
    [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
                 => Arbitrary $(applyTo (conT t) ns) where
                   arbitrary = sized go --(arbitrary :: Gen Int) >>= go
                     where go n | n <= 1 = oneof $(listE (mkList fcs))
-                               | otherwise = oneof $(listE (mkList constructors)) |]
+                               | otherwise = oneof $(listE (mkList scons)) |]
    else
     [d| instance Arbitrary $(applyTo (conT t) ns) where
                    arbitrary = sized go --(arbitrary :: Gen Int) >>= go
                      where go n | n <= 1 = oneof $(listE (mkList fcs))
-                                | otherwise = oneof $(listE (mkList constructors)) |]
+                                | otherwise = oneof $(listE (mkList scons)) |]
 
 
 isVarT (VarT _) = True
 isVarT _ = False
 
+findLeafTypes :: Type -> [Type]
+findLeafTypes (AppT ListT ty) = findLeafTypes ty
+findLeafTypes (AppT (TupleT n) ty) = findLeafTypes ty
+findLeafTypes (AppT (ConT _) ty) = findLeafTypes ty
+findLeafTypes (AppT ty1 ty2) = findLeafTypes ty1 ++ findLeafTypes ty2
+findLeafTypes ty = [ty]
+
 deriveArbitraryRec t = do
   TyConI (DataD _ _ _ constructors _) <- reify t
-  let innerTypes = [ ty | NormalC _ tys <- constructors, (_,ty) <- tys, countCons (== t) ty == 0, not (isVarT ty) ]
+  let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ 0 tys) <- constructors, ty <- tys, not (isVarT ty) ]
   runIO $ print innerTypes
   decs <- fmap concat $ forM innerTypes $ \ty ->
     do q <- isInstance ''Arbitrary [ty]

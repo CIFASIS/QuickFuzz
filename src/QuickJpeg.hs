@@ -24,6 +24,8 @@ import Data.DeriveTH
 import Data.Word(Word8, Word16, Word32)
 import Data.Int( Int16, Int8 )
 
+import DeriveArbitrary
+
 import GHC.Types
 import GHC.Word
 
@@ -60,7 +62,7 @@ instance Arbitrary L.ByteString where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word8)
      return $ L.pack l
-
+{-
 instance Arbitrary (Metadatas) where
   arbitrary = do
       w <- (arbitrary :: Gen Word)
@@ -68,7 +70,7 @@ instance Arbitrary (Metadatas) where
       d <- (arbitrary :: Gen Double) 
       sf <- (arbitrary :: Gen SourceFormat)
       return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> w, DpiY :=> w, Width :=> w, Height :=> w, Title :=> s] }
-
+-}
 instance Arbitrary (Image PixelYCbCr8) where
    arbitrary = do
        l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelYCbCr8))
@@ -78,7 +80,7 @@ instance Arbitrary (Image PixelYCbCr8) where
 
 instance Show (Image PixelYCbCr8) where
    show x = ""
-
+{-
 derive makeArbitrary ''ExifTag
 derive makeArbitrary ''IfdType
 derive makeArbitrary ''ExifData
@@ -100,7 +102,8 @@ derive makeArbitrary ''JpgFrameHeader
 derive makeArbitrary ''JpgFrame
 derive makeArbitrary ''JpgImage
 derive makeArbitrary ''SourceFormat
-
+-}
+$(deriveArbitraryRec ''JpgImage)
 
 type MJpgImage  = (Word8,Metadatas, Image PixelYCbCr8)
 encodeJpgImage (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
