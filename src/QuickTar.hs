@@ -10,6 +10,7 @@ import Control.Monad.Zip
 import Control.Exception
 import Data.Binary( Binary(..), encode )
 
+import Codec.Archive.Tar.Entry
 import Codec.Archive.Tar.Types
 import Codec.Archive.Tar.Write
 
@@ -65,26 +66,40 @@ instance Arbitrary (V.Vector (VU.Vector Word8)) where
 
 
 derive makeArbitrary ''Entry
+derive makeShow ''Entry
+
 derive makeArbitrary ''EntryContent
 derive makeArbitrary ''TarPath
+derive makeShow ''EntryContent
+derive makeShow ''TarPath
 derive makeArbitrary ''LinkTarget
-
+derive makeShow ''LinkTarget
 derive makeArbitrary ''Format
 derive makeArbitrary ''Ownership
-derive makeArbitrary ''Permissions
+derive makeShow ''Format
+derive makeShow ''Ownership
 
+--derive makeArbitrary ''Permissions
 
-main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 50 } (absprop "buggy_qc.tar" "/bin/tar" ["-vf", "buggy_qc.tar"] mencode)
+mencode ::  [Entry] -> L.ByteString
+mencode = write
 
+instance Arbitrary L.ByteString where
+   arbitrary = do 
+     l <- listOf (arbitrary :: Gen Word8)
+     return $ L.pack l
 
---instance Arbitrary Permissions where
---   arbitrary = do
---     w32 <- arbitrary :: Gen Word32
---     return $ CMode w32
+instance Arbitrary Permissions where
+   arbitrary = do
+     w32 <- arbitrary :: Gen Word32
+     return $ CMode w32
 
+main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 500 } (noShrinking $ absprop "buggy_qc.tar" "/bin/tar" ["-tvf", "buggy_qc.tar"] mencode)
 
 --derive makeArbitrary ''Entry
 --derive makeArbitrary ''CompressionMethod
+
+{-
 
 filenames = take 11 (repeat "buggy.tar")
 
@@ -109,3 +124,5 @@ main = do
  
      ) (zip filenames zips)
   main
+
+-}
