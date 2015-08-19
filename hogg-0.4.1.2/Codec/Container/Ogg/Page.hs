@@ -110,7 +110,7 @@ pageWrite (OggPage _ track cont incplt bos eos gp seqno s) = newPageData
     htype = L.pack [headerType]
     gp_ = le64Fill (gpUnpack gp)
     ser_ = le32Fill serialno
-    seqno_ = le32Fill seqno
+    seqno_ = le32Fill (0 :: Integer)--seqno
     crc = le32Fill (genCRC crcPageData)
 
     headerType :: Word8
