@@ -35,45 +35,20 @@ import System.Process
 import System.Exit
 
 
-instance Arbitrary (V.Vector Word32) where
+instance Arbitrary a => Arbitrary (V.Vector a) where
    arbitrary = do 
-     l <- listOf (arbitrary :: Gen Word32)
+     l <- listOf arbitrary
      return $ V.fromList l
 
-instance Arbitrary (V.Vector Word16) where
+instance (VU.Unbox a, Arbitrary a) => Arbitrary (VU.Vector a) where
    arbitrary = do 
-     l <- listOf (arbitrary :: Gen Word16)
-     return $ V.fromList l
-
-instance Arbitrary (VU.Vector Int) where
-   arbitrary = do 
-     l <- listOf (arbitrary :: Gen Int)
+     l <- listOf arbitrary
      return $ VU.fromList l
 
-instance Arbitrary (VU.Vector Int8) where
+instance (VS.Storable a, Arbitrary a) => Arbitrary (VS.Vector a) where
    arbitrary = do 
-     l <- listOf (arbitrary :: Gen Int8)
-     return $ VU.fromList l
-
-instance Arbitrary (VU.Vector Word8) where
-   arbitrary = do 
-     l <- listOf (arbitrary :: Gen Word8)
-     return $ VU.fromList l
-
-instance Arbitrary (VS.Vector Word16) where
-   arbitrary = do 
-     l <- listOf (arbitrary :: Gen Word16)
+     l <- listOf arbitrary
      return $ VS.fromList l
-
-instance Arbitrary (MacroBlock Int16) where
-    arbitrary = do 
-     l <- listOf (arbitrary :: Gen Int16)
-     return $ VS.fromList l
-
-instance Arbitrary (V.Vector (VU.Vector Word8)) where
-   arbitrary = do 
-     l <- listOf (arbitrary :: Gen [Word8])
-     return $ V.fromList (map VU.fromList l)
 
 
 instance Arbitrary B.ByteString where
@@ -130,10 +105,10 @@ derive makeArbitrary ''SourceFormat
 type MJpgImage  = (Word8,Metadatas, Image PixelYCbCr8)
 encodeJpgImage (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
 
-mencode :: MJpgImage -> L.ByteString
-mencode = encodeJpgImage
+mencode :: JpgImage -> L.ByteString
+mencode = encode--JpgImage
 
-main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 50 } (absprop "buggy_qc.jp2" "/usr/bin/jpegtopnm" ["buggy_qc.jp2"] mencode)
+main = quickCheckWith stdArgs { maxSuccess = 120, maxSize = 50 } (absprop "buggy_qc.jp2" "" [] mencode)
 
 --main = quickCheckWith stdArgs { maxSuccess = 1200000, maxSize = 100 } (noShrinking $ absprop "buggy_qc.jp2" "/usr/bin/jasper" ["--input", "buggy_qc.jp2", "--output-format", "pnm"] mencode)
 
