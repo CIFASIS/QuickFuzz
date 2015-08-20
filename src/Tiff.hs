@@ -79,32 +79,72 @@ instance Arbitrary (Image PixelYCbCr8) where
        h <- (arbitrary :: Gen Int)
        return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList [1] }
 
+instance Arbitrary (Image PixelRGB8) where
+   arbitrary = do
+       l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelRGB8))
+       w <- (arbitrary :: Gen Int)
+       h <- (arbitrary :: Gen Int)
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList [1] }
+
+
+instance Arbitrary (Image PixelRGB16) where
+   arbitrary = do
+       l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelRGB16))
+       w <- (arbitrary :: Gen Int)
+       h <- (arbitrary :: Gen Int)
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList [1] }
+
+
 instance Show (Image PixelYCbCr8) where
    show x = ""
 
+instance Show (Image PixelRGB8) where
+   show x = ""
+
+instance Show (Image PixelRGB16) where
+   show x = ""
+
+
 type TiffFile  = (TiffInfo, Image PixelRGB8)
 
+encodeTiffFile :: TiffFile -> L.ByteString 
 encodeTiffFile (hdr,img) = runPut $ putP rawPixelData hdr
                            where rawPixelData = toByteString $ imageData img
 
-derive makeArbitrary ''TiffFile
+--derive makeArbitrary ''TiffFile
 derive makeArbitrary ''TiffInfo
+derive makeShow ''TiffInfo
+
+
 --derive makeArbitrary ''Metadatas
 derive makeArbitrary ''Predictor
+derive makeShow ''Predictor
+
 derive makeArbitrary ''ExtraSample
+derive makeShow ''ExtraSample
+
 derive makeArbitrary ''TiffCompression
+derive makeShow ''TiffCompression
+
 derive makeArbitrary ''TiffSampleFormat
+derive makeShow ''TiffSampleFormat
+
 derive makeArbitrary ''TiffPlanarConfiguration
 derive makeArbitrary ''TiffColorspace
 derive makeArbitrary ''TiffHeader
 derive makeArbitrary ''Endianness
 derive makeArbitrary ''SourceFormat
 
+derive makeShow ''TiffPlanarConfiguration
+derive makeShow ''TiffColorspace
+
+
+
 -- $(deriveArbitraryRec ''TiffFile)
 
-mencode :: TiffImage -> L.ByteString
+mencode :: TiffFile -> L.ByteString
 mencode = encodeTiffFile
 
-main = quickCheckWith stdArgs { maxSuccess = 120, maxSize = 50 } (absprop "buggy_qc.tiff" "identify.im6" ["buggy_qc.tiff"] mencode)
+main = quickCheckWith stdArgs { maxSuccess = 120000000, maxSize = 10 } (absprop "buggy_qc.tiff" "bins/pixbuf_vuln_poc" ["buggy_qc.tiff"] mencode)
 --main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 50 } (genprop "buggy_qc.jp2" "" [] mencode "data/jpeg")
 
