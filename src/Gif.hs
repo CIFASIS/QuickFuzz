@@ -1,10 +1,10 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
 
-module QuickGif where
+module Gif where
 
 import Test.QuickCheck
+import DeriveArbitrary
 import Check
---import Test.QuickCheck.Gen
 
 import Control.Monad.Zip
 import Control.Exception
@@ -78,8 +78,8 @@ instance Arbitrary (VS.Vector Word16) where
 instance Arbitrary (V.Vector (VU.Vector Word8)) where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word8)
-     --x <- (arbitrary :: Gen Int)
-     return $ V.replicate 32 (VU.fromList [1])
+     x <- (arbitrary :: Gen Int)
+     return $ V.replicate x (VU.fromList [1])
 
 
 instance Arbitrary (Image PixelRGB8) where
@@ -87,31 +87,18 @@ instance Arbitrary (Image PixelRGB8) where
        l <- listOf (arbitrary :: Gen Word8)
        w <- (arbitrary :: Gen Int)
        h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = 16, imageHeight = 16, imageData = VS.fromList [1] }
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList [1] }
 
 instance Arbitrary (Image Word8) where
    arbitrary = do
        w <- (arbitrary :: Gen Int)
        h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = 16, imageHeight = 16, imageData = VS.fromList [1] }
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList [1] }
 
 instance Show (Image Word8) where
    show x = ""
 
-derive makeArbitrary ''GifFile
-derive makeShow ''GifFile
-derive makeArbitrary ''GifLooping
-derive makeShow ''GifLooping
-
-derive makeArbitrary ''GifImage
-derive makeArbitrary ''GraphicControlExtension
-derive makeArbitrary ''GifHeader
-derive makeArbitrary ''DisposalMethod
-derive makeArbitrary ''LogicalScreenDescriptor
-derive makeArbitrary ''GifVersion
-derive makeArbitrary ''PixelRGB8
-derive makeArbitrary ''ImageDescriptor
-
+$(deriveArbitraryRec ''GifImage)
 derive makeShow ''GifImage
 derive makeShow ''GraphicControlExtension
 derive makeShow ''GifHeader
@@ -122,8 +109,6 @@ derive makeShow ''ImageDescriptor
 
 instance Show Palette where
    show x = ""
-
---derive makeShow ''Palette
 
 handler :: SomeException -> IO ()
 handler _ = return ()
@@ -136,9 +121,9 @@ type MGifImage  = (Image Pixel8, Palette)
 encodeMGifImage :: MGifImage -> L.ByteString 
 encodeMGifImage (img, pal) = fromRight $ encodeGifImageWithPalette img pal
 
-mencode :: MGifImage -> L.ByteString 
-mencode = encodeMGifImage
+mencode :: GifImage -> L.ByteString 
+mencode = encode--MGifImage
 
-main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 20 } (absprop "buggy_qc.gif" "mplayer" ["buggy_qc.gif",  "-vo", "png"] mencode)
---main = quickCheckWith stdArgs { maxSuccess = 50000000, maxSize = 10 } absprop 
+--main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 100 } (absprop "buggy_qc.gif" "/usr/bin/giftopnm" ["buggy_qc.gif"] mencode)
+main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 10 } (genprop "buggy_qc.gif" "/usr/bin/giftopnm" ["buggy_qc.gif"]  mencode "data/gif")
 

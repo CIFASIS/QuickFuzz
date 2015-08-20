@@ -6,13 +6,6 @@ import Test.QuickCheck
 
 import Data.Binary( Binary(..), encode )
 
-import Codec.Container.Ogg.Page
-import Codec.Container.Ogg.Granulepos
-import Codec.Container.Ogg.Track
-import Codec.Container.Ogg.MessageHeaders
-import Codec.Container.Ogg.Granulerate
-import Codec.Container.Ogg.ContentType
-
 import qualified Data.ByteString.Lazy as L
 
 import Data.DeriveTH

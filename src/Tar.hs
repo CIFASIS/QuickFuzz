@@ -1,10 +1,11 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances#-}
 
-module QuickTar where
+module Tar where
 
 import Test.QuickCheck
---import Test.QuickCheck.Instances
 import Check
+import DeriveArbitrary
+
 
 import Control.Monad.Zip
 import Control.Exception
@@ -62,8 +63,10 @@ instance Arbitrary (VS.Vector Word16) where
 instance Arbitrary (V.Vector (VU.Vector Word8)) where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word8)
-     return $ V.replicate 32 (VU.fromList l)
+     s <- (arbitrary :: Gen Int)
+     return $ V.replicate s (VU.fromList l)
 
+-- $(deriveArbitraryRec ''Entry) (not working)
 
 derive makeArbitrary ''Entry
 derive makeShow ''Entry
@@ -79,15 +82,13 @@ derive makeArbitrary ''Ownership
 derive makeShow ''Format
 derive makeShow ''Ownership
 
---derive makeArbitrary ''Permissions
-
 mencode ::  [Entry] -> L.ByteString
 mencode = write
 
 instance Arbitrary L.ByteString where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word8)
-     return $ L.pack l
+     return $ L.pack []
 
 instance Arbitrary Permissions where
    arbitrary = do
@@ -95,34 +96,3 @@ instance Arbitrary Permissions where
      return $ CMode w32
 
 main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 500 } (noShrinking $ absprop "buggy_qc.tar" "/bin/tar" ["-tvf", "buggy_qc.tar"] mencode)
-
---derive makeArbitrary ''Entry
---derive makeArbitrary ''CompressionMethod
-
-{-
-
-filenames = take 11 (repeat "buggy.tar")
-
-handler :: SomeException -> IO ()
-handler _ = return ()
- 
-main = do
-  zips  <- sample' (resize 5000 (arbitrary :: Gen [Entry]))
-  mapM_ (\(filename,zipf) -> 
-      do
-       catch (L.writeFile filename (write zipf)) handler
-       --ret <- rawSystem "/home/vagrant/.local/bin/honggfuzz" ["-q", "-N300", "-f", "buggy.zip", "--", "/usr/bin/unzip","-l","___FILE___"]
-       ret <- rawSystem "/usr/bin/zzuf" ["-s", "0:1", "-C", "0", "-S", "-q", "-I","x", "-T", "3", "/usr/bin/tar", "-tf", "buggy.tar"]
-       --ret <- rawSystem "/usr/bin/valgrind" ["--quiet", "--track-origins=yes", "/bin/tar", "-tf", "buggy.tar"]
-
-       case ret of
-        ExitFailure x  -> ( do 
-                            putStrLn (show x) 
-                            exitWith ret)
-        _             -> return ()
-       --return ()
- 
-     ) (zip filenames zips)
-  main
-
--}

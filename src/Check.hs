@@ -11,6 +11,7 @@ import System.Random
 import System.Process
 import System.Posix
 import System.Exit
+import System.Directory
 
 getFileSize :: String -> IO FileOffset
 getFileSize path = do
@@ -27,6 +28,18 @@ zzuf prog args filename = do
                             ret <- system "/usr/bin/zzuf -r 0.001:0.00000001 -s" ++ (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 1)) ++ "< " ++ filename ++ " > " ++ filename + ".fuzzed" 
 -}
 
+genprop filename prog args encode dir x = 
+         monadicIO $ do
+         seed <- run (randomIO :: IO Int)
+         sfilename <- run $ return (dir ++ "/" ++ filename ++ "." ++ (show seed))
+         run $ Control.Exception.catch (L.writeFile sfilename (encode x)) handler
+         size <- run $ getFileSize sfilename
+         if size == 0 
+            then (do 
+                    run $ removeFile sfilename
+                    Test.QuickCheck.Monadic.assert True)
+            else
+              Test.QuickCheck.Monadic.assert True
 
 absprop filename prog args encode x = 
          monadicIO $ do
@@ -37,16 +50,16 @@ absprop filename prog args encode x =
          else (
            do 
            seed <- run (randomIO :: IO Int)
-           --ret <- run $ rawSystem "/usr/bin/zzuf" (["-q", "-M", "-1", "-r","0.001:0.00000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 100)), "-c", "-S", "-T", "15", "-j", "5", prog] ++ args)
+           ret <- run $ rawSystem "/usr/bin/zzuf" (["-r","0.001:0.00000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 100)), "-c", "-S", "-T", "15", "-j", "5", prog] ++ args)
            --ret <- run $ rawSystem "/usr/bin/zzuf" (["-q", "-r","0.001:0.00000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 100)), "-c", "-S", "-T", "10", "-j", "5", prog] ++ args)
 
-           ret <- run $ rawSystem "tcreator2" [ "--copy", ("jasper-"++show seed), "/usr/bin/jasper --input file:/home/vagrant/QuickFuzz/"++ filename ++" --output-format pnm", "jpeg"]
+           --ret <- run $ rawSystem "tcreator2" [ "--copy", ("jasper-"++show seed), "/usr/bin/jasper --input file:/home/vagrant/QuickFuzz/"++ filename ++" --output-format pnm", "jpeg"]
            --ret <- run $ rawSystem "fextractor" (["--show-stdout", "--dynamic", "--timeout", "60", "--out-file","/home/vagrant/QuickFuzz/jpeg-jpegtopnm.csv", "jpeg/_usr_bin_jpegtopnm:0"])
 
 
            --ret <- run $ rawSystem "fextractor" (["--show-stdout", "--dynamic", "--timeout", "60", "--out-file","/home/vagrant/QuickFuzz/jpeg-jpegtopnm.csv", "jpeg/_usr_bin_jpegtopnm:0"])
            --ret <- run $ rawSystem "/usr/bin/valgrind" (["--quiet", prog] ++ args)         
            case ret of
-              ExitFailure y -> Test.QuickCheck.Monadic.assert True
+              ExitFailure y -> Test.QuickCheck.Monadic.assert False
               _             -> Test.QuickCheck.Monadic.assert True
            )
