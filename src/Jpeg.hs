@@ -90,5 +90,5 @@ mencode :: MJpgImage -> L.ByteString
 mencode = encodeJpgImage
 
 --main = quickCheckWith stdArgs { maxSuccess = 120, maxSize = 50 } (absprop "buggy_qc.jp2" "" [] mencode)
-main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 50 } (genprop "buggy_qc.jp2" "" [] mencode "data/jpeg")
+main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 50 } (genprop "buggy_qc.jp2" "/usr/bin/jpeginfo" ["buggy_qc.jp2"] mencode "data/jpeg")
 

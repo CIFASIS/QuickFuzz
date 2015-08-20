@@ -50,8 +50,9 @@ absprop filename prog args encode x =
          else (
            do 
            seed <- run (randomIO :: IO Int)
-           ret <- run $ rawSystem "/usr/bin/zzuf" (["-r","0.001:0.00000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 100)), "-c", "-S", "-T", "15", "-j", "5", prog] ++ args)
-           --ret <- run $ rawSystem "/usr/bin/zzuf" (["-q", "-r","0.001:0.00000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 100)), "-c", "-S", "-T", "10", "-j", "5", prog] ++ args)
+           --ret <- run $ rawSystem "/home/vagrant/repos/radamsa/radamsa" ["-s", show (seed `mod` 10024), "-o", filename ++ ".fuzzed", filename]
+           --ret <- run $ rawSystem "/usr/bin/zzuf" (["-r","0", "-c", "-S", "-T", "15", "-j", "5", prog] ++ args)
+           ret <- run $ rawSystem "/usr/bin/zzuf" (["-q", "-r","0.001:0.00000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 100)), "-c", "-S", "-T", "10", "-j", "5", prog] ++ args)
 
            --ret <- run $ rawSystem "tcreator2" [ "--copy", ("jasper-"++show seed), "/usr/bin/jasper --input file:/home/vagrant/QuickFuzz/"++ filename ++" --output-format pnm", "jpeg"]
            --ret <- run $ rawSystem "fextractor" (["--show-stdout", "--dynamic", "--timeout", "60", "--out-file","/home/vagrant/QuickFuzz/jpeg-jpegtopnm.csv", "jpeg/_usr_bin_jpegtopnm:0"])

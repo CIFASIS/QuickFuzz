@@ -10,4 +10,4 @@ import qualified Jpeg
 import qualified Tiff
 --import Png
 
-main = Tiff.main
+main = Jpeg.main
