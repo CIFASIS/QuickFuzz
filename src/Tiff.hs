@@ -145,6 +145,6 @@ derive makeShow ''TiffColorspace
 mencode :: TiffFile -> L.ByteString
 mencode = encodeTiffFile
 
-main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 10 } (genprop "buggy_qc.tiff" "bins/pixbuf_vuln_poc" ["buggy_qc.tiff"] mencode "data/tiff")
+main = quickCheckWith stdArgs { maxSuccess = 120000000, maxSize = 10 } (checkprop "buggy_qc.tiff" "bins/pixbuf_vuln_poc" ["buggy_qc.tiff"] mencode)
 --main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 50 } (genprop "buggy_qc.jp2" "" [] mencode "data/jpeg")
 

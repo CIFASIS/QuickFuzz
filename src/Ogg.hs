@@ -1,7 +1,8 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
-module QuickOgg where
+module Ogg where
 
 import Check
+import DeriveArbitrary
 import Test.QuickCheck
 
 import Data.Binary( Binary(..), encode )
@@ -19,25 +20,28 @@ import Data.DeriveTH
 import Data.Word(Word8, Word16, Word32)
 import Data.Int( Int16, Int8 )
 
-import qualified Data.Vector as V
-import qualified Data.Vector.Unboxed as VU
-import qualified Data.Vector.Storable as VS
+--import qualified Data.Vector as V
+--import qualified Data.Vector.Unboxed as VU
+--import qualified Data.Vector.Storable as VS
 
-import GHC.Types
+--import GHC.Types
 
 import Data.Binary.Put( runPut )
 
+import ByteString
 
-derive makeArbitrary ''OggPage
-derive makeArbitrary ''Granulepos
-derive makeArbitrary ''OggTrack
-derive makeArbitrary ''Granulerate
-derive makeArbitrary ''ContentType
+$(deriveArbitraryRec ''OggPage)
 
-instance Arbitrary L.ByteString where
-   arbitrary = do
-     l <- listOf (arbitrary :: Gen Word8)
-     return $ L.pack l
+--derive makeArbitrary ''OggPage
+--derive makeArbitrary ''Granulepos
+--derive makeArbitrary ''OggTrack
+--derive makeArbitrary ''Granulerate
+--derive makeArbitrary ''ContentType
+
+--instance Arbitrary L.ByteString where
+--   arbitrary = do
+--     l <- listOf (arbitrary :: Gen Word8)
+--     return $ L.pack l
 
 instance Arbitrary MessageHeaders where
    arbitrary = do
@@ -45,7 +49,7 @@ instance Arbitrary MessageHeaders where
      x <- arbitrary :: Gen String
      return $ mhAppends x y mhEmpty
 
-instance CoArbitrary L.ByteString where
-   coarbitrary x = coarbitrary $ L.unpack x
+--instance CoArbitrary L.ByteString where
+--   coarbitrary x = coarbitrary $ L.unpack x
 
 main = quickCheckWith stdArgs { maxSuccess = 100, maxSize = 100 } (absprop "buggy_qc.ogg" "/usr/bin/ogginfo" ["buggy_qc.ogg"] pageWrite)

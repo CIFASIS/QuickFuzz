@@ -95,4 +95,4 @@ instance Arbitrary Permissions where
      w32 <- arbitrary :: Gen Word32
      return $ CMode w32
 
-main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 500 } (noShrinking $ absprop "buggy_qc.tar" "/bin/tar" ["-tvf", "buggy_qc.tar.fuzzed"] mencode)
+main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 500 } (fuzzprop "buggy_qc.tar" "/bin/tar" ["-tvf", "buggy_qc.tar.fuzzed"] mencode)

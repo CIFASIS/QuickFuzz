@@ -1,13 +1,14 @@
 module Main where
 
-import qualified QuickBMP as BMP
+import qualified Bmp
 import qualified Gif
---import qualified QuickOgg as Ogg
-import qualified QuickZip as Zip
+--import qualified Ogg
+--import qualified Tga
+import qualified Zip
 import qualified Tar
-import qualified QuickByteString as ByteString
 import qualified Jpeg
 import qualified Tiff
+import qualified Xml
 --import Png
 
-main = Jpeg.main
+main = Gif.main

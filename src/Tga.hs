@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances#-}
 
-module QuickTga where
+module Tga where
 
 import Test.QuickCheck
 import Check
@@ -10,7 +10,7 @@ import Control.Exception
 import Data.Binary( Binary(..), encode )
 
 import Codec.Picture.Types
---import Codec.Picture.Tga
+import Codec.Picture.Tga
 import Codec.Picture.Metadata.Exif
 import Codec.Picture.Metadata
 
@@ -107,8 +107,8 @@ derive makeArbitrary ''SourceFormat
 
 --type TgaImage = TgaFile
 
---mencode :: TgaFile -> L.ByteString
-mencode = (encode :: TgaFile -> L.ByteString) --JpgImage
+mencode :: TgaFile_t -> L.ByteString
+mencode = encode --(encode :: TgaFile -> L.ByteString) --JpgImage
 
 main = quickCheckWith stdArgs { maxSuccess = 1200000, maxSize = 500 } ( noShrinking $ absprop "buggy_qc.jp2" "bins/pixbuf_vuln_poc" ["buggy_qc.jp2"] mencode)
 

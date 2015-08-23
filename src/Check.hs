@@ -41,7 +41,8 @@ genprop filename prog args encode dir x =
             else
               Test.QuickCheck.Monadic.assert True
 
-absprop filename prog args encode x = 
+
+checkprop filename prog args encode x = 
          monadicIO $ do
          run $ Control.Exception.catch (L.writeFile filename (encode x)) handler
          size <- run $ getFileSize filename
@@ -50,17 +51,26 @@ absprop filename prog args encode x =
          else (
            do 
            seed <- run (randomIO :: IO Int)
-           --ret <- run $ rawSystem "/home/vagrant/repos/radamsa/radamsa" ["-s", show (seed `mod` 10024), "-o", filename ++ ".fuzzed", filename]
-           --ret <- run $ rawSystem "/usr/bin/zzuf" (["-r","0", "-c", "-S", "-T", "15", "-j", "5", prog] ++ args)
-           ret <- run $ rawSystem "/usr/bin/zzuf" (["-q", "-r","0.001:0.00000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 100)), "-c", "-S", "-T", "10", "-j", "5", prog] ++ args)
+           ret <- run $ rawSystem "/usr/bin/valgrind" (["--log-file=vreport.out", "--quiet", prog] ++ args)
+           size <- run $ getFileSize "vreport.out"
+           if size == 0 
+              then Test.QuickCheck.Monadic.assert True
+              else Test.QuickCheck.Monadic.assert False
+           )
 
-           --ret <- run $ rawSystem "tcreator2" [ "--copy", ("jasper-"++show seed), "/usr/bin/jasper --input file:/home/vagrant/QuickFuzz/"++ filename ++" --output-format pnm", "jpeg"]
-           --ret <- run $ rawSystem "fextractor" (["--show-stdout", "--dynamic", "--timeout", "60", "--out-file","/home/vagrant/QuickFuzz/jpeg-jpegtopnm.csv", "jpeg/_usr_bin_jpegtopnm:0"])
-
-
-           --ret <- run $ rawSystem "fextractor" (["--show-stdout", "--dynamic", "--timeout", "60", "--out-file","/home/vagrant/QuickFuzz/jpeg-jpegtopnm.csv", "jpeg/_usr_bin_jpegtopnm:0"])
-           --ret <- run $ rawSystem "/usr/bin/valgrind" (["--quiet", prog] ++ args)         
+fuzzprop filename prog args encode x = 
+         noShrinking $ monadicIO $ do
+         run $ Control.Exception.catch (L.writeFile filename (encode x)) handler
+         size <- run $ getFileSize filename
+         if size == 0 
+            then Test.QuickCheck.Monadic.assert True 
+         else (
+           do 
+           seed <- run (randomIO :: IO Int)
+           --ret <- run $ rawSystem "/usr/bin/file" [filename]
+           --run $ putStrLn (show ret)
+           ret <- run $ rawSystem "/usr/bin/zzuf" (["-q", "-M", "4000", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 100)), "-c", "-S", "-T", "15", "-j", "5", prog] ++ args)
            case ret of
-              ExitFailure y -> Test.QuickCheck.Monadic.assert False
+              ExitFailure y -> Test.QuickCheck.Monadic.assert True
               _             -> Test.QuickCheck.Monadic.assert True
            )
