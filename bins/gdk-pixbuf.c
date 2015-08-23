@@ -1,12 +1,22 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
-// gcc pixbuf_vuln_poc.c -o pixbuf_vuln_poc  `pkg-config --libs --cflags gdk-pixbuf-2.0`
+#include <gtk/gtk.h>
+// gcc gdk-pixbuf.c -o gdk-pixbuf  `pkg-config --libs --cflags gdk-pixbuf-2.0`
 
 int main(int argc, char **argv) {
+    GtkImage *preview_widget = GTK_IMAGE(NULL);
     GdkPixbuf* buf;
-    int size = 32;
+    int size = 128;
     GError* err = NULL;
+    gint preview_width = 0;
+    gint preview_height = 0;
+
+    GdkPixbufFormat *preview_format = gdk_pixbuf_get_file_info(argv[1],
+                                                             &preview_width,
+                                                             &preview_height);
 
     buf =  gdk_pixbuf_new_from_file_at_size(argv[1], size, size, &err);
+
+    gtk_image_set_from_pixbuf(preview_widget, buf);
 
     if (err)
       printf ("Gerror: %s\n", err->message);
