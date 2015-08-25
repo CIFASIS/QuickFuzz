@@ -9,6 +9,6 @@ import qualified Tar
 import qualified Jpeg
 import qualified Tiff
 import qualified Xml
---import Png
+import qualified Png
 
-main = Gif.main
+main = Png.main

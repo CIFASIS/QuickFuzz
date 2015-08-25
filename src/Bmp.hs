@@ -19,9 +19,7 @@ import Data.Binary.Put( runPut )
 
 type BmpFile  = (BmpHeader, BmpInfoHeader, BmpPalette, Image PixelRGBA8)
 
--- $(deriveArbitraryRec ''BmpFile)
-
-derive makeArbitrary ''SourceFormat
+--derive makeArbitrary ''SourceFormat
 derive makeArbitrary ''BmpPalette
 derive makeArbitrary ''BmpInfoHeader
 derive makeArbitrary ''BmpHeader

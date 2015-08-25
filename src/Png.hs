@@ -5,88 +5,35 @@ module Png where
 import Test.QuickCheck
 import Check
 
-import Control.Monad.Zip
-import Control.Exception
-import Data.Binary( Binary(..), encode )
-
 import Codec.Picture.Types
 import Codec.Picture.Png
 import Codec.Picture.Png.Type
 import Codec.Picture.Png.Export
 import Codec.Picture.Metadata
 
-
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString as B
-
-import Data.DeriveTH
-import Data.Word(Word8, Word16, Word32)
-import Data.Int( Int16, Int8 )
-
-import DeriveArbitrary
 
 import GHC.Types
 import GHC.Word
 
-import qualified Data.Vector as V
-import qualified Data.Vector.Unboxed as VU
-import qualified Data.Vector.Storable as VS
+import Vector
+import Images
 
-import System.Process
-import System.Exit
+import DeriveArbitrary
 
 
-instance Arbitrary a => Arbitrary (V.Vector a) where
-   arbitrary = do 
-     l <- listOf arbitrary
-     return $ V.fromList l
+fromRight  :: Either a b -> b
+fromRight (Right x)  = x
+fromRight (Left x) = error "abc"
 
-instance (VU.Unbox a, Arbitrary a) => Arbitrary (VU.Vector a) where
-   arbitrary = do 
-     l <- listOf arbitrary
-     return $ VU.fromList l
+$(deriveArbitraryRec ''PngImageType)
 
-instance (VS.Storable a, Arbitrary a) => Arbitrary (VS.Vector a) where
-   arbitrary = do 
-     l <- listOf arbitrary
-     return $ VS.fromList l
+type MPngImage = (Maybe Palette, PngImageType, Metadatas, Image Pixel8) --(Metadatas, PngImageType, Maybe Palette, Image Pixel8)
 
+encodePngImage :: MPngImage -> L.ByteString
+encodePngImage (a,b,c,d) = (genericEncodePng a b c d) --(encodePalettedPngWithMetadata a b c)
 
-instance Arbitrary B.ByteString where
-   arbitrary = do 
-     l <- listOf (arbitrary :: Gen Word8)
-     return $ B.pack l
-
-instance Arbitrary L.ByteString where
-   arbitrary = do 
-     l <- listOf (arbitrary :: Gen Word8)
-     return $ L.pack l
-{-
-instance Arbitrary (Metadatas) where
-  arbitrary = do
-      w <- (arbitrary :: Gen Word)
-      s <- (arbitrary :: Gen String)
-      d <- (arbitrary :: Gen Double) 
-      sf <- (arbitrary :: Gen SourceFormat)
-      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> w, DpiY :=> w, Width :=> w, Height :=> w, Title :=> s] }
--}
-instance Arbitrary (Image PixelYCbCr8) where
-   arbitrary = do
-       l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelYCbCr8))
-       w <- (arbitrary :: Gen Int)
-       h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList [1] }
-
-instance Show (Image PixelYCbCr8) where
-   show x = ""
-
-
-type MPngImage = (Metadatas, Palette, Image Pixel8)
-encodePngImage (a,b,c,d) = encodePalettedPngWithMetadata a b c
-
-$(deriveArbitraryRec ''MPngImage)
-
-mencode :: JpgImage -> L.ByteString
+mencode :: MPngImage -> L.ByteString
 mencode = encodePngImage
 
-main = quickCheckWith stdArgs { maxSuccess = 120, maxSize = 50 } (absprop "buggy_qc.png" "/usr/bin/pnginfo" ["buggy_qc.png"] mencode)
+main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 50 } (noShrinking $ fuzzprop "buggy_qc.png" "./bins/gdk-pixbuf" ["buggy_qc.png"] mencode)

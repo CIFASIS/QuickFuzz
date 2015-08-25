@@ -39,32 +39,6 @@ import qualified Data.Vector.Storable as VS
 import System.Process
 import System.Exit
 
-{-
-instance Arbitrary B.ByteString where
-   arbitrary = do 
-     l <- listOf (arbitrary :: Gen Word8)
-     return $ B.pack l
-
-instance Arbitrary L.ByteString where
-   arbitrary = do 
-     l <- listOf (arbitrary :: Gen Word8)
-     return $ L.pack l
--}
-
-instance Arbitrary (Metadatas) where
-  arbitrary = do
-      w <- (arbitrary :: Gen Word)
-      s <- (arbitrary :: Gen String)
-      d <- (arbitrary :: Gen Double) 
-      sf <- (arbitrary :: Gen SourceFormat)
-      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> w, DpiY :=> w, Width :=> w, Height :=> w, Title :=> s] }
-
-{-
--}
-
--- $(deriveArbitraryRec ''JpgImage)
-$(deriveArbitraryRec ''SourceFormat)
-
 type MJpgImage  = (Word8,Metadatas, Image PixelYCbCr8)
 encodeJpgImage (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
 
@@ -72,5 +46,5 @@ mencode :: MJpgImage -> L.ByteString
 mencode = encodeJpgImage
 
 --main = quickCheckWith stdArgs { maxSuccess = 120, maxSize = 50 } (absprop "buggy_qc.jp2" "" [] mencode)
-main = quickCheckWith stdArgs { maxSuccess = 1200000, maxSize = 50 } (checkprop "buggy_qc.jp2" "/usr/bin/identify.im6" ["buggy_qc.jp2"] mencode)
+main = quickCheckWith stdArgs { maxSuccess = 1200000, maxSize = 50 } (fuzzprop "buggy_qc.jpeg" "/usr/bin/djpeg" ["-gif", "buggy_qc.jpeg"] mencode)
 
