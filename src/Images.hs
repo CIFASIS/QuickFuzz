@@ -17,10 +17,14 @@ $(deriveArbitraryRec ''SourceFormat)
 instance Arbitrary (Metadatas) where
   arbitrary = do
       w <- (arbitrary :: Gen Word)
+      h <- (arbitrary :: Gen Word)
+      dx <- (arbitrary :: Gen Word)
+      dy <- (arbitrary :: Gen Word)
+
       s <- (arbitrary :: Gen String)
       d <- (arbitrary :: Gen Double) 
       sf <- (arbitrary :: Gen SourceFormat)
-      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> w, DpiY :=> w, Width :=> w, Height :=> w, Title :=> s] }
+      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> dx, DpiY :=> dy, Width :=> w, Height :=> h, Title :=> s] }
 
 instance Arbitrary (Image PixelYCbCr8) where
    arbitrary = do
@@ -61,5 +65,18 @@ instance Arbitrary (Image PixelRGBA8) where
        return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
 
 instance Show (Image PixelRGBA8) where
+   show x = ""
+
+instance Arbitrary (Image PixelRGB16) where
+   arbitrary = do
+       l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelRGB16))
+       w <- (arbitrary :: Gen Int)
+       h <- (arbitrary :: Gen Int)
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l}
+
+
+
+
+instance Show (Image PixelRGB16) where
    show x = ""
 

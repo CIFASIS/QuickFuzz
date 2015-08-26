@@ -36,4 +36,4 @@ encodePngImage (a,b,c,d) = (genericEncodePng a b c d) --(encodePalettedPngWithMe
 mencode :: MPngImage -> L.ByteString
 mencode = encodePngImage
 
-main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 50 } (noShrinking $ fuzzprop "buggy_qc.png" "./bins/gdk-pixbuf" ["buggy_qc.png"] mencode)
+main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 20 } (noShrinking $ checkprop "buggy_qc.png" "./bins/gdk-pixbuf" ["buggy_qc.png"] mencode)

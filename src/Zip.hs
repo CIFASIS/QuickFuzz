@@ -26,10 +26,10 @@ import qualified Data.Vector.Storable as VS
 import Vector
 import ByteString
 
-instance Arbitrary (V.Vector (VU.Vector Word8)) where
-   arbitrary = do 
-     l <- listOf (arbitrary :: Gen Word8)
-     return $ V.replicate 32 (VU.fromList l)
+--instance Arbitrary (V.Vector (VU.Vector Word8)) where
+--   arbitrary = do 
+--     l <- listOf (arbitrary :: Gen Word8)
+--     return $ V.replicate 32 (VU.fromList l)
 
 $(deriveArbitraryRec ''Archive)
 

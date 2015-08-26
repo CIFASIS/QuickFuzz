@@ -41,6 +41,7 @@ genprop filename prog args encode dir x =
             else
               Test.QuickCheck.Monadic.assert True
 
+outdir = "outdir"
 
 checkprop filename prog args encode x = 
          monadicIO $ do
@@ -53,9 +54,14 @@ checkprop filename prog args encode x =
            seed <- run (randomIO :: IO Int)
            ret <- run $ rawSystem "/usr/bin/valgrind" (["--log-file=vreport.out", "--quiet", prog] ++ args)
            size <- run $ getFileSize "vreport.out"
-           if size == 0 
-              then Test.QuickCheck.Monadic.assert True
-              else Test.QuickCheck.Monadic.assert False
+           if size > 0 
+              then ( 
+                  do 
+                    run $ copyFile "vreport.out" (outdir ++ "/" ++ "vreport.out."++ show seed)
+                    run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
+                    Test.QuickCheck.Monadic.assert True 
+                  )
+              else Test.QuickCheck.Monadic.assert True
            )
 
 fuzzprop filename prog args encode x = 
@@ -69,7 +75,7 @@ fuzzprop filename prog args encode x =
            seed <- run (randomIO :: IO Int)
            --ret <- run $ rawSystem "/usr/bin/file" [filename]
            --run $ putStrLn (show ret)
-           ret <- run $ rawSystem "/usr/bin/zzuf" (["-q", "-M", "2000", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 15)), "-c", "-S", "-T", "15", "-j", "15", prog] ++ args)
+           ret <- run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 150)), "-c", "-S", "-T", "15", "-j", "15", prog] ++ args)
            case ret of
               ExitFailure y -> Test.QuickCheck.Monadic.assert False
               _             -> Test.QuickCheck.Monadic.assert True
