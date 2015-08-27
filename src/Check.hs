@@ -75,7 +75,7 @@ fuzzprop filename prog args encode x =
            seed <- run (randomIO :: IO Int)
            --ret <- run $ rawSystem "/usr/bin/file" [filename]
            --run $ putStrLn (show ret)
-           ret <- run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 150)), "-c", "-S", "-T", "15", "-j", "15", prog] ++ args)
+           ret <- run $ rawSystem "/usr/bin/zzuf" (["-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 150)), "-c", "-S", "-T", "2", "-j", "15", prog] ++ args)
            case ret of
               ExitFailure y -> Test.QuickCheck.Monadic.assert False
               _             -> Test.QuickCheck.Monadic.assert True

@@ -10,5 +10,6 @@ import qualified Jpeg
 import qualified Tiff
 import qualified Xml
 import qualified Png
+import qualified Pnm
 
-main = Png.main
+main = Pnm.main
