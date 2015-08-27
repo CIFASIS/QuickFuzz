@@ -12,4 +12,4 @@ import qualified Xml
 import qualified Png
 import qualified Pnm
 
-main = Pnm.main
+main = Tiff.main

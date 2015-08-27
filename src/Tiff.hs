@@ -5,7 +5,6 @@ module Tiff where
 import Test.QuickCheck
 import Check
 
---import Control.Monad.Zip
 import Control.Exception
 import Data.Binary( Binary(..), encode )
 
@@ -17,27 +16,21 @@ import Codec.Picture.Metadata.Exif
 import Codec.Picture.Metadata
 
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString as B
 
 import Data.DeriveTH
---import Data.Word(Word8, Word16, Word32)
---import Data.Int( Int16, Int8 )
 import Data.Binary.Put( runPut )
 
 import DeriveArbitrary
 import Vector
 import Images
 
---import GHC.Types
---import GHC.Word
-
 import Codec.Picture.VectorByteConversion( toByteString )
 
-type TiffFile  = (TiffInfo, Image PixelRGB8)
+type TiffFile  = (Image PixelCMYK16)
 
 encodeTiffFile :: TiffFile -> L.ByteString 
-encodeTiffFile (hdr,img) = runPut $ putP rawPixelData hdr
-                           where rawPixelData = toByteString $ imageData img
+encodeTiffFile = encodeTiff--runPut $ putP rawPixelData hdr
+                       --    where rawPixelData = toByteString $ imageData img
 
 --derive makeArbitrary ''TiffFile
 derive makeArbitrary ''TiffInfo
@@ -70,6 +63,6 @@ derive makeShow ''TiffColorspace
 mencode :: TiffFile -> L.ByteString
 mencode = encodeTiffFile
 
-main = quickCheckWith stdArgs { maxSuccess = 120000000, maxSize = 20 } (fuzzprop "buggy_qc.tif" "tiff2pdf" ["buggy_qc.tif"] mencode)
+main = quickCheckWith stdArgs { maxSuccess = 120000000, maxSize = 50 } (fuzzprop "buggy_qc.tif" "tiffinfo" ["-D", "buggy_qc.tif"] mencode)
 --main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 50 } (genprop "buggy_qc.jp2" "" [] mencode "data/jpeg")
 

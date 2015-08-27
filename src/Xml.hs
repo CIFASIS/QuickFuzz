@@ -13,20 +13,12 @@ import Text.XML.HaXml.Types
 import Text.XML.HaXml.ByteStringPP
 
 import qualified Data.ByteString.Lazy as L
---import qualified Data.ByteString as B
 
 import Data.DeriveTH
---import Data.Word(Word8, Word16, Word32)
---import Data.Int( Int16, Int8 )
-
 import DeriveArbitrary
 
 import Vector
 import ByteString 
-
---import GHC.Types
---import GHC.Word
-
 
 derive makeArbitrary ''Document
 derive makeArbitrary ''Misc

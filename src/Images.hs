@@ -24,17 +24,30 @@ instance Arbitrary (Metadatas) where
       s <- (arbitrary :: Gen String)
       d <- (arbitrary :: Gen Double) 
       sf <- (arbitrary :: Gen SourceFormat)
-      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> dx, DpiY :=> dy, Width :=> w, Height :=> h, Title :=> s] }
+      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> dx, DpiY :=> dy, Width :=> 32, Height :=>32, Title :=> s] }
 
 instance Arbitrary (Image PixelYCbCr8) where
    arbitrary = do
        l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelYCbCr8))
        w <- (arbitrary :: Gen Int)
        h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
+       return $ Image { imageWidth = 32, imageHeight = 32, imageData = VS.fromList l }
 
 instance Show (Image PixelYCbCr8) where
    show x = ""
+
+
+instance Arbitrary (Image PixelCMYK16) where
+   arbitrary = do
+       l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelCMYK16))
+       w <- (arbitrary :: Gen Int)
+       h <- (arbitrary :: Gen Int)
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
+
+instance Show (Image PixelCMYK16) where
+   show x = ""
+
+--PixelCMYK16
 
 instance Arbitrary (Image PixelRGB8) where
    arbitrary = do
