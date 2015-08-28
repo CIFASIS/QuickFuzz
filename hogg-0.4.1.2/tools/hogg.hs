@@ -22,7 +22,16 @@ import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Char
 import Data.List hiding (sort)
 
-import System.Locale (defaultTimeLocale)
+--import System.Locale (defaultTimeLocale)
+--import Data.Time.Locale.Compat (defaultTimeLocale)
+
+#if MIN_VERSION_time(1,5,0)
+import Data.Time.Format(defaultTimeLocale, dateTimeFmt)
+#else
+ import System.Locale (defaultTimeLocale, dateTimeFmt)
+ import System.Locale (defaultTimeLocale, dateTimeFmt)
+#endif
+
 import Data.Time.Format (formatTime)
 import Data.Time.Clock (getCurrentTime)
 

@@ -31,7 +31,14 @@ module Codec.Container.Ogg.ContentType (
   speex,
   celt,
   theora,
-  vorbis
+  vorbis,
+  skeletonIdent,
+  cmmlIdent,
+  flacIdent,
+  speexIdent,
+  celtIdent,
+  theoraIdent,
+  vorbisIdent
 ) where
 
 import Data.Bits

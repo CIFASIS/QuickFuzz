@@ -30,12 +30,12 @@ import Data.Binary.Put( runPut )
 
 import ByteString
 
-$(deriveArbitraryRec ''OggPage)
+-- $(deriveArbitraryRec ''OggPage)
 
---derive makeArbitrary ''OggPage
---derive makeArbitrary ''Granulepos
---derive makeArbitrary ''OggTrack
---derive makeArbitrary ''Granulerate
+derive makeArbitrary ''OggPage
+derive makeArbitrary ''Granulepos
+derive makeArbitrary ''OggTrack
+derive makeArbitrary ''Granulerate
 --derive makeArbitrary ''ContentType
 
 --instance Arbitrary L.ByteString where
@@ -43,13 +43,20 @@ $(deriveArbitraryRec ''OggPage)
 --     l <- listOf (arbitrary :: Gen Word8)
 --     return $ L.pack l
 
+instance Arbitrary ContentType where
+   arbitrary = oneof $ map return [theora]--(map return [skeleton, cmml, vorbis, theora, speex, celt, flac])   
+ 
+
 instance Arbitrary MessageHeaders where
    arbitrary = do
      y <- listOf (arbitrary :: Gen String)
-     x <- arbitrary :: Gen String
+     x <- (arbitrary :: (Gen String))
      return $ mhAppends x y mhEmpty
+
+appendvorbis d = L.append theoraIdent d
+appendh (OggPage x track cont incplt bos eos gp seqno s) = OggPage x track cont incplt bos eos gp seqno (map appendvorbis s)
 
 --instance CoArbitrary L.ByteString where
 --   coarbitrary x = coarbitrary $ L.unpack x
 
-main = quickCheckWith stdArgs { maxSuccess = 100, maxSize = 100 } (absprop "buggy_qc.ogg" "/usr/bin/ogginfo" ["buggy_qc.ogg"] pageWrite)
+main = quickCheckWith stdArgs { maxSuccess = 10000000, maxSize = 50 } (checkprop "buggy_qc.ogg" "/usr/bin/mplayer" ["buggy_qc.ogg"] ( pageWrite . appendh))

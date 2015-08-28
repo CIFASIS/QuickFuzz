@@ -2,7 +2,7 @@ module Main where
 
 import qualified Bmp
 import qualified Gif
---import qualified Ogg
+import qualified Ogg
 --import qualified Tga
 import qualified Zip
 import qualified Tar
@@ -12,4 +12,4 @@ import qualified Xml
 import qualified Png
 import qualified Pnm
 
-main = Tiff.main
+main = Ogg.main
