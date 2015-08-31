@@ -26,9 +26,11 @@ import Images
 
 import Codec.Picture.VectorByteConversion( toByteString )
 
+import Data.List.Split
+
 type TiffFile  = (Image PixelCMYK16)
 
-encodeTiffFile :: TiffFile -> L.ByteString 
+encodeTiffFile :: TiffFile -> L.ByteString
 encodeTiffFile = encodeTiff--runPut $ putP rawPixelData hdr
                        --    where rawPixelData = toByteString $ imageData img
 
@@ -63,6 +65,9 @@ derive makeShow ''TiffColorspace
 mencode :: TiffFile -> L.ByteString
 mencode = encodeTiffFile
 
-main = quickCheckWith stdArgs { maxSuccess = 120000000, maxSize = 20 } (fuzzprop "buggy_qc.tif" "tiffinfo" ["-D", "buggy_qc.tif"] mencode)
---main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 50 } (genprop "buggy_qc.jp2" "" [] mencode "data/jpeg")
-
+main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+    (case prop of
+        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+    ) where spl = splitOn " " cmd

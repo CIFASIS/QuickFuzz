@@ -25,6 +25,8 @@ import Data.Word(Word8, Word16, Word32)
 import Vector
 import ByteString
 
+import Data.List.Split
+
 -- $(deriveArbitraryRec ''Entry) (not working)
 
 derive makeArbitrary ''Entry
@@ -49,4 +51,9 @@ instance Arbitrary Permissions where
      w32 <- arbitrary :: Gen Word32
      return $ CMode w32
 
-main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 500 } (checkprop "buggy_qc.tar" "/usr/bin/bsdtar" ["-tvf", "buggy_qc.tar"] mencode)
+main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+    (case prop of
+        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+    ) where spl = splitOn " " cmd

@@ -30,6 +30,8 @@ import Data.Binary.Put( runPut )
 
 import ByteString
 
+import Data.List.Split
+
 -- $(deriveArbitraryRec ''OggPage)
 
 derive makeArbitrary ''OggPage
@@ -44,8 +46,8 @@ derive makeArbitrary ''Granulerate
 --     return $ L.pack l
 
 instance Arbitrary ContentType where
-   arbitrary = oneof $ map return [theora]--(map return [skeleton, cmml, vorbis, theora, speex, celt, flac])   
- 
+   arbitrary = oneof $ map return [theora]--(map return [skeleton, cmml, vorbis, theora, speex, celt, flac])
+
 
 instance Arbitrary MessageHeaders where
    arbitrary = do
@@ -59,4 +61,9 @@ appendh (OggPage x track cont incplt bos eos gp seqno s) = OggPage x track cont 
 --instance CoArbitrary L.ByteString where
 --   coarbitrary x = coarbitrary $ L.unpack x
 
-main = quickCheckWith stdArgs { maxSuccess = 10000000, maxSize = 50 } (checkprop "buggy_qc.ogg" "/usr/bin/mplayer" ["buggy_qc.ogg"] ( pageWrite . appendh))
+main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+    (case prop of
+        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args (pageWrite . appendh))
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args (pageWrite . appendh))
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args (pageWrite . appendh))
+    ) where spl = splitOn " " cmd

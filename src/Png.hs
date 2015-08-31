@@ -21,6 +21,7 @@ import Images
 
 import DeriveArbitrary
 
+import Data.List.Split
 
 fromRight  :: Either a b -> b
 fromRight (Right x)  = x
@@ -36,4 +37,9 @@ encodePngImage (a,b,c,d) = (genericEncodePng a b c d) --(encodePalettedPngWithMe
 mencode :: MPngImage -> L.ByteString
 mencode = encodePngImage
 
-main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 20 } (noShrinking $ checkprop "buggy_qc.png" "./bins/gdk-pixbuf" ["buggy_qc.png"] mencode)
+main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+    (case prop of
+        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+    ) where spl = splitOn " " cmd

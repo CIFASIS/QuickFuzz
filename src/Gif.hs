@@ -27,6 +27,8 @@ import qualified Data.Vector.Storable as VS
 
 --import Control.Monad.Reader()
 
+import Data.List.Split
+
 $(deriveArbitraryRec ''GifImage)
 $(deriveArbitraryRec ''GifLooping)
 
@@ -47,10 +49,10 @@ fromRight (Right x)  = x
 fromRight (Left x) = error "abc"
 
 type MGifImage  = (GifLooping, [(Palette, GifDelay, Image Pixel8)])
-encodeMGifImage :: MGifImage -> L.ByteString 
+encodeMGifImage :: MGifImage -> L.ByteString
 encodeMGifImage (a, b) = fromRight $ encodeGifImages a b--encodeGifImageWithPalette img pal
 
-mencode :: MGifImage -> L.ByteString 
+mencode :: MGifImage -> L.ByteString
 mencode = encodeMGifImage
 
 --main = quickCheckWith stdArgs { maxSuccess = 120000000, maxSize = 25 } (noShrinking $ fuzzprop "buggy_qc.gif" "/usr/bin/giftopnm" ["buggy_qc.gif"] mencode)
@@ -58,5 +60,9 @@ mencode = encodeMGifImage
 
 --main = quickCheckWith stdArgs { maxSuccess = 1200000, maxSize = 20 } (noShrinking $ fuzzprop "buggy_qc.gif" "/usr/bin/convert.im6" ["buggy_qc.gif", "-resize", "128x128", "png:-"]  mencode)
 
-main = quickCheckWith stdArgs { maxSuccess = 12000000, maxSize = 20 } (noShrinking $  checkprop "buggy_qc.gif" "bins/gdk-pixbuf" ["buggy_qc.gif"]  mencode)
-
+main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+    (case prop of
+        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+    ) where spl = splitOn " " cmd

@@ -27,7 +27,7 @@ import Data.Int( Int16, Int8 )
 import DeriveArbitrary
 import ByteString
 import Vector
-import Images 
+import Images
 
 import GHC.Types
 import GHC.Word
@@ -39,12 +39,17 @@ import qualified Data.Vector.Storable as VS
 import System.Process
 import System.Exit
 
+import Data.List.Split
+
 type MJpgImage  = (Word8,Metadatas, Image PixelYCbCr8)
 encodeJpgImage (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
 
 mencode :: MJpgImage -> L.ByteString
 mencode = encodeJpgImage
 
---main = quickCheckWith stdArgs { maxSuccess = 120, maxSize = 50 } (absprop "buggy_qc.jp2" "" [] mencode)
-main = quickCheckWith stdArgs { maxSuccess = 200000, maxSize = 20 } (noShrinking $ checkprop "buggy_qc.jpeg" "./bins/gdk-pixbuf" ["buggy_qc.jpeg"] mencode)
-
+main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+    (case prop of
+        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+    ) where spl = splitOn " " cmd

@@ -18,7 +18,9 @@ import Data.DeriveTH
 import DeriveArbitrary
 
 import Vector
-import ByteString 
+import ByteString
+
+import Data.List.Split
 
 derive makeArbitrary ''Document
 derive makeArbitrary ''Misc
@@ -62,10 +64,14 @@ derive makeArbitrary ''EnumeratedType
 derive makeArbitrary ''Modifier
 derive makeArbitrary ''TokenizedType
 
-type MXml  = Document () 
+type MXml  = Document ()
 
 mencode :: MXml -> L.ByteString
 mencode x = document x
 
-main = quickCheckWith stdArgs { maxSuccess = 12000, maxSize = 9 } (fuzzprop "buggy_qc.xml" "/usr/bin/xmllint" ["html", "buggy_qc.xml"] mencode)
---main = quickCheckWith stdArgs { maxSuccess = 1200, maxSize = 50 } (genprop "buggy_qc.jp2" "" [] mencode "data/xml")
+main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+    (case prop of
+        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+    ) where spl = splitOn " " cmd
