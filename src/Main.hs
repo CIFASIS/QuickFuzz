@@ -11,5 +11,6 @@ import qualified Tiff
 import qualified Xml
 import qualified Png
 import qualified Pnm
+import qualified Gzip
 
-main = Ogg.main
+main = Png.main
