@@ -59,7 +59,7 @@ checkprop filename prog args encode x =
                   do 
                     run $ copyFile "vreport.out" (outdir ++ "/" ++ "vreport.out."++ show seed)
                     run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
-                    Test.QuickCheck.Monadic.assert True 
+                    Test.QuickCheck.Monadic.assert True
                   )
               else Test.QuickCheck.Monadic.assert True
            )
@@ -75,8 +75,12 @@ fuzzprop filename prog args encode x =
            seed <- run (randomIO :: IO Int)
            --ret <- run $ rawSystem "/usr/bin/file" [filename]
            --run $ putStrLn (show x)
-           ret <- run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-r","0.00004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 150)), "-c", "-S", "-T", "10", "-j", "15", prog] ++ args)
+           ret <- run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 150)), "-c", "-S", "-T", "60", "-j", "15", prog] ++ args)
            case ret of
-              ExitFailure y -> Test.QuickCheck.Monadic.assert False
+              ExitFailure y -> (
+                                do 
+                                 run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
+                                 Test.QuickCheck.Monadic.assert True
+                )
               _             -> Test.QuickCheck.Monadic.assert True
            )
