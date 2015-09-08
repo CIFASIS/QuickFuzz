@@ -10,6 +10,7 @@
 -- Targa (*.tga) files.
 module Codec.Picture.Tga( decodeTga
                         , decodeTgaWithMetadata
+                        , TgaFile_t
                         , TgaSaveable
                         , encodeTga
                         , writeTga
@@ -177,6 +178,9 @@ data TgaFile = TgaFile
   , _tgaPalette    :: !B.ByteString
   , _tgaFileRest   :: !B.ByteString
   }
+
+type TgaFile_t = TgaFile
+
 
 getPalette :: TgaHeader -> Get B.ByteString
 getPalette hdr | _tgaHdrMapLength hdr <= 0 = return mempty

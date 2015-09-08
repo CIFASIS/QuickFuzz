@@ -46,6 +46,7 @@ Library
                     Codec.Picture.Jpg.DefaultTable,
                     Codec.Picture.HDR,
                     Codec.Picture.Tga,
+                    Codec.Picture.Tga.Types,
                     Codec.Picture.Tiff,
                     Codec.Picture.Tiff.Types,
                     Codec.Picture.Metadata,

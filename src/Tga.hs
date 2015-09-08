@@ -10,7 +10,7 @@ import Control.Exception
 import Data.Binary( Binary(..), encode )
 
 import Codec.Picture.Types
-import Codec.Picture.Tga
+import Codec.Picture.Tga.Types
 import Codec.Picture.Metadata.Exif
 import Codec.Picture.Metadata
 
@@ -33,6 +33,13 @@ import qualified Data.Vector.Storable as VS
 import System.Process
 import System.Exit
 
+import ByteString
+
+import Data.List.Split
+
+
+
+{-
 
 instance Arbitrary a => Arbitrary (V.Vector a) where
    arbitrary = do 
@@ -59,6 +66,7 @@ instance Arbitrary L.ByteString where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word8)
      return $ L.pack l
+-}
 {-
 instance Arbitrary (Metadatas) where
   arbitrary = do
@@ -67,7 +75,7 @@ instance Arbitrary (Metadatas) where
       d <- (arbitrary :: Gen Double) 
       sf <- (arbitrary :: Gen SourceFormat)
       return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> w, DpiY :=> w, Width :=> w, Height :=> w, Title :=> s] }
--}
+
 instance Arbitrary (Image PixelYCbCr8) where
    arbitrary = do
        l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelYCbCr8))
@@ -77,6 +85,7 @@ instance Arbitrary (Image PixelYCbCr8) where
 
 instance Show (Image PixelYCbCr8) where
    show x = ""
+-}
 {-
 derive makeArbitrary ''ExifTag
 derive makeArbitrary ''IfdType
@@ -100,55 +109,22 @@ derive makeArbitrary ''JpgFrame
 derive makeArbitrary ''JpgImage
 derive makeArbitrary ''SourceFormat
 -}
--- $(deriveArbitraryRec ''TgaImage)
+derive makeShow ''TgaFile_t
+derive makeShow ''TgaImageType
+derive makeShow ''TgaImageDescription
+derive makeShow ''TgaColorMapType
+derive makeShow ''TgaHeader
 
---type MJpgImage  = (Word8,Metadatas, Image PixelYCbCr8)
---encodeJpgImage (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
+derive makeArbitrary ''TgaFile_t
+$(deriveArbitraryRec ''TgaHeader)
 
---type TgaImage = TgaFile
 
 mencode :: TgaFile_t -> L.ByteString
 mencode = encode --(encode :: TgaFile -> L.ByteString) --JpgImage
 
-main = quickCheckWith stdArgs { maxSuccess = 1200000, maxSize = 500 } ( noShrinking $ absprop "buggy_qc.jp2" "bins/pixbuf_vuln_poc" ["buggy_qc.jp2"] mencode)
-
---main = quickCheckWith stdArgs { maxSuccess = 1200000, maxSize = 100 } (noShrinking $ absprop "buggy_qc.jp2" "/usr/bin/jasper" ["--input", "buggy_qc.jp2", "--output-format", "pnm"] mencode)
-
-
-
-{--
-type MJpegFile  = (Word8,Metadatas, Image PixelYCbCr8)
-
-encodeJpegFile (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
-
-filenames = take 11 (repeat "buggy_qc.jpg")
-
-instance Arbitrary (Image PixelYCbCr8) where
-   arbitrary = do
-       l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelYCbCr8))
-       w <- (arbitrary :: Gen Int)
-       h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
-
-handler :: SomeException -> IO ()
-handler _ = return ()
- 
-main = do
-  jpgs  <- sample' (resize 10 (arbitrary :: Gen MJpegFile))
-  mapM_ (\(filename,jpg) -> 
-      do
-       catch (L.writeFile filename (encodeJpegFile jpg)) handler
-       --ret <- rawSystem "/usr/bin/valgrind" ["--error-exitcode=-1", "/usr/bin/jpeginfo","buggy.jpg"]
-       r <- (randomIO :: IO Int)
-       ret <- rawSystem "/usr/bin/zzuf" ["-q", "-s", (show (r `mod` 10024))++":"++(show (r `mod` 10024 + 1)), "-Ix", "-M-1", "-c", "-S", "-T", "2", "/usr/bin/file", "buggy_qc.jpg"]
-
-       --ret <- rawSystem "/usr/bin/zzuf" ["-s", "0:100","-c", "-S", "-T", "3", "/usr/bin/identify.im6", "buggy.jpg"]
-       case ret of
-        ExitFailure x -> ( do 
-                            putStrLn (show x) 
-                            exitWith ret)
-        _             -> return ()
-     ) (zip filenames jpgs)
-  main
-
--}
+main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+    (case prop of
+        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+    ) where spl = splitOn " " cmd

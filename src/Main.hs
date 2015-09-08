@@ -3,7 +3,7 @@ module Main where
 import qualified Bmp
 import qualified Gif
 import qualified Ogg
---import qualified Tga
+import qualified Tga
 import qualified Zip
 import qualified Tar
 import qualified Jpeg
@@ -42,6 +42,7 @@ dispatch (MainArgs t n c a succ size) = case t of
         "Zip"  -> Zip.main n c a succ size
         "Bzip"  -> Bzip.main n c a succ size
         "Tar"  -> Tar.main n c a succ size
+        "Tga"  -> Tga.main n c a succ size
         "Jpeg" -> Jpeg.main n c a succ size
         "Tiff" -> Tiff.main n c a succ size
         "Xml"  -> Xml.main n c a succ size
