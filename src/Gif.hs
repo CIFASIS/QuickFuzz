@@ -44,9 +44,9 @@ derive makeShow ''GifLooping
 handler :: SomeException -> IO ()
 handler _ = return ()
 
-fromRight           :: Either a b -> b
+--fromRight           :: Either a b -> b
 fromRight (Right x)  = x
-fromRight (Left x) = error "abc"
+fromRight (Left x) = error x
 
 type MGifImage  = (GifLooping, [(Palette, GifDelay, Image Pixel8)])
 encodeMGifImage :: MGifImage -> L.ByteString

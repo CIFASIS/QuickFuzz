@@ -13,7 +13,8 @@ It found interesting bugs in gdk-pixbuf, jasper and unzip.
 
  * A modern version of GHC (e.g 7.10)
  * happy
-
+ * zlib-dev 
+ * libbz2-dev
 
 In Ubuntu, a PPA to install GHC 7.10 is available [here](https://launchpad.net/~hvr/+archive/ubuntu/ghc).
 
@@ -22,4 +23,5 @@ In Ubuntu, a PPA to install GHC 7.10 is available [here](https://launchpad.net/~
   1. Install the modified version of the packages (using "caball install" each subdirectory):
     * Juicypixels (3.2.5.2)
     * tar (0.4.2.1)
+    * hogg
   2. Install QuickFuzz (using "cabal install" inside the root of this repository)
