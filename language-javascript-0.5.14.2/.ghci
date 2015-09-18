@@ -1,0 +1,5 @@
+-- Startup commands for the GHC interpreter
+:set -hide-package monads-tf 
+:set -hide-package monads-fd
+:set -i./src
+:set -i./dist/build
