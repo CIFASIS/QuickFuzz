@@ -9,10 +9,12 @@ import qualified Tar
 import qualified Jpeg
 import qualified Tiff
 import qualified Xml
+import qualified Html
 import qualified Png
 import qualified Pnm
 import qualified Gzip
 import qualified Bzip
+import qualified Js
 
 import System.Console.ArgParser
 
@@ -46,6 +48,8 @@ dispatch (MainArgs t n c a succ size) = case t of
         "Jpeg" -> Jpeg.main n c a succ size
         "Tiff" -> Tiff.main n c a succ size
         "Xml"  -> Xml.main n c a succ size
+        "Html"  -> Html.main n c a succ size
+        "Js"  -> Js.main n c a succ size
         "Png"  -> Png.main n c a succ size
         "Pnm"  -> Pnm.main n c a succ size
 

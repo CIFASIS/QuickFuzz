@@ -46,7 +46,7 @@ derive makeArbitrary ''Granulerate
 --     return $ L.pack l
 
 instance Arbitrary ContentType where
-   arbitrary = oneof $ map return [theora]--(map return [skeleton, cmml, vorbis, theora, speex, celt, flac])
+   arbitrary = oneof $ (map return [skeleton, cmml, vorbis, theora, speex, celt, flac])
 
 
 instance Arbitrary MessageHeaders where

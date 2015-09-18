@@ -75,7 +75,7 @@ fuzzprop filename prog args encode x =
            seed <- run (randomIO :: IO Int)
            --ret <- run $ rawSystem "/usr/bin/file" [filename]
            --run $ putStrLn (show x)
-           ret <- run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 5)), "-I", filename, "-S", "-T", "60", "-j", "1", prog] ++ args)
+           ret <- run $ rawSystem "/usr/bin/zzuf" (["-q", "-M", "-1", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 5)), "-I", filename, "-S", "-T", "60", "-j", "5", prog] ++ args)
            case ret of
               ExitFailure y -> (
                                 do 

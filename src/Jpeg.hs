@@ -41,8 +41,17 @@ import System.Exit
 
 import Data.List.Split
 
-type MJpgImage  = (Word8,Metadatas, Image PixelYCbCr8)
-encodeJpgImage (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
+--import Codec.Picture.Jpg.Types 
+
+
+$(deriveArbitraryRec ''JpgImage)
+
+
+type MJpgImage  = JpgImage --(Word8,Metadatas, Image PixelYCbCr8)
+--encodeJpgImage (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
+encodeJpgImage = encode
+
+
 
 mencode :: MJpgImage -> L.ByteString
 mencode = encodeJpgImage
