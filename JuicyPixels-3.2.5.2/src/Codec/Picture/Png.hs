@@ -44,7 +44,7 @@ import Data.List( find, zip4 )
 import Data.Word( Word8, Word16, Word32 )
 import qualified Codec.Compression.Zlib as Z
 import qualified Data.ByteString as B
-import qualified Data.ByteString.Unsafe as BU
+import qualified Data.ByteString as BU
 import qualified Data.ByteString.Lazy as Lb
 import Foreign.Storable ( Storable )
 
@@ -103,7 +103,7 @@ pngFiltering unpacker beginZeroes (imgWidth, imgHeight) str initialIdx = do
     otherLine <- M.replicate (beginZeroes + imgWidth) 0
     let folder            _          _  lineIndex !idx | lineIndex >= imgHeight = return idx
         folder previousLine currentLine lineIndex !idx = do
-               let byte = str `BU.unsafeIndex` idx
+               let byte = str `BU.index` idx
                let lineFilter = case unparsePngFilter byte of
                        Right FilterNone    -> filterNone
                        Right FilterSub     -> filterSub
@@ -129,47 +129,47 @@ pngFiltering unpacker beginZeroes (imgWidth, imgHeight) str initialIdx = do
           filterNone !_previousLine !thisLine = inner beginZeroes
             where inner idx !readIdx
                             | idx > lastIdx = return readIdx
-                            | otherwise = do let byte = str `BU.unsafeIndex` readIdx
-                                             (thisLine `M.unsafeWrite` idx) byte
+                            | otherwise = do let byte = str `BU.index` readIdx
+                                             (thisLine `M.write` idx) byte
                                              inner (idx + 1) $ readIdx + 1
 
           filterSub !_previousLine !thisLine = inner beginZeroes
             where inner idx !readIdx
                             | idx > lastIdx = return readIdx
-                            | otherwise = do let byte = str `BU.unsafeIndex` readIdx
-                                             val <- thisLine `M.unsafeRead` (idx - stride)
-                                             (thisLine `M.unsafeWrite` idx) $ byte + val
+                            | otherwise = do let byte = str `BU.index` readIdx
+                                             val <- thisLine `M.read` (idx - stride)
+                                             (thisLine `M.write` idx) $ byte + val
                                              inner (idx + 1) $ readIdx + 1
 
           filterUp !previousLine !thisLine = inner beginZeroes
             where inner idx !readIdx
                             | idx > lastIdx = return readIdx
-                            | otherwise = do let byte = str `BU.unsafeIndex` readIdx
-                                             val <- previousLine `M.unsafeRead` idx
-                                             (thisLine `M.unsafeWrite` idx) $ val + byte
+                            | otherwise = do let byte = str `BU.index` readIdx
+                                             val <- previousLine `M.read` idx
+                                             (thisLine `M.write` idx) $ val + byte
                                              inner (idx + 1) $ readIdx + 1
 
           filterAverage !previousLine !thisLine = inner beginZeroes
             where inner idx !readIdx
                             | idx > lastIdx = return readIdx
-                            | otherwise = do let byte = str `BU.unsafeIndex` readIdx
-                                             valA <- thisLine `M.unsafeRead` (idx - stride)
-                                             valB <- previousLine `M.unsafeRead` idx
+                            | otherwise = do let byte = str `BU.index` readIdx
+                                             valA <- thisLine `M.read` (idx - stride)
+                                             valB <- previousLine `M.read` idx
                                              let a' = fromIntegral valA
                                                  b' = fromIntegral valB
                                                  average = fromIntegral ((a' + b') `div` (2 :: Word16)) 
                                                  writeVal = byte + average 
-                                             (thisLine `M.unsafeWrite` idx) writeVal
+                                             (thisLine `M.write` idx) writeVal
                                              inner (idx + 1) $ readIdx + 1
 
           filterPaeth !previousLine !thisLine = inner beginZeroes
             where inner idx !readIdx
                             | idx > lastIdx = return readIdx
-                            | otherwise = do let byte = str `BU.unsafeIndex` readIdx
-                                             valA <- thisLine `M.unsafeRead` (idx - stride)
-                                             valC <- previousLine `M.unsafeRead` (idx - stride)
-                                             valB <- previousLine `M.unsafeRead` idx
-                                             (thisLine `M.unsafeWrite` idx) $ byte + paeth valA valB valC
+                            | otherwise = do let byte = str `BU.index` readIdx
+                                             valA <- thisLine `M.read` (idx - stride)
+                                             valC <- previousLine `M.read` (idx - stride)
+                                             valB <- previousLine `M.read` idx
+                                             (thisLine `M.write` idx) $ byte + paeth valA valB valC
                                              inner (idx + 1) $ readIdx + 1
 
                   paeth a b c
@@ -210,9 +210,9 @@ byteUnpacker sampleCount (MutableImage{ mutableImageWidth = imgWidth, mutableIma
                 srcPixelIndex = pixelIndex * sampleCount + beginIdx
                 perPixel sample | sample >= sampleCount = return ()
                                 | otherwise = do
-                    val <- line `M.unsafeRead` (srcPixelIndex + sample)
+                    val <- line `M.read` (srcPixelIndex + sample)
                     let writeIdx = destSampleIndex + sample
-                    (arr `M.unsafeWrite` writeIdx) val
+                    (arr `M.write` writeIdx) val
                     perPixel (sample + 1)
             perPixel 0
             inner (pixelIndex + 1)
@@ -231,15 +231,15 @@ bitUnpacker _ (MutableImage{ mutableImageWidth = imgWidth, mutableImageData = ar
                 | otherwise = 0
         (pixelToRead, lineRest) = (lineWidth + subPadd) `divMod` 8
     forM_ [0 .. pixelToRead - 1] $ \pixelIndex -> do
-        val <- line `M.unsafeRead` (pixelIndex  + beginIdx)
+        val <- line `M.read` (pixelIndex  + beginIdx)
         let writeIdx n = lineIndex + (pixelIndex * 8 + n) * strideWidth + beginLeft 
-        forM_ [0 .. 7] $ \bit -> (arr `M.unsafeWrite` writeIdx (7 - bit)) ((val `unsafeShiftR` bit) .&. 1)
+        forM_ [0 .. 7] $ \bit -> (arr `M.write` writeIdx (7 - bit)) ((val `unsafeShiftR` bit) .&. 1)
 
     when (lineRest /= 0)
-         (do val <- line `M.unsafeRead` endLine
+         (do val <- line `M.read` endLine
              let writeIdx n = lineIndex + (pixelToRead * 8 + n) * strideWidth + beginLeft
              forM_ [0 .. lineRest - 1] $ \bit ->
-                (arr `M.unsafeWrite` writeIdx bit) ((val `unsafeShiftR` (7 - bit)) .&. 0x1))
+                (arr `M.write` writeIdx bit) ((val `unsafeShiftR` (7 - bit)) .&. 0x1))
 
 
 -- | Unpack lines when bit depth is 2
@@ -255,18 +255,18 @@ twoBitsUnpacker _ (MutableImage{ mutableImageWidth = imgWidth, mutableImageData 
         (pixelToRead, lineRest) = (lineWidth + subPadd) `divMod` 4
 
     forM_ [0 .. pixelToRead - 1] $ \pixelIndex -> do
-        val <- line `M.unsafeRead` (pixelIndex  + beginIdx)
+        val <- line `M.read` (pixelIndex  + beginIdx)
         let writeIdx n = lineIndex + (pixelIndex * 4 + n) * strideWidth + beginLeft 
-        (arr `M.unsafeWrite` writeIdx 0) $ (val `unsafeShiftR` 6) .&. 0x3
-        (arr `M.unsafeWrite` writeIdx 1) $ (val `unsafeShiftR` 4) .&. 0x3
-        (arr `M.unsafeWrite` writeIdx 2) $ (val `unsafeShiftR` 2) .&. 0x3
-        (arr `M.unsafeWrite` writeIdx 3) $ val .&. 0x3
+        (arr `M.write` writeIdx 0) $ (val `unsafeShiftR` 6) .&. 0x3
+        (arr `M.write` writeIdx 1) $ (val `unsafeShiftR` 4) .&. 0x3
+        (arr `M.write` writeIdx 2) $ (val `unsafeShiftR` 2) .&. 0x3
+        (arr `M.write` writeIdx 3) $ val .&. 0x3
 
     when (lineRest /= 0)
-         (do val <- line `M.unsafeRead` endLine
+         (do val <- line `M.read` endLine
              let writeIdx n = lineIndex + (pixelToRead * 4 + n) * strideWidth + beginLeft
              forM_ [0 .. lineRest - 1] $ \bit ->
-                (arr `M.unsafeWrite` writeIdx bit) ((val `unsafeShiftR` (6 - 2 * bit)) .&. 0x3))
+                (arr `M.write` writeIdx bit) ((val `unsafeShiftR` (6 - 2 * bit)) .&. 0x3))
 
 halfByteUnpacker :: Int -> MutableImage s Word8 -> StrideInfo -> BeginOffset -> LineUnpacker s
 halfByteUnpacker _ (MutableImage{ mutableImageWidth = imgWidth, mutableImageData = arr })
@@ -279,15 +279,15 @@ halfByteUnpacker _ (MutableImage{ mutableImageWidth = imgWidth, mutableImageData
                 | otherwise = 0
         (pixelToRead, lineRest) = (lineWidth + subPadd) `divMod` 2
     forM_ [0 .. pixelToRead - 1] $ \pixelIndex -> do
-        val <- line `M.unsafeRead` (pixelIndex  + beginIdx)
+        val <- line `M.read` (pixelIndex  + beginIdx)
         let writeIdx n = lineIndex + (pixelIndex * 2 + n) * strideWidth + beginLeft 
-        (arr `M.unsafeWrite` writeIdx 0) $ (val `unsafeShiftR` 4) .&. 0xF
-        (arr `M.unsafeWrite` writeIdx 1) $ val .&. 0xF
+        (arr `M.write` writeIdx 0) $ (val `unsafeShiftR` 4) .&. 0xF
+        (arr `M.write` writeIdx 1) $ val .&. 0xF
     
     when (lineRest /= 0)
-         (do val <- line `M.unsafeRead` endLine
+         (do val <- line `M.read` endLine
              let writeIdx = lineIndex + (pixelToRead * 2) * strideWidth + beginLeft 
-             (arr `M.unsafeWrite` writeIdx) $ (val `unsafeShiftR` 4) .&. 0xF)
+             (arr `M.write` writeIdx) $ (val `unsafeShiftR` 4) .&. 0xF)
 
 shortUnpacker :: Int -> MutableImage s Word16 -> StrideInfo -> BeginOffset -> LineUnpacker s
 shortUnpacker sampleCount (MutableImage{ mutableImageWidth = imgWidth, mutableImageData = arr })
@@ -301,11 +301,11 @@ shortUnpacker sampleCount (MutableImage{ mutableImageWidth = imgWidth, mutableIm
             destSampleIndex = destPixelIndex * sampleCount
             srcPixelIndex = pixelIndex * sampleCount * 2 + beginIdx
         forM_ [0 .. sampleCount - 1] $ \sample -> do
-            highBits <- line `M.unsafeRead` (srcPixelIndex + sample * 2 + 0)
-            lowBits <- line `M.unsafeRead` (srcPixelIndex + sample * 2 + 1)
+            highBits <- line `M.read` (srcPixelIndex + sample * 2 + 0)
+            lowBits <- line `M.read` (srcPixelIndex + sample * 2 + 1)
             let fullValue = fromIntegral lowBits .|. (fromIntegral highBits `unsafeShiftL` 8)
                 writeIdx = destSampleIndex + sample
-            (arr `M.unsafeWrite` writeIdx) fullValue
+            (arr `M.write` writeIdx) fullValue
 
 -- | Transform a scanline to a bunch of bytes. Bytes are then packed
 -- into pixels at a further step.
@@ -376,7 +376,7 @@ deinterlacer (PngIHdr { width = w, height = h, colourType  = imgKind
                             (scanlineUnpacker8 iBitDepth (fromIntegral compCount)
                                                          mutableImage)
                             str
-        Left <$> V.unsafeFreeze imgArray
+        Left <$> V.freeze imgArray
 
       else do
         imgArray <- M.new arraySize
@@ -386,7 +386,7 @@ deinterlacer (PngIHdr { width = w, height = h, colourType  = imgKind
                             (fromIntegral w, fromIntegral h)
                             (shortUnpacker (fromIntegral compCount) mutableImage)
                             str
-        Right <$> V.unsafeFreeze imgArray
+        Right <$> V.freeze imgArray
 
 generateGreyscalePalette :: Word8 -> PngPalette
 generateGreyscalePalette bits = Image (maxValue+1) 1 vec

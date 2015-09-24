@@ -108,14 +108,14 @@ genericEncode16BitsPng imgKind metas
               finalVec <- M.new $ lineSize * 2 :: ST s (M.STVector s Word8)
               let baseIndex = line * lineSize
               forM_ [0 ..  lineSize - 1] $ \ix -> do
-                  let v = arr `VS.unsafeIndex` (baseIndex + ix)
+                  let v = arr VS.! (baseIndex + ix)
                       high = fromIntegral $ (v `unsafeShiftR` 8) .&. 0xFF
                       low = fromIntegral $ v .&. 0xFF
 
-                  (finalVec `M.unsafeWrite` (ix * 2 + 0)) high
-                  (finalVec `M.unsafeWrite` (ix * 2 + 1)) low
+                  (finalVec `M.write` (ix * 2 + 0)) high
+                  (finalVec `M.write` (ix * 2 + 1)) low
 
-              VS.unsafeFreeze finalVec
+              VS.freeze finalVec
 
           imgEncodedData = Z.compress . Lb.fromChunks
                         $ concat [[zero, encodeLine line] | line <- [0 .. h - 1]]

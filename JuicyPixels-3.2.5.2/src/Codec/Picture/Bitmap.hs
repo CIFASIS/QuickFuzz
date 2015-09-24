@@ -157,7 +157,7 @@ stridePut :: M.STVector s Word8 -> Int -> Int -> ST s ()
 stridePut vec = inner
  where inner  _ 0 = return ()
        inner ix n = do
-           (vec `M.unsafeWrite` ix) 0
+           (vec `M.write` ix) 0
            inner (ix + 1) (n - 1)
 
 instance BmpEncodable Pixel8 where
@@ -176,14 +176,14 @@ instance BmpEncodable Pixel8 where
                   let lineIdx = line * w
                       inner col | col >= w = return ()
                       inner col = do
-                          let v = arr `VS.unsafeIndex` (lineIdx + col)
-                          (buff `M.unsafeWrite` col) v
+                          let v = arr VS.! (lineIdx + col)
+                          (buff `M.write` col) v
                           inner (col + 1)
 
                   inner 0
 
                   stridePut buff w stride
-                  VS.unsafeFreeze buff
+                  VS.freeze buff
 
 instance BmpEncodable PixelRGBA8 where
     bitsPerPixel _ = 32
@@ -198,20 +198,20 @@ instance BmpEncodable PixelRGBA8 where
             let initialIndex = line * w * 4
                 inner col _ _ | col >= w = return ()
                 inner col writeIdx readIdx = do
-                    let r = arr `VS.unsafeIndex` readIdx
-                        g = arr `VS.unsafeIndex` (readIdx + 1)
-                        b = arr `VS.unsafeIndex` (readIdx + 2)
-                        a = arr `VS.unsafeIndex` (readIdx + 3)
+                    let r = arr VS.! readIdx
+                        g = arr VS.! (readIdx + 1)
+                        b = arr VS.! (readIdx + 2)
+                        a = arr VS.! (readIdx + 3)
 
-                    (buff `M.unsafeWrite` writeIdx) b
-                    (buff `M.unsafeWrite` (writeIdx + 1)) g
-                    (buff `M.unsafeWrite` (writeIdx + 2)) r
-                    (buff `M.unsafeWrite` (writeIdx + 3)) a
+                    (buff `M.write` writeIdx) b
+                    (buff `M.write` (writeIdx + 1)) g
+                    (buff `M.write` (writeIdx + 2)) r
+                    (buff `M.write` (writeIdx + 3)) a
 
                     inner (col + 1) (writeIdx + 4) (readIdx + 4)
 
             inner 0 0 initialIndex
-            VS.unsafeFreeze buff
+            VS.freeze buff
 
 instance BmpEncodable PixelRGB8 where
     bitsPerPixel _ = 24
@@ -228,18 +228,18 @@ instance BmpEncodable PixelRGB8 where
               let initialIndex = line * w * 3
                   inner col _ _ | col >= w = return ()
                   inner col writeIdx readIdx = do
-                      let r = arr `VS.unsafeIndex` readIdx
-                          g = arr `VS.unsafeIndex` (readIdx + 1)
-                          b = arr `VS.unsafeIndex` (readIdx + 2)
+                      let r = arr VS.! readIdx
+                          g = arr VS.! (readIdx + 1)
+                          b = arr VS.! (readIdx + 2)
                       
-                      (buff `M.unsafeWrite` writeIdx) b
-                      (buff `M.unsafeWrite` (writeIdx + 1)) g
-                      (buff `M.unsafeWrite` (writeIdx + 2)) r
+                      (buff `M.write` writeIdx) b
+                      (buff `M.write` (writeIdx + 1)) g
+                      (buff `M.write` (writeIdx + 2)) r
 
                       inner (col + 1) (writeIdx + 3) (readIdx + 3)
 
               inner 0 0 initialIndex
-              VS.unsafeFreeze buff
+              VS.freeze buff
 
 decodeImageRGB8 :: BmpInfoHeader -> B.ByteString -> Image PixelRGB8
 decodeImageRGB8 (BmpInfoHeader { width = w, height = h }) str = Image wi hi stArray
@@ -248,7 +248,7 @@ decodeImageRGB8 (BmpInfoHeader { width = w, height = h }) str = Image wi hi stAr
         stArray = runST $ do
             arr <- M.new (fromIntegral $ w * h * 3)
             forM_ [hi - 1, hi - 2 .. 0] (readLine arr)
-            VS.unsafeFreeze arr
+            VS.freeze arr
 
         stride = linePadding 24 wi
 
@@ -260,9 +260,9 @@ decodeImageRGB8 (BmpInfoHeader { width = w, height = h }) str = Image wi hi stAr
 
                 inner _ writeIdx | writeIdx >= lastIndex = return ()
                 inner readIdx writeIdx = do
-                    (arr `M.unsafeWrite`  writeIdx     ) (str `B.index` (readIdx + 2))
-                    (arr `M.unsafeWrite` (writeIdx + 1)) (str `B.index` (readIdx + 1))
-                    (arr `M.unsafeWrite` (writeIdx + 2)) (str `B.index`  readIdx)
+                    (arr `M.write`  writeIdx     ) (str `B.index` (readIdx + 2))
+                    (arr `M.write` (writeIdx + 1)) (str `B.index` (readIdx + 1))
+                    (arr `M.write` (writeIdx + 2)) (str `B.index`  readIdx)
                     inner (readIdx + 3) (writeIdx + 3)
 
             in inner readIndex writeIndex
@@ -274,7 +274,7 @@ decodeImageY8 (BmpInfoHeader { width = w, height = h }) str = Image wi hi stArra
         stArray = runST $ do
             arr <- M.new . fromIntegral $ w * h
             forM_ [hi - 1, hi - 2 .. 0] (readLine arr)
-            VS.unsafeFreeze arr
+            VS.freeze arr
 
         stride = linePadding 8 wi
         
@@ -286,7 +286,7 @@ decodeImageY8 (BmpInfoHeader { width = w, height = h }) str = Image wi hi stArra
 
                 inner _ writeIdx | writeIdx >= lastIndex = return ()
                 inner readIdx writeIdx = do
-                    (arr `M.unsafeWrite` writeIdx) (str `B.index` readIdx)
+                    (arr `M.write` writeIdx) (str `B.index` readIdx)
                     inner (readIdx + 1) (writeIdx + 1)
 
             in inner readIndex writeIndex

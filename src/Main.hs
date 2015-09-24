@@ -15,6 +15,7 @@ import qualified Pnm
 import qualified Gzip
 import qualified Bzip
 import qualified Js
+import qualified Svg
 
 import System.Console.ArgParser
 
@@ -52,6 +53,7 @@ dispatch (MainArgs t n c a succ size) = case t of
         "Js"  -> Js.main n c a succ size
         "Png"  -> Png.main n c a succ size
         "Pnm"  -> Pnm.main n c a succ size
+        "Svg"  -> Svg.main n c a succ size
 
 main = do
     interface <- cli

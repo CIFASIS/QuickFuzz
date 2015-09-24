@@ -268,11 +268,11 @@ stride Image { imageWidth = w, imageHeight = h, imageData = array }
 
     let go writeIndex _ | writeIndex >= cell_count = return ()
         go writeIndex readIndex = do
-          (outArray `M.unsafeWrite` writeIndex) $ array `V.unsafeIndex` readIndex
+          (outArray `M.write` writeIndex) $ array V.! readIndex
           go (writeIndex + 1) $ readIndex + padd
 
     go 0 firstComponent
-    V.unsafeFreeze outArray
+    V.freeze outArray
 
 instance NFData (Image a) where
     rnf (Image width height dat) = width  `seq`
@@ -762,7 +762,7 @@ generateImage f w h = Image { imageWidth = w, imageHeight = h, imageData = gener
                             column (idx + compCount) $ x + 1
 
             lineGenerator 0 0
-            V.unsafeFreeze arr
+            V.freeze arr
 
 -- | Create an image using a monadic initializer function.
 -- The function will receive values from 0 to width-1 for the x parameter
@@ -819,7 +819,7 @@ generateFoldImage f intialAcc w h =
                     writePixel mutImage x y px
                     return acc') intialAcc [(x,y) | y <- [0 .. h-1], x <- [0 .. w-1]]
 
-            frozen <- V.unsafeFreeze arr
+            frozen <- V.freeze arr
             return (foldResult, frozen)
 
 -- | Fold over the pixel of an image with a raster scan order:
@@ -908,7 +908,7 @@ pixelMap f Image { imageWidth = w, imageHeight = h, imageData = vec } =
             -- unsafeFreeze avoids making a second copy and it will be
             -- safe because newArray can't be referenced as a mutable array
             -- outside of this where block
-            V.unsafeFreeze newArr
+            V.freeze newArr
 
 
 -- | Helpers to embed a rankNTypes inside an Applicative
@@ -929,7 +929,7 @@ writePx idx act px = GenST $ do
 freezeGenST :: Pixel px
             => Int -> Int -> GenST (PixelBaseComponent px) -> Image px
 freezeGenST w h act =
-  Image w h (runST (genAction act >>= V.unsafeFreeze))
+  Image w h (runST (genAction act >>= V.freeze))
 
 -- | Traversal in "raster" order, from left to right the top to bottom.
 -- This traversal is matching pixelMap in spirit.
@@ -1022,7 +1022,7 @@ pixelMapXY f Image { imageWidth = w, imageHeight = h, imageData = vec } =
             -- unsafeFreeze avoids making a second copy and it will be
             -- safe because newArray can't be referenced as a mutable array
             -- outside of this where block
-            V.unsafeFreeze newArr
+            V.freeze newArr
 
 -- | Combine, pixel by pixel and component by component
 -- the values of 3 different images. Usage example:
@@ -1142,11 +1142,11 @@ instance Pixel Pixel8 where
         arr `M.write` mutablePixelBaseIndex image x y
 
     {-# INLINE unsafePixelAt #-}
-    unsafePixelAt = V.unsafeIndex
+    unsafePixelAt = (V.!)
     {-# INLINE unsafeReadPixel #-}
-    unsafeReadPixel = M.unsafeRead
+    unsafeReadPixel = M.read
     {-# INLINE unsafeWritePixel #-}
-    unsafeWritePixel = M.unsafeWrite
+    unsafeWritePixel = M.write
 
 instance ColorConvertible Pixel8 PixelYA8 where
     {-# INLINE promotePixel #-}
@@ -1197,11 +1197,11 @@ instance Pixel Pixel16 where
         arr `M.write` mutablePixelBaseIndex image x y
 
     {-# INLINE unsafePixelAt #-}
-    unsafePixelAt = V.unsafeIndex
+    unsafePixelAt = (V.!)
     {-# INLINE unsafeReadPixel #-}
-    unsafeReadPixel = M.unsafeRead
+    unsafeReadPixel = M.read
     {-# INLINE unsafeWritePixel #-}
-    unsafeWritePixel = M.unsafeWrite
+    unsafeWritePixel = M.write
 
 instance ColorConvertible Pixel16 PixelYA16 where
     {-# INLINE promotePixel #-}
@@ -1245,11 +1245,11 @@ instance Pixel Pixel32 where
         arr `M.write` mutablePixelBaseIndex image x y
 
     {-# INLINE unsafePixelAt #-}
-    unsafePixelAt = V.unsafeIndex
+    unsafePixelAt = (V.!)
     {-# INLINE unsafeReadPixel #-}
-    unsafeReadPixel = M.unsafeRead
+    unsafeReadPixel = M.read
     {-# INLINE unsafeWritePixel #-}
-    unsafeWritePixel = M.unsafeWrite
+    unsafeWritePixel = M.write
 
 --------------------------------------------------
 ----            PixelF instances
@@ -1280,11 +1280,11 @@ instance Pixel PixelF where
         arr `M.write` mutablePixelBaseIndex image x y
 
     {-# INLINE unsafePixelAt #-}
-    unsafePixelAt = V.unsafeIndex
+    unsafePixelAt = (V.!)
     {-# INLINE unsafeReadPixel #-}
-    unsafeReadPixel = M.unsafeRead
+    unsafeReadPixel = M.read
     {-# INLINE unsafeWritePixel #-}
-    unsafeWritePixel = M.unsafeWrite
+    unsafeWritePixel = M.write
 
 instance ColorConvertible PixelF PixelRGBF where
     {-# INLINE promotePixel #-}
@@ -1328,13 +1328,13 @@ instance Pixel PixelYA8 where
 
     {-# INLINE unsafePixelAt #-}
     unsafePixelAt v idx =
-        PixelYA8 (V.unsafeIndex v idx) (V.unsafeIndex v $ idx + 1)
+        PixelYA8 (v V.! idx) (v V.! (idx + 1))
     {-# INLINE unsafeReadPixel #-}
     unsafeReadPixel vec idx =
-        PixelYA8 `liftM` M.unsafeRead vec idx `ap` M.unsafeRead vec (idx + 1)
+        PixelYA8 `liftM` M.read vec idx `ap` M.read vec (idx + 1)
     {-# INLINE unsafeWritePixel #-}
     unsafeWritePixel v idx (PixelYA8 y a) =
-        M.unsafeWrite v idx y >> M.unsafeWrite v (idx + 1) a
+        M.write v idx y >> M.write v (idx + 1) a
 
 instance ColorConvertible PixelYA8 PixelRGB8 where
     {-# INLINE promotePixel #-}
@@ -1402,13 +1402,13 @@ instance Pixel PixelYA16 where
 
     {-# INLINE unsafePixelAt #-}
     unsafePixelAt v idx =
-        PixelYA16 (V.unsafeIndex v idx) (V.unsafeIndex v $ idx + 1)
+        PixelYA16 (v V.! idx) (v V.! (idx + 1))
     {-# INLINE unsafeReadPixel #-}
     unsafeReadPixel vec idx =
-        PixelYA16 `liftM` M.unsafeRead vec idx `ap` M.unsafeRead vec (idx + 1)
+        PixelYA16 `liftM` M.read vec idx `ap` M.read vec (idx + 1)
     {-# INLINE unsafeWritePixel #-}
     unsafeWritePixel v idx (PixelYA16 y a) =
-        M.unsafeWrite v idx y >> M.unsafeWrite v (idx + 1) a
+        M.write v idx y >> M.write v (idx + 1) a
 
 instance ColorConvertible PixelYA16 PixelRGBA16 where
     {-# INLINE promotePixel #-}
@@ -1468,16 +1468,16 @@ instance Pixel PixelRGBF where
 
     {-# INLINE unsafePixelAt #-}
     unsafePixelAt v idx =
-        PixelRGBF (V.unsafeIndex v idx) (V.unsafeIndex v $ idx + 1) (V.unsafeIndex v $ idx + 2)
+        PixelRGBF (v V.! idx) (v V.! (idx + 1)) (v V.! (idx + 2))
     {-# INLINE unsafeReadPixel #-}
     unsafeReadPixel vec idx =
-        PixelRGBF `liftM` M.unsafeRead vec idx
-                  `ap` M.unsafeRead vec (idx + 1)
-                  `ap` M.unsafeRead vec (idx + 2)
+        PixelRGBF `liftM` M.read vec idx
+                  `ap` M.read vec (idx + 1)
+                  `ap` M.read vec (idx + 2)
     {-# INLINE unsafeWritePixel #-}
     unsafeWritePixel v idx (PixelRGBF r g b) =
-        M.unsafeWrite v idx r >> M.unsafeWrite v (idx + 1) g
-                              >> M.unsafeWrite v (idx + 2) b
+        M.write v idx r >> M.write v (idx + 1) g
+                              >> M.write v (idx + 2) b
 
 instance ColorPlane PixelRGBF PlaneRed where
     toComponentIndex _ _ = 0
@@ -1530,16 +1530,16 @@ instance Pixel PixelRGB16 where
 
     {-# INLINE unsafePixelAt #-}
     unsafePixelAt v idx =
-        PixelRGB16 (V.unsafeIndex v idx) (V.unsafeIndex v $ idx + 1) (V.unsafeIndex v $ idx + 2)
+        PixelRGB16 (v V.! idx) (v V.! (idx + 1)) (v V.! (idx + 2))
     {-# INLINE unsafeReadPixel #-}
     unsafeReadPixel vec idx =
-        PixelRGB16 `liftM` M.unsafeRead vec idx
-                   `ap` M.unsafeRead vec (idx + 1)
-                   `ap` M.unsafeRead vec (idx + 2)
+        PixelRGB16 `liftM` M.read vec idx
+                   `ap` M.read vec (idx + 1)
+                   `ap` M.read vec (idx + 2)
     {-# INLINE unsafeWritePixel #-}
     unsafeWritePixel v idx (PixelRGB16 r g b) =
-        M.unsafeWrite v idx r >> M.unsafeWrite v (idx + 1) g
-                              >> M.unsafeWrite v (idx + 2) b
+        M.unsafeWrite v idx r >> M.write v (idx + 1) g
+                              >> M.write v (idx + 2) b
 
 instance ColorPlane PixelRGB16 PlaneRed where
     toComponentIndex _ _ = 0
@@ -1605,16 +1605,16 @@ instance Pixel PixelRGB8 where
 
     {-# INLINE unsafePixelAt #-}
     unsafePixelAt v idx =
-        PixelRGB8 (V.unsafeIndex v idx) (V.unsafeIndex v $ idx + 1) (V.unsafeIndex v $ idx + 2)
+        PixelRGB8 (v V.! idx) (v V.! (idx + 1)) (v V.! (idx + 2))
     {-# INLINE unsafeReadPixel #-}
     unsafeReadPixel vec idx =
-        PixelRGB8 `liftM` M.unsafeRead vec idx
-                  `ap` M.unsafeRead vec (idx + 1)
-                  `ap` M.unsafeRead vec (idx + 2)
+        PixelRGB8 `liftM` M.read vec idx
+                  `ap` M.read vec (idx + 1)
+                  `ap` M.read vec (idx + 2)
     {-# INLINE unsafeWritePixel #-}
     unsafeWritePixel v idx (PixelRGB8 r g b) =
-        M.unsafeWrite v idx r >> M.unsafeWrite v (idx + 1) g
-                              >> M.unsafeWrite v (idx + 2) b
+        M.write v idx r >> M.write v (idx + 1) g
+                              >> M.write v (idx + 2) b
 
 instance ColorConvertible PixelRGB8 PixelRGBA8 where
     {-# INLINE promotePixel #-}
@@ -1697,23 +1697,23 @@ instance Pixel PixelRGBA8 where
 
     {-# INLINE unsafePixelAt #-}
     unsafePixelAt v idx =
-        PixelRGBA8 (V.unsafeIndex v idx)
-                   (V.unsafeIndex v $ idx + 1)
-                   (V.unsafeIndex v $ idx + 2)
-                   (V.unsafeIndex v $ idx + 3)
+        PixelRGBA8 (v V.! idx)
+                   (v V.! (idx + 1))
+                   (v V.! (idx + 2))
+                   (v V.! (idx + 3))
 
     {-# INLINE unsafeReadPixel #-}
     unsafeReadPixel vec idx =
-        PixelRGBA8 `liftM` M.unsafeRead vec idx
-                   `ap` M.unsafeRead vec (idx + 1)
-                   `ap` M.unsafeRead vec (idx + 2)
-                   `ap` M.unsafeRead vec (idx + 3)
+        PixelRGBA8 `liftM` M.read vec idx
+                   `ap` M.read vec (idx + 1)
+                   `ap` M.read vec (idx + 2)
+                   `ap` M.read vec (idx + 3)
 
     {-# INLINE unsafeWritePixel #-}
     unsafeWritePixel v idx (PixelRGBA8 r g b a) =
-        M.unsafeWrite v idx r >> M.unsafeWrite v (idx + 1) g
-                              >> M.unsafeWrite v (idx + 2) b
-                              >> M.unsafeWrite v (idx + 3) a
+        M.write v idx r >> M.write v (idx + 1) g
+                              >> M.write v (idx + 2) b
+                              >> M.write v (idx + 3) a
 
 instance ColorConvertible PixelRGBA8 PixelRGBA16 where
     {-# INLINE promotePixel #-}
@@ -1779,21 +1779,21 @@ instance Pixel PixelRGBA16 where
 
     {-# INLINE unsafePixelAt #-}
     unsafePixelAt v idx =
-        PixelRGBA16 (V.unsafeIndex v idx)
-                    (V.unsafeIndex v $ idx + 1)
-                    (V.unsafeIndex v $ idx + 2)
-                    (V.unsafeIndex v $ idx + 3)
+        PixelRGBA16 (v V.! idx)
+                    (v V.! (idx + 1))
+                    (v V.! (idx + 2))
+                    (v V.! (idx + 3))
     {-# INLINE unsafeReadPixel #-}
     unsafeReadPixel vec idx =
-        PixelRGBA16 `liftM` M.unsafeRead vec idx
-                    `ap` M.unsafeRead vec (idx + 1)
-                    `ap` M.unsafeRead vec (idx + 2)
-                    `ap` M.unsafeRead vec (idx + 3)
+        PixelRGBA16 `liftM` M.read vec idx
+                    `ap` M.read vec (idx + 1)
+                    `ap` M.read vec (idx + 2)
+                    `ap` M.read vec (idx + 3)
     {-# INLINE unsafeWritePixel #-}
     unsafeWritePixel v idx (PixelRGBA16 r g b a) =
-        M.unsafeWrite v idx r >> M.unsafeWrite v (idx + 1) g
-                              >> M.unsafeWrite v (idx + 2) b
-                              >> M.unsafeWrite v (idx + 3) a
+        M.write v idx r >> M.write v (idx + 1) g
+                              >> M.write v (idx + 2) b
+                              >> M.write v (idx + 3) a
 
 
 instance TransparentPixel PixelRGBA16 PixelRGB16 where
@@ -1854,16 +1854,16 @@ instance Pixel PixelYCbCr8 where
 
     {-# INLINE unsafePixelAt #-}
     unsafePixelAt v idx =
-        PixelYCbCr8 (V.unsafeIndex v idx) (V.unsafeIndex v $ idx + 1) (V.unsafeIndex v $ idx + 2)
+        PixelYCbCr8 (v V.! idx) (v V.! (idx + 1)) (v V.! (idx + 2))
     {-# INLINE unsafeReadPixel #-}
     unsafeReadPixel vec idx =
-        PixelYCbCr8 `liftM` M.unsafeRead vec idx
-                    `ap` M.unsafeRead vec (idx + 1)
-                    `ap` M.unsafeRead vec (idx + 2)
+        PixelYCbCr8 `liftM` M.read vec idx
+                    `ap` M.read vec (idx + 1)
+                    `ap` M.read vec (idx + 2)
     {-# INLINE unsafeWritePixel #-}
     unsafeWritePixel v idx (PixelYCbCr8 y cb cr) =
-        M.unsafeWrite v idx y >> M.unsafeWrite v (idx + 1) cb
-                              >> M.unsafeWrite v (idx + 2) cr
+        M.write v idx y >> M.write v (idx + 1) cb
+                              >> M.write v (idx + 2) cr
 
 instance (Pixel a) => ColorSpaceConvertible a a where
     convertPixel = id
@@ -1895,9 +1895,9 @@ instance ColorSpaceConvertible PixelRGB8 PixelYCbCr8 where
             gi = fromIntegral g
             bi = fromIntegral b
 
-            y  = (rYTab `V.unsafeIndex` ri + gYTab `V.unsafeIndex` gi + bYTab `V.unsafeIndex` bi) `unsafeShiftR` scaleBits
-            cb = (rCbTab `V.unsafeIndex` ri + gCbTab `V.unsafeIndex` gi + bCbTab `V.unsafeIndex` bi) `unsafeShiftR` scaleBits
-            cr = (bCbTab `V.unsafeIndex` ri + gCrTab `V.unsafeIndex` gi + bCrTab `V.unsafeIndex` bi) `unsafeShiftR` scaleBits
+            y  = (rYTab V.! ri + gYTab V.! gi + bYTab V.! bi) `unsafeShiftR` scaleBits
+            cb = (rCbTab V.! ri + gCbTab V.! gi + bCbTab V.! bi) `unsafeShiftR` scaleBits
+            cr = (bCbTab V.! ri + gCrTab V.! gi + bCrTab V.! bi) `unsafeShiftR` scaleBits
 
     convertImage Image { imageWidth = w, imageHeight = h, imageData = d } = Image w h newData
         where maxi = w * h
@@ -1915,17 +1915,17 @@ instance ColorSpaceConvertible PixelRGB8 PixelYCbCr8 where
                 block <- M.new $ maxi * 3
                 let traductor _ idx | idx >= maxi = return block
                     traductor readIdx idx = do
-                        let ri = fromIntegral $ d `V.unsafeIndex` readIdx
-                            gi = fromIntegral $ d `V.unsafeIndex` (readIdx + 1)
-                            bi = fromIntegral $ d `V.unsafeIndex` (readIdx + 2)
+                        let ri = fromIntegral $ d V.! readIdx
+                            gi = fromIntegral $ d V.! (readIdx + 1)
+                            bi = fromIntegral $ d V.! (readIdx + 2)
 
                             y  = (rY * ri + gY * gi + bY * bi + oneHalf) `unsafeShiftR` scaleBits
                             cb = (rCb * ri + gCb * gi + bCb * bi + (128 `unsafeShiftL` scaleBits) + oneHalf - 1) `unsafeShiftR` scaleBits
                             cr = (bCb * ri + (128 `unsafeShiftL` scaleBits) + oneHalf - 1+ gCr * gi + bCr * bi) `unsafeShiftR` scaleBits
 
-                        (block `M.unsafeWrite` (readIdx + 0)) $ fromIntegral y
-                        (block `M.unsafeWrite` (readIdx + 1)) $ fromIntegral cb
-                        (block `M.unsafeWrite` (readIdx + 2)) $ fromIntegral cr
+                        (block `M.write` (readIdx + 0)) $ fromIntegral y
+                        (block `M.write` (readIdx + 1)) $ fromIntegral cb
+                        (block `M.write` (readIdx + 2)) $ fromIntegral cr
                         traductor (readIdx + 3) (idx + 1)
 
                 traductor 0 0 >>= V.freeze
@@ -1944,9 +1944,9 @@ instance ColorSpaceConvertible PixelYCbCr8 PixelRGB8 where
               cbi = fromIntegral cb
               cri = fromIntegral cr
 
-              r = yi +  crRTab `V.unsafeIndex` cri
-              g = yi + (cbGTab `V.unsafeIndex` cbi + crGTab `V.unsafeIndex` cri) `unsafeShiftR` scaleBits
-              b = yi +  cbBTab `V.unsafeIndex` cbi
+              r = yi +  crRTab V.! cri
+              g = yi + (cbGTab V.! cbi + crGTab V.! cri) `unsafeShiftR` scaleBits
+              b = yi +  cbBTab V.! cbi
 
     convertImage Image { imageWidth = w, imageHeight = h, imageData = d } = Image w h newData
         where maxi = w * h
@@ -1958,17 +1958,17 @@ instance ColorSpaceConvertible PixelYCbCr8 PixelRGB8 where
                 block <- M.new $ maxi * 3
                 let traductor _ idx | idx >= maxi = return block
                     traductor readIdx idx = do
-                        let yi =  fromIntegral $ d `V.unsafeIndex` readIdx
-                            cbi = fromIntegral $ d `V.unsafeIndex` (readIdx + 1)
-                            cri = fromIntegral $ d `V.unsafeIndex` (readIdx + 2)
+                        let yi =  fromIntegral $ d V.! readIdx
+                            cbi = fromIntegral $ d V.! (readIdx + 1)
+                            cri = fromIntegral $ d V.! (readIdx + 2)
 
-                            r = yi +  crRTab `V.unsafeIndex` cri
-                            g = yi + (cbGTab `V.unsafeIndex` cbi + crGTab `V.unsafeIndex` cri) `unsafeShiftR` scaleBits
-                            b = yi +  cbBTab `V.unsafeIndex` cbi
+                            r = yi +  crRTab V.! cri
+                            g = yi + (cbGTab V.! cbi + crGTab V.! cri) `unsafeShiftR` scaleBits
+                            b = yi +  cbBTab V.! cbi
 
-                        (block `M.unsafeWrite` (readIdx + 0)) $ clampWord8 r
-                        (block `M.unsafeWrite` (readIdx + 1)) $ clampWord8 g
-                        (block `M.unsafeWrite` (readIdx + 2)) $ clampWord8 b
+                        (block `M.write` (readIdx + 0)) $ clampWord8 r
+                        (block `M.write` (readIdx + 1)) $ clampWord8 g
+                        (block `M.write` (readIdx + 2)) $ clampWord8 b
                         traductor (readIdx + 3) (idx + 1)
 
                 traductor 0 0 >>= V.freeze
@@ -2027,23 +2027,23 @@ instance Pixel PixelCMYK8 where
 
     {-# INLINE unsafePixelAt #-}
     unsafePixelAt v idx =
-        PixelCMYK8 (V.unsafeIndex v idx)
-                   (V.unsafeIndex v $ idx + 1)
-                   (V.unsafeIndex v $ idx + 2)
-                   (V.unsafeIndex v $ idx + 3)
+        PixelCMYK8 (v V.! idx)
+                   (v V.! (idx + 1))
+                   (v V.! (idx + 2))
+                   (v V.! (idx + 3))
 
     {-# INLINE unsafeReadPixel #-}
     unsafeReadPixel vec idx =
-        PixelCMYK8 `liftM` M.unsafeRead vec idx
-                   `ap` M.unsafeRead vec (idx + 1)
-                   `ap` M.unsafeRead vec (idx + 2)
-                   `ap` M.unsafeRead vec (idx + 3)
+        PixelCMYK8 `liftM` M.read vec idx
+                   `ap` M.read vec (idx + 1)
+                   `ap` M.read vec (idx + 2)
+                   `ap` M.read vec (idx + 3)
 
     {-# INLINE unsafeWritePixel #-}
     unsafeWritePixel v idx (PixelCMYK8 r g b a) =
-        M.unsafeWrite v idx r >> M.unsafeWrite v (idx + 1) g
-                              >> M.unsafeWrite v (idx + 2) b
-                              >> M.unsafeWrite v (idx + 3) a
+        M.write v idx r >> M.write v (idx + 1) g
+                              >> M.write v (idx + 2) b
+                              >> M.write v (idx + 3) a
 
 instance ColorSpaceConvertible PixelCMYK8 PixelRGB8 where
   convertPixel (PixelCMYK8 c m y k) =
@@ -2101,23 +2101,23 @@ instance Pixel PixelYCbCrK8 where
 
     {-# INLINE unsafePixelAt #-}
     unsafePixelAt v idx =
-        PixelYCbCrK8 (V.unsafeIndex v idx)
-                     (V.unsafeIndex v $ idx + 1)
-                     (V.unsafeIndex v $ idx + 2)
-                     (V.unsafeIndex v $ idx + 3)
+        PixelYCbCrK8 (v V.! idx)
+                     (v V.! (idx + 1))
+                     (v V.! (idx + 2))
+                     (v V.! (idx + 3))
 
     {-# INLINE unsafeReadPixel #-}
     unsafeReadPixel vec idx =
-      PixelYCbCrK8 `liftM` M.unsafeRead vec idx
-                   `ap` M.unsafeRead vec (idx + 1)
-                   `ap` M.unsafeRead vec (idx + 2)
-                   `ap` M.unsafeRead vec (idx + 3)
+      PixelYCbCrK8 `liftM` M.read vec idx
+                   `ap` M.read vec (idx + 1)
+                   `ap` M.read vec (idx + 2)
+                   `ap` M.read vec (idx + 3)
 
     {-# INLINE unsafeWritePixel #-}
     unsafeWritePixel v idx (PixelYCbCrK8 y cb cr k) =
-        M.unsafeWrite v idx y >> M.unsafeWrite v (idx + 1) cb
-                              >> M.unsafeWrite v (idx + 2) cr
-                              >> M.unsafeWrite v (idx + 3) k
+        M.write v idx y >> M.write v (idx + 1) cb
+                              >> M.write v (idx + 2) cr
+                              >> M.write v (idx + 3) k
 
 instance ColorSpaceConvertible PixelYCbCrK8 PixelRGB8 where
   convertPixel (PixelYCbCrK8 y cb cr _k) = PixelRGB8 (clamp r) (clamp g) (clamp b)
@@ -2238,22 +2238,22 @@ instance Pixel PixelCMYK16 where
 
     {-# INLINE unsafePixelAt #-}
     unsafePixelAt v idx =
-        PixelCMYK16 (V.unsafeIndex v idx)
-                   (V.unsafeIndex v $ idx + 1)
-                   (V.unsafeIndex v $ idx + 2)
-                   (V.unsafeIndex v $ idx + 3)
+        PixelCMYK16 (v V.! idx)
+                   (v V.! (idx + 1))
+                   (v V.! (idx + 2))
+                   (v V.! (idx + 3))
 
     {-# INLINE unsafeReadPixel #-}
     unsafeReadPixel vec idx =
-        PixelCMYK16 `liftM` M.unsafeRead vec idx
-                   `ap` M.unsafeRead vec (idx + 1)
-                   `ap` M.unsafeRead vec (idx + 2)
-                   `ap` M.unsafeRead vec (idx + 3)
+        PixelCMYK16 `liftM` M.read vec idx
+                   `ap` M.read vec (idx + 1)
+                   `ap` M.read vec (idx + 2)
+                   `ap` M.read vec (idx + 3)
     {-# INLINE unsafeWritePixel #-}
     unsafeWritePixel v idx (PixelCMYK16 r g b a) =
-        M.unsafeWrite v idx r >> M.unsafeWrite v (idx + 1) g
-                              >> M.unsafeWrite v (idx + 2) b
-                              >> M.unsafeWrite v (idx + 3) a
+        M.write v idx r >> M.write v (idx + 1) g
+                              >> M.write v (idx + 2) b
+                              >> M.write v (idx + 3) a
 
 instance ColorSpaceConvertible PixelCMYK16 PixelRGB16 where
   convertPixel (PixelCMYK16 c m y k) =
@@ -2507,7 +2507,7 @@ readPackedPixelAt :: forall m px.
                   -> m px
 {-# INLINE readPackedPixelAt #-}
 readPackedPixelAt img idx = do
-    unpacked <- M.unsafeRead converted (idx `div` compCount)
+    unpacked <- M.read converted (idx `div` compCount)
     return $ unpackPixel unpacked
     where
     !compCount = componentCount (undefined :: px)
@@ -2528,7 +2528,7 @@ writePackedPixelAt :: ( Pixel px, PackeablePixel px
                    -> m ()
 {-# INLINE writePackedPixelAt #-}
 writePackedPixelAt img idx px =
-    M.unsafeWrite converted (idx `div` compCount) packed
+    M.write converted (idx `div` compCount) packed
   where
     !packed = packPixel px
     !compCount = componentCount px

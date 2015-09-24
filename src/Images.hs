@@ -24,7 +24,7 @@ instance Arbitrary (Metadatas) where
       s <- (arbitrary :: Gen String)
       d <- (arbitrary :: Gen Double) 
       sf <- (arbitrary :: Gen SourceFormat)
-      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> dx, DpiY :=> dy, Width :=> w, Height :=> h, Title :=> s] }
+      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> dx, DpiY :=> dy, Width :=> w, Height :=> h, Title :=> ""] }
 
 instance Arbitrary (Image PixelYCbCr8) where
    arbitrary = do
@@ -64,7 +64,7 @@ instance Arbitrary (Image Pixel8) where
        l <- listOf (arbitrary :: Gen Word8)
        w <- (arbitrary :: Gen Int)
        h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.replicate 128 42}
 
 instance Show (Image Pixel8) where
    show x = ""

@@ -10,9 +10,9 @@ import Control.Monad
 import Control.Applicative
 import Data.List
 
-data Tree a = Leaf a
-            | Node (Tree a) a (Tree a)
-            deriving (Eq, Show)
+--data Tree a = Leaf a
+--            | Node (Tree a) a (Tree a)
+--            deriving (Eq, Show)
 {-
 instance Arbitrary a => Arbitrary (Tree a) where
   arbitrary = (arbitrary :: Gen Int) >>= go

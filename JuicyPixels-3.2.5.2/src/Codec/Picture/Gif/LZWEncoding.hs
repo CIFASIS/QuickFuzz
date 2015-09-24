@@ -59,7 +59,7 @@ lookupUpdate vector freeIndex firstIndex trie =
           Nothing | index == maxi -> (prevIndex, index, Nothing)
                   | otherwise -> (prevIndex, index, Just $ I.insert val newNode currentTrie)
 
-      where val = fromIntegral $ vector `V.unsafeIndex` index
+      where val = fromIntegral $ vector V.! index
             newNode = emptyNode { trieIndex = freeIndex }
 
 lzwEncode :: Int -> V.Vector Word8 -> L.ByteString

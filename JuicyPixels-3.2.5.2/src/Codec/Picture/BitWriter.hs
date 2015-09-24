@@ -208,7 +208,7 @@ flushCurrentBuffer' st = do
 
 byteStringFromVector :: M.MVector s Word8 -> Int -> ST s B.ByteString
 byteStringFromVector vec size = do
-    frozen <- VS.unsafeFreeze vec
+    frozen <- VS.freeze vec
     return $ blitVector frozen 0 size
 
 setBitCount' :: BoolWriteStateRef s -> Word8 -> Int -> ST s ()
