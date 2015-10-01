@@ -66,7 +66,6 @@ checkprop filename prog args encode x =
 
 fuzzprop filename prog args encode x = 
          noShrinking $ monadicIO $ do
-         --run $ putStrLn (show x)
          run $ (L.writeFile filename (encode x))
          size <- run $ getFileSize filename
          if size == 0 
@@ -74,14 +73,39 @@ fuzzprop filename prog args encode x =
          else (
            do 
            seed <- run (randomIO :: IO Int)
-           --ret <- run $ rawSystem "/usr/bin/file" [filename]
-           --run $ putStrLn (show x)
-           ret <- run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-r","0.0", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 1)), "-I", filename, "-S", "-T", "60", "-j", "1", prog] ++ args)
+           ret <- run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 5)), "-I", filename, "-S", "-T", "5", "-j", "5", prog] ++ args)
            case ret of
-              ExitFailure y -> (
-                                do 
-                                 run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
+              ExitFailure x -> (
+                                do
+                                 run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 5)), "-I", filename, "-S", "-T", "5", "-j", "1", prog] ++ args) 
+                                 run $ copyFile (filename) (outdir ++ "/" ++ filename ++ "."++ show seed)
                                  Test.QuickCheck.Monadic.assert True
+                )
+              _             -> Test.QuickCheck.Monadic.assert True
+           )
+
+fuzzgdbprop filename prog args encode x = 
+         noShrinking $ monadicIO $ do
+         run $ (L.writeFile filename (encode x))
+         size <- run $ getFileSize filename
+         if size == 0 
+            then Test.QuickCheck.Monadic.assert True 
+         else (
+           do 
+           seed <- run (randomIO :: IO Int)
+           run $ system $ "/usr/bin/zzuf -r 0.004:0.000001 -s" ++ (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 1)) ++ "<" ++ filename ++ " > " ++ filename ++ ".fuzzed"
+           ret <- run $ rawSystem "/usr/bin/gdb" (["-return-child-result", "-batch-silent", "--tty", "/dev/null", "-ex", "handle SIGTERM nostop", "-ex", "handle SIGCONT nostop", "-ex", "break abort", "-ex", "run", "--args", prog] ++ args)
+           case ret of
+              ExitFailure x -> (
+                                
+                                if (x /= 3 && x /= 124) then
+                                 do 
+                                   ret <- run $ rawSystem "/usr/bin/gdb" (["-batch", "-ex", "break abort", "-ex", "run", "-ex", "bt", "--args", prog] ++ args)
+
+                                   run $ copyFile (filename ++ ".fuzzed") (outdir ++ "/" ++ filename ++ "."++ show seed)
+                                   Test.QuickCheck.Monadic.assert True
+                                 else
+                                   Test.QuickCheck.Monadic.assert True
                 )
               _             -> Test.QuickCheck.Monadic.assert True
            )

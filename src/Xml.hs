@@ -9,10 +9,14 @@ import Control.Monad.Zip
 import Control.Exception
 import Data.Binary( Binary(..), encode )
 
-import Text.XML.HaXml.Types
-import Text.XML.HaXml.ByteStringPP
+--import Text.XML.HaXml.Types
+--import Text.XML.HaXml.ByteStringPP
+
+import Text.XML.Light.Output( ppcTopElement, prettyConfigPP )
+import Text.XML.Light.Types
 
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy.Char8 as LC8
 
 import Data.DeriveTH
 import DeriveArbitrary
@@ -21,7 +25,9 @@ import Vector
 import ByteString
 
 import Data.List.Split
+import Data.Char (chr)
 
+{-
 derive makeArbitrary ''Document
 derive makeArbitrary ''Misc
 derive makeArbitrary ''Element
@@ -63,11 +69,32 @@ derive makeArbitrary ''Mixed
 derive makeArbitrary ''EnumeratedType
 derive makeArbitrary ''Modifier
 derive makeArbitrary ''TokenizedType
+-}
 
-type MXml  = Document ()
+genName :: Gen String
+genName = listOf1 validChars :: Gen String
+  where validChars = chr <$> choose (97, 122)
 
-mencode :: MXml -> L.ByteString
-mencode x = document x
+instance Arbitrary String where
+   arbitrary = oneof $ map return ["a", "b", "defs"]
+   --arbitrary = genName
+
+--type MXml  = Document ()
+type MXml = Element
+
+derive makeArbitrary ''Element
+--derive makeArbitrary ''Element
+
+$(deriveArbitraryRec ''Content)
+$(deriveArbitraryRec ''Attr)
+
+
+--mencode :: MXml -> L.ByteString
+--mencode x = document x
+
+mencode :: MXml -> LC8.ByteString
+mencode x = LC8.pack $ ppcTopElement prettyConfigPP x
+
 
 main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
     (case prop of

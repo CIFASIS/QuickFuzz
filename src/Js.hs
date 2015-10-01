@@ -25,14 +25,7 @@ import ByteString
 
 import Data.List.Split
 
--- derive makeArbitrary ''JSNode
--- $(deriveArbitraryRec ''TokenPosn)
--- $(deriveArbitraryRec ''CommentAnnotation)
-
 type MJs =  JavaScript String
-
---instance Arbitrary String where
---   arbitrary = oneof $ map return ["a", "b"] 
 
 mencode :: MJs -> L.ByteString
 mencode x = L8.pack $ show $ prettyPrint x

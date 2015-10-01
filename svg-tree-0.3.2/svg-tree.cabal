@@ -33,7 +33,7 @@ Source-Repository this
 
 library
   hs-source-dirs: src
-  Ghc-options: -O3 -Wall
+  Ghc-options: -O0 -Wall
   ghc-prof-options: -rtsopts -Wall
   default-language: Haskell2010
   exposed-modules: Graphics.Svg

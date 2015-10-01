@@ -32,6 +32,8 @@ import qualified Data.Vector.Storable as VS
 
 import Data.Monoid
 import Data.List.Split
+import Data.Char (chr)
+import qualified Data.Text as T
 
 import Linear
 
@@ -71,8 +73,14 @@ instance Arbitrary (Map String Element) where
      y <- arbitrary 
      return $ singleton x y
 
---instance Arbitrary String where
---   arbitrary = oneof $ Prelude.map return ["a", "b", "c", "d"] 
+genName :: Gen String
+genName = listOf1 validChars :: Gen String
+  where validChars = chr <$> choose (97, 122)
+
+instance Arbitrary String where
+--   arbitrary = genName
+   arbitrary = oneof $ Prelude.map return ["a", "b"]--genName
+
 
 $(derive makeArbitrary ''Graphics.Svg.Types.Tree)
 $(derive makeArbitrary ''Origin)

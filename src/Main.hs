@@ -15,6 +15,7 @@ import qualified Pnm
 import qualified Gzip
 import qualified Bzip
 import qualified Js
+import qualified SimpleSvg
 import qualified Svg
 
 import System.Console.ArgParser
