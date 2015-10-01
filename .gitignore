@@ -1,5 +1,5 @@
 packages/yjsvg
-
+packages/jp
 *.swp
 dist
 cabal-dev

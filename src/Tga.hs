@@ -37,78 +37,6 @@ import ByteString
 
 import Data.List.Split
 
-
-
-{-
-
-instance Arbitrary a => Arbitrary (V.Vector a) where
-   arbitrary = do 
-     l <- listOf arbitrary
-     return $ V.fromList l
-
-instance (VU.Unbox a, Arbitrary a) => Arbitrary (VU.Vector a) where
-   arbitrary = do 
-     l <- listOf arbitrary
-     return $ VU.fromList l
-
-instance (VS.Storable a, Arbitrary a) => Arbitrary (VS.Vector a) where
-   arbitrary = do 
-     l <- listOf arbitrary
-     return $ VS.fromList l
-
-
-instance Arbitrary B.ByteString where
-   arbitrary = do 
-     l <- listOf (arbitrary :: Gen Word8)
-     return $ B.pack l
-
-instance Arbitrary L.ByteString where
-   arbitrary = do 
-     l <- listOf (arbitrary :: Gen Word8)
-     return $ L.pack l
--}
-{-
-instance Arbitrary (Metadatas) where
-  arbitrary = do
-      w <- (arbitrary :: Gen Word)
-      s <- (arbitrary :: Gen String)
-      d <- (arbitrary :: Gen Double) 
-      sf <- (arbitrary :: Gen SourceFormat)
-      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> w, DpiY :=> w, Width :=> w, Height :=> w, Title :=> s] }
-
-instance Arbitrary (Image PixelYCbCr8) where
-   arbitrary = do
-       l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelYCbCr8))
-       w <- (arbitrary :: Gen Int)
-       h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList [1] }
-
-instance Show (Image PixelYCbCr8) where
-   show x = ""
--}
-{-
-derive makeArbitrary ''ExifTag
-derive makeArbitrary ''IfdType
-derive makeArbitrary ''ExifData
-derive makeArbitrary ''JpgAdobeApp14
-derive makeArbitrary ''JFifUnit
-derive makeArbitrary ''AdobeTransform
-
-derive makeArbitrary ''JpgJFIFApp0
-derive makeArbitrary ''ImageFileDirectory
-
-derive makeArbitrary ''DctComponent
-derive makeArbitrary ''JpgQuantTableSpec
-derive makeArbitrary ''JpgHuffmanTableSpec
-derive makeArbitrary ''JpgScanSpecification
-derive makeArbitrary ''JpgScanHeader
-derive makeArbitrary ''JpgFrameKind
-derive makeArbitrary ''JpgComponent
-derive makeArbitrary ''JpgFrameHeader
-derive makeArbitrary ''JpgFrame
-derive makeArbitrary ''JpgImage
-derive makeArbitrary ''SourceFormat
--}
 derive makeShow ''TgaFile_t
 derive makeShow ''TgaImageType
 derive makeShow ''TgaImageDescription
@@ -118,9 +46,8 @@ derive makeShow ''TgaHeader
 derive makeArbitrary ''TgaFile_t
 $(deriveArbitraryRec ''TgaHeader)
 
-
 mencode :: TgaFile_t -> L.ByteString
-mencode = encode --(encode :: TgaFile -> L.ByteString) --JpgImage
+mencode = encode
 
 main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
     (case prop of
