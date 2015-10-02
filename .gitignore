@@ -1,5 +1,7 @@
 packages/yjsvg
 packages/jp
+packages/hogg
+packages/svg-tree
 *.swp
 dist
 cabal-dev
