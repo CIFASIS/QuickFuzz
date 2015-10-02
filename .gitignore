@@ -3,6 +3,7 @@ packages/jp
 packages/hogg
 packages/svg-tree
 packages/tar
+packages/language-javascript
 *.swp
 dist
 cabal-dev
