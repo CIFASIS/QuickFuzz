@@ -1,45 +1,49 @@
 <!DOCTYPE html>
 <html>
-
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Quickfuzz : An experimental grammar fuzzer in Haskell using QuickCheck">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
 
-    <title>Quickfuzz</title>
+    <title>QuickFuzz by CIFASIS</title>
   </head>
 
   <body>
+    <header>
+      <div class="inner">
+        <h1>QuickFuzz</h1>
+        <h2>An experimental grammar fuzzer in Haskell using QuickCheck</h2>
+        <a href="https://github.com/CIFASIS/QuickFuzz" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/CIFASIS/QuickFuzz">View on GitHub</a>
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <p>QuickCheck is powered by QuickCheck, Template Haskell and specific libraries from Hackage to geneate many complex file-formats like Jpeg, Png, Svg, Xml, Zip, Tar and many more!. QuickFuzz is open-source (GPL3) and you can find it <a href="https://github.com/CIFASIS/QuickFuzz">here</a></p>
 
-          <h1 id="project_title">Quickfuzz</h1>
-          <h2 id="project_tagline">An experimental grammar fuzzer in Haskell using QuickCheck</h2>
+<h3>
+<a id="bugs-lost-and-found" class="anchor" href="#bugs-lost-and-found" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Bugs (lost and) found</strong>
+</h3>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/CIFASIS/QuickFuzz/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/CIFASIS/QuickFuzz/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
-<a id="quickfuzz" class="anchor" href="#quickfuzz" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>QuickFuzz</strong>
-</h1>
-
-<h2>
-<a id="an-experimental-grammar-fuzzer-in-haskell-using-quickcheck-template-haskell-and-specific-libraries-from-hackage-that-also-finds-interesting-bugs-in-gdk-pixbuf-jasper-and-unzip" class="anchor" href="#an-experimental-grammar-fuzzer-in-haskell-using-quickcheck-template-haskell-and-specific-libraries-from-hackage-that-also-finds-interesting-bugs-in-gdk-pixbuf-jasper-and-unzip" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>An experimental grammar fuzzer in Haskell using QuickCheck, Template Haskell and specific libraries from Hackage, that also finds interesting bugs in gdk-pixbuf, jasper and unzip.</strong>
-</h2>
-
-<hr>
+<ul>
+<li>Firefox (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1210745">failed assert in gif loader</a>)</li>
+<li>Gdk-Pixbuf (<a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-88/">CVE-2015-4491</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/10">CVE-2015-7674</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/9">CVE-2015-7673</a>)</li>
+<li>Jasper (<a href="https://bugzilla.redhat.com/show_bug.cgi?id=1254242">CVE-2015-5203</a>)</li>
+<li>Unzip (<a href="http://www.openwall.com/lists/oss-security/2015/09/15/6">multiple memory issues</a>)</li>
+<li>GNU Tar (<a href="http://www.openwall.com/lists/oss-security/2015/08/31/1">out-of-bound access</a>)</li>
+<li>Optipng (<a href="http://www.openwall.com/lists/oss-security/2015/09/23/4">buffer overflow</a>, <a href="https://bugzilla.redhat.com/show_bug.cgi?id=1264015">use-after-free</a>)</li>
+<li>Libtiff (<a href="http://www.openwall.com/lists/oss-security/2015/09/21/7">CVE-2015-7313</a>)</li>
+<li>Libarchive (<a href="https://bugs.launchpad.net/ubuntu/+source/libarchive/+bug/1487020">big allocation in tar handling</a>)</li>
+</ul>
 
 <h3>
 <a id="authors" class="anchor" href="#authors" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Authors</strong>
@@ -50,47 +54,25 @@
 <li>Gustavo <strong>Grieco</strong> (<a href="http://cifasis-conicet.gov.ar/">CIFASIS-Conicet</a> and <a href="http://www-verimag.imag.fr/?lang=en">VERIMAG</a>)</li>
 <li>Martín <strong>Escarrá</strong> (<a href="http://www.unr.edu.ar/">Universidad Nacional de Rosario</a>)</li>
 </ul>
+        </section>
 
-<h3>
-<a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Requirements</strong>
-</h3>
+        <aside id="sidebar">
+          <a href="https://github.com/CIFASIS/QuickFuzz/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/CIFASIS/QuickFuzz/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
 
-<ul>
-<li>A modern version of GHC (e.g 7.10)</li>
-<li>happy</li>
-<li>zlib-dev </li>
-<li>libbz2-dev</li>
-</ul>
+          <p class="repo-owner"><a href="https://github.com/CIFASIS/QuickFuzz"></a> is maintained by <a href="https://github.com/CIFASIS">CIFASIS</a>.</p>
 
-<p>In Ubuntu, a PPA to install GHC 7.10 is available <a href="https://launchpad.net/%7Ehvr/+archive/ubuntu/ghc">here</a>.</p>
-
-<h3>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Installation</strong>
-</h3>
-
-<ol>
-<li>Install the modified version of these packages (using "caball install" in each subdirectory):
-
-<ul>
-<li>    Juicypixels (3.2.5.2)</li>
-<li>    tar (0.4.2.1)</li>
-<li>    hogg</li>
-</ul>
-</li>
-<li>Install <strong>QuickFuzz</strong> (using "cabal install" inside the root of this repository)</li>
-</ol>
-      </section>
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
     </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Quickfuzz maintained by <a href="https://github.com/CIFASIS">CIFASIS</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-    
-
+  
   </body>
 </html>
