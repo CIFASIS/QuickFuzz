@@ -19,6 +19,8 @@ In Ubuntu, a PPA to install GHC 7.10 is available [here](https://launchpad.net/~
 
 ## Instalation
 
+    $ git clone https://github.com/CIFASIS/QuickFuzz.git
+    $ cd QuickFuzz
     $ ./install.sh
 
 Additionally, you may want to use QuickFuzz more easily by appending this line to your **~/.bashrc** file:
