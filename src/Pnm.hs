@@ -2,6 +2,7 @@
 
 module Pnm where
 
+import Args
 import Test.QuickCheck
 import Check
 
@@ -12,14 +13,11 @@ import Data.Binary( Binary(..), encode )
 import Data.Word(Word8, Word16, Word32)
 
 import qualified Data.ByteString.Lazy as L
-
---import Data.DeriveTH
 import DeriveArbitrary
 
 import Data.List.Split
 
 data MPnmType  = BinaryPnm | TextPnm
---deriving show
 
 instance Show MPnmType where
    show BinaryPnm = "BPPM"
@@ -35,9 +33,11 @@ encodePnmImage (TextPnm, x, y, d) = BPPM.stringPPM (x,y) d
 mencode :: MPnmImage -> L.ByteString
 mencode = encodePnmImage
 
-main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args) = (head spl, tail spl) in
     (case prop of
-        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
-        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
-        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+        "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
+        "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
+        _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd

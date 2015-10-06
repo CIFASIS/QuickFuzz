@@ -2,12 +2,12 @@
 
 module SimpleSvg where
 
+import Args
 import Test.QuickCheck
 import Check
 
 import Data.Binary( Binary(..), encode )
 
---import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as LC8
 import qualified Data.ByteString.Char8 as C8
 import Data.DeriveTH
@@ -19,10 +19,9 @@ import Vector
 import Text.XML.Light.Input( parseXMLDoc )
 import Text.XML.Light.Output( ppcTopElement, prettyConfigPP )
 
-
-import qualified Data.Vector as V
-import qualified Data.Vector.Unboxed as VU
-import qualified Data.Vector.Storable as VS
+--import qualified Data.Vector as V
+--import qualified Data.Vector.Unboxed as VU
+--import qualified Data.Vector.Storable as VS
 
 import Data.Monoid
 import Data.List.Split
@@ -41,7 +40,7 @@ genName = listOf1 validChars :: Gen String
   where validChars = chr <$> choose (97, 122)
 
 instance Arbitrary String where
-   arbitrary = oneof $ map return ["a", "b"]--genName
+   arbitrary = genName
 
 instance Arbitrary Color where
    arbitrary = do 
@@ -64,10 +63,11 @@ encodeMSvgFile (x,y,d) = LC8.pack $  showSVG x y d
 mencode :: MSvgFile -> LC8.ByteString
 mencode = encodeMSvgFile
 
-main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args) = (head spl, tail spl) in
     (case prop of
-        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
-        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
-        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+        "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
+        "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
+        _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
-

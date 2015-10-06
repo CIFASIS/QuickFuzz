@@ -2,14 +2,10 @@
 
 module Js where
 
+import Args
 import Test.QuickCheck
 import Check
 
-import Control.Monad.Zip
-import Control.Exception
-import Data.Binary( Binary(..), encode )
-
---import Text.PrettyPrint.HughesPJ
 import Text.PrettyPrint.Leijen
 import Language.ECMAScript3.PrettyPrint
 import Language.ECMAScript3.Syntax
@@ -17,11 +13,6 @@ import Language.ECMAScript3.Syntax.Arbitrary
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
-import Data.DeriveTH
-import DeriveArbitrary
-
-import Vector
-import ByteString
 
 import Data.List.Split
 
@@ -30,9 +21,12 @@ type MJs =  JavaScript String
 mencode :: MJs -> L.ByteString
 mencode x = L8.pack $ show $ prettyPrint x
 
-main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args) = (head spl, tail spl) in
     (case prop of
-        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
-        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
-        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+        "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
+        "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
+        _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
+

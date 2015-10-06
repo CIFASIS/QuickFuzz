@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances#-}
 
 module Png where
-
+import Args
 import Test.QuickCheck
 import Check
 
@@ -13,8 +13,8 @@ import Codec.Picture.Metadata
 
 import qualified Data.ByteString.Lazy as L
 
-import GHC.Types
-import GHC.Word
+--import GHC.Types
+--import GHC.Word
 
 import Vector
 import Images
@@ -23,9 +23,9 @@ import DeriveArbitrary
 
 import Data.List.Split
 
-fromRight  :: Either a b -> b
-fromRight (Right x)  = x
-fromRight (Left x) = error "abc"
+--fromRight  :: Either a b -> b
+--fromRight (Right x)  = x
+--fromRight (Left x) = error "abc"
 
 $(deriveArbitraryRec ''PngImageType)
 
@@ -37,9 +37,11 @@ encodePngImage (a,b,c,d) = (genericEncodePng a b c d) --(encodePalettedPngWithMe
 mencode :: MPngImage -> L.ByteString
 mencode = encodePngImage
 
-main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args) = (head spl, tail spl) in
     (case prop of
-        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
-        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
-        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+        "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
+        "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
+        _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd

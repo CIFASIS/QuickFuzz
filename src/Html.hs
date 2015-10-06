@@ -2,12 +2,13 @@
 
 module Html where
 
+import Args
 import Test.QuickCheck
 import Check
 
-import Control.Monad.Zip
-import Control.Exception
-import Data.Binary( Binary(..), encode )
+--import Control.Monad.Zip
+--import Control.Exception
+--import Data.Binary( Binary(..), encode )
 
 import Text.XML.HaXml.Types
 --import Text.XML.HaXml.ByteStringPP
@@ -68,15 +69,17 @@ derive makeArbitrary ''TokenizedType
 
 type MHtml =  [Content ()]
 
-instance Arbitrary String where
-   arbitrary = oneof $ map return ["a", "b", "href"] 
+--instance Arbitrary String where
+--   arbitrary = oneof $ map return ["a", "b", "href"] 
 
 mencode :: MHtml -> L8.ByteString
 mencode x = L8.pack $ render $ htmlprint x
 
-main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args) = (head spl, tail spl) in
     (case prop of
-        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
-        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
-        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+        "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
+        "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
+        _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
