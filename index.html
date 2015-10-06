@@ -28,15 +28,15 @@
     <div id="content-wrapper">
       <div class="inner clearfix">
         <section id="main-content">
-          <p>QuickFuzz is powered by QuickCheck, Template Haskell and specific libraries from Hackage to generate many complex file-formats like Jpeg, Png, Svg, Xml, Zip, Tar and many more!. QuickFuzz is open-source (GPL3) and you can find it <a href="https://github.com/CIFASIS/QuickFuzz">here</a></p>
+          <p>QuickFuzz is grammar fuzzer powered by QuickCheck, Template Haskell and specific libraries from Hackage to generate many complex file-formats like Jpeg, Png, Svg, Xml, Zip, Tar and many more!. QuickFuzz is open-source (GPL3) and you can find it <a href="https://github.com/CIFASIS/QuickFuzz">here</a></p>
 
 <h3>
 <a id="bugs-lost-and-found" class="anchor" href="#bugs-lost-and-found" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Bugs (lost and) found</strong>
 </h3>
 
 <ul>
-<li>Firefox (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1210745">failed assert in gif loader</a>)</li>
-<li>Gdk-Pixbuf (<a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-88/">CVE-2015-4491</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/10">CVE-2015-7674</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/9">CVE-2015-7673</a>)</li>
+<li>Firefox (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1210745">failed assert in gif loader</a>, undisclosed)</li>
+<li>Gdk-Pixbuf (<a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-88/">CVE-2015-4491</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/10">CVE-2015-7674</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/9">CVE-2015-7673</a>, undisclosed)</li>
 <li>Jasper (<a href="https://bugzilla.redhat.com/show_bug.cgi?id=1254242">CVE-2015-5203</a>)</li>
 <li>Unzip (<a href="http://www.openwall.com/lists/oss-security/2015/09/15/6">multiple memory issues</a>)</li>
 <li>GNU Tar (<a href="http://www.openwall.com/lists/oss-security/2015/08/31/1">out-of-bound access</a>)</li>
@@ -44,6 +44,19 @@
 <li>Libtiff (<a href="http://www.openwall.com/lists/oss-security/2015/09/21/7">CVE-2015-7313</a>)</li>
 <li>Libarchive (<a href="https://bugs.launchpad.net/ubuntu/+source/libarchive/+bug/1487020">big allocation in tar handling</a>)</li>
 </ul>
+
+<h2>
+<a id="quick-introduction-to-quickfuzz" class="anchor" href="#quick-introduction-to-quickfuzz" aria-hidden="true"><span class="octicon octicon-link"></span></a>Quick introduction to QuickFuzz</h2>
+
+<p>Let's generate, fuzz and test for crashes giftopnm 10 times with a maximum structural size of 10:</p>
+
+<pre><code>$ QuickFuzz Gif c.gif "/usr/bin/giftopnm c.gif" -a zzuf -t 10 -s 300
+zzuf[s=1806,r=0.004:1e-06]: signal 11 (SIGSEGV)
+zzuf[s=1807,r=0.004:1e-06]: signal 11 (SIGSEGV)
++++ OK, passed 10 tests.
+</code></pre>
+
+<p>Two crashes are found (actually, they are produced by the same bug).</p>
 
 <h3>
 <a id="authors" class="anchor" href="#authors" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Authors</strong>
