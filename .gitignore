@@ -1,9 +1,4 @@
-packages/yjsvg
-packages/jp
-packages/hogg
-packages/svg-tree
-packages/tar
-packages/language-javascript
+packages
 *.swp
 dist
 cabal-dev
