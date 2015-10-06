@@ -1,7 +1,7 @@
 _PKG="yjsvg_haskell Juicy.Pixels svg-tree hogg tar language-javascript"
 _PKG_DIR="packages"
 
-# IMPORTANT ##########################
+# RECOMMENDED ########################
 # Add this line to your ~/.bashrc file
 export PATH=$HOME/.cabal/bin:$PATH
 ######################################
