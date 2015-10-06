@@ -1,7 +1,11 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
 module ByteString where
 
+import Args
 import Test.QuickCheck
+import Check
+import Data.List.Split
+
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as B
 
@@ -20,3 +24,14 @@ instance Arbitrary L.ByteString where
 
 instance CoArbitrary L.ByteString where
    coarbitrary x = coarbitrary $ L.unpack x
+
+bencode = id
+
+main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args) = (head spl, tail spl) in
+    (case prop of
+        "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args bencode outdir)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args bencode outdir)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args bencode outdir)
+        "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args bencode outdir)
+        _     -> error "Invalid action selected"
+    ) where spl = splitOn " " cmd

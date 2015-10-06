@@ -2,15 +2,14 @@
 
 module Bzip where
 
+import Args
 import Test.QuickCheck
 import Check
 
-
---import Codec.Compression.GZip
 import Codec.Compression.BZip.Internal
 
-import Data.Binary( Binary(..), encode )
-import Data.Word(Word8, Word16, Word32)
+--import Data.Binary( Binary(..), encode )
+--import Data.Word(Word8, Word16, Word32)
 
 import qualified Data.ByteString.Lazy as L
 import Data.List.Split
@@ -30,13 +29,11 @@ derive makeShow ''BlockSize
 mencode :: MBzipFile -> L.ByteString
 mencode (p,bs) = compress p bs
 
-main filename cmd prop maxSuccess maxSize = let (prog, args) = (head spl, tail spl) in
+main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args) = (head spl, tail spl) in
     (case prop of
-        "fuzz" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ fuzzprop filename prog args mencode)
-        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode)
-        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode)
+        "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
+        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
+        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
+        "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
+        _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
-
---main = quickCheckWith stdArgs { maxSuccess = 120, maxSize = 50 } (absprop "buggy_qc.jp2" "" [] mencode)
---main = quickCheckWith stdArgs { maxSuccess = 200000, maxSize = 100 } (noShrinking $ fuzzprop "buggy_qc.gz" "/bin/gzip" ["-d", "--to-stdout", "buggy_qc.gz"] mencode)
-
