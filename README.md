@@ -1,7 +1,7 @@
 # QuickFuzz
 
 An experimental grammar fuzzer in Haskell using QuickCheck, Template Haskell and specific libraries from Hackage.
-It found interesting bugs in gdk-pixbuf, jasper and unzip.
+It found [some interesting bugs](http://QuickFuzz.org/).
 
 ## Authors
 
@@ -19,9 +19,8 @@ In Ubuntu, a PPA to install GHC 7.10 is available [here](https://launchpad.net/~
 
 ## Instalation
 
-    ./install.sh
+    $ ./install.sh
 
-  * Additionally, you may want to suscribe QuickFuzz to your _PATH_ variable by adding this line to
-  your **~/.bashrc** file:
+Additionally, you may want to use QuickFuzz more easily by appending this line to your **~/.bashrc** file:
 
     export PATH=$HOME/.cabal/bin:$PATH
