@@ -64,11 +64,11 @@ zzufprop filename prog args encode outdir x =
          else (
            do 
            seed <- run (randomIO :: IO Int)
-           ret <- run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-q", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 5)), "-I", filename, "-S", "-T", "5", "-j", "5", prog] ++ args)
+           ret <- run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-q", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024)), "-I", filename, "-S", "-T", "60", "-j", "1", prog] ++ args)
            case ret of
               ExitFailure x -> (
                                 do
-                                 --run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 5)), "-I", filename, "-S", "-T", "5", "-j", "1", prog] ++ args) 
+                                 --run $ system $ "/usr/bin/zzuf -r  0.004:0.000001 -s" ++ (show (seed `mod` 10024))++":"++(show (seed `mod` 10024)) ++ "<" ++ filename ++ " > " ++ filename ++ ".fuzzed"
                                  run $ copyFile (filename) (outdir ++ "/" ++ filename ++ "."++ show seed)
                                  Test.QuickCheck.Monadic.assert True
                 )
@@ -86,7 +86,7 @@ execprop filename prog args encode outdir x =
            seed <- run (randomIO :: IO Int)
            --run $ system $ "/usr/bin/zzuf -r 0.004:0.000001 -s" ++ (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 1)) ++ "<" ++ filename ++ " > " ++ filename ++ ".fuzzed"
            ret <- run $ rawSystem prog args
-           run $ putStrLn (show ret)
+           --run $ putStrLn (show ret)
            case ret of
               ExitFailure x -> (
                                 
