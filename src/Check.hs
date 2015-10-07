@@ -57,6 +57,7 @@ checkprop filename prog args encode outdir x =
 
 zzufprop filename prog args encode outdir x = 
          noShrinking $ monadicIO $ do
+         run $ createDirectoryIfMissing False outdir
          run $ Control.Exception.catch (L.writeFile filename (encode x)) handler
          size <- run $ getFileSize filename
          if size == 0 
@@ -64,7 +65,7 @@ zzufprop filename prog args encode outdir x =
          else (
            do 
            seed <- run (randomIO :: IO Int)
-           ret <- run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-q", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024)), "-I", filename, "-S", "-T", "60", "-j", "1", prog] ++ args)
+           ret <- run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-q", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024+5)), "-I", filename, "-S", "-T", "60", "-j", "1", prog] ++ args)
            case ret of
               ExitFailure x -> (
                                 do
