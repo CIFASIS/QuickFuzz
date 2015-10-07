@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
+{-# OPTIONS_GHC -threaded -rtsopts #-}
 
 module Gif where
 
@@ -16,6 +17,8 @@ import Codec.Picture.Types
 import Vector
 import ByteString
 import Images
+
+import Parallel
 
 import qualified Data.ByteString.Lazy as L
 import Data.DeriveTH
@@ -53,11 +56,24 @@ encodeMGifImage (a, b) = fromRight $ encodeGifImages a b--encodeGifImageWithPale
 mencode :: MGifImage -> L.ByteString
 mencode = encodeMGifImage
 
-main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args) = (head spl, tail spl) in
-    (case prop of
-        "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
-        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
-        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
-        "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
+process :: FilePath -> String -> String -> Int -> Int -> FilePath -> IO ()
+process filename cmd prop maxSuccess maxSize outdir =
+    let (prog, args) = (head spl, tail spl)
+    in (case prop of
+        "zzuf" ->
+            quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize }
+            (noShrinking $ zzufprop filename prog args mencode outdir)
+        "check" ->
+            quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize }
+            (noShrinking $ checkprop filename prog args mencode outdir)
+        "gen" ->
+            quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize }
+            (noShrinking $ genprop filename prog args mencode outdir)
+        "exec" ->
+            quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize }
+            (noShrinking $ execprop filename prog args mencode outdir)
         _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
+
+
+main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = processIN 10 filename cmd prop maxSuccess maxSize outdir process

@@ -21,6 +21,8 @@ import qualified Data.Vector.Storable as VS
 import Vector
 import ByteString
 
+import Parallel
+
 import Data.List.Split
 
 $(deriveArbitraryRec ''Archive)
@@ -28,11 +30,15 @@ $(deriveArbitraryRec ''Archive)
 mencode :: Archive -> L.ByteString
 mencode = encode
 
-main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args) = (head spl, tail spl) in
-    (case prop of
-        "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
-        "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
-        "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
-        "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
-        _     -> error "Invalid action selected"
-    ) where spl = splitOn " " cmd
+process filename cmd prop maxSuccess maxSize outdir =
+    let (prog, args) = (head spl, tail spl) in
+        (case prop of
+            "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
+            "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
+            "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
+            "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
+            _     -> error "Invalid action selected"
+        ) where spl = splitOn " " cmd
+    
+
+main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = processIN 1 filename cmd prop maxSuccess maxSize outdir process
