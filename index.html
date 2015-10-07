@@ -48,7 +48,7 @@
 <h2>
 <a id="quick-introduction-to-quickfuzz" class="anchor" href="#quick-introduction-to-quickfuzz" aria-hidden="true"><span class="octicon octicon-link"></span></a>Quick introduction to QuickFuzz</h2>
 
-<p>Let's generate, fuzz and test for crashes giftopnm 10 times with a maximum structural size of 10:</p>
+<p>Let's generate, fuzz and test for crashes giftopnm 10 times with a maximum structural size of 300:</p>
 
 <pre><code>$ QuickFuzz Gif c.gif "/usr/bin/giftopnm c.gif" -a zzuf -t 10 -s 300
 zzuf[s=1806,r=0.004:1e-06]: signal 11 (SIGSEGV)
@@ -56,7 +56,7 @@ zzuf[s=1807,r=0.004:1e-06]: signal 11 (SIGSEGV)
 +++ OK, passed 10 tests.
 </code></pre>
 
-<p>Two crashes are found (actually, they are produced by the same bug).</p>
+<p>In this case, two crashes were found (actually, they are produced by the same bug).</p>
 
 <h3>
 <a id="authors" class="anchor" href="#authors" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Authors</strong>
