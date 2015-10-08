@@ -17,6 +17,7 @@ import qualified Bzip
 import qualified Js
 import qualified SimpleSvg
 --import qualified Svg
+import qualified Dot
 import qualified ByteString
 
 import System.Console.ArgParser 
@@ -26,6 +27,7 @@ dispatch :: MainArgs -> IO ()
 dispatch args = case (findFileType args) of
 
         "Bmp"  -> Bmp.main args
+        "Dot"  -> Dot.main args
         "Gif"  -> Gif.main args
         "Ogg"  -> Ogg.main args
         "Zip"  -> Zip.main args        

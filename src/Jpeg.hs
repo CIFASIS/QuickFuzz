@@ -31,12 +31,12 @@ import Images
 import GHC.Types
 import GHC.Word
 
-import qualified Data.Vector as V
-import qualified Data.Vector.Unboxed as VU
-import qualified Data.Vector.Storable as VS
+--import qualified Data.Vector as V
+--import qualified Data.Vector.Unboxed as VU
+--import qualified Data.Vector.Storable as VS
 
-import System.Process
-import System.Exit
+--import System.Process
+--import System.Exit
 
 import Data.List.Split
 

@@ -23,6 +23,7 @@ import DeriveArbitrary
 import Vector
 import ByteString
 
+import Data.Char (chr)
 import Data.List.Split
 
 derive makeArbitrary ''Document
@@ -68,6 +69,13 @@ derive makeArbitrary ''Modifier
 derive makeArbitrary ''TokenizedType
 
 type MHtml =  [Content ()]
+
+genName :: Gen String
+genName = listOf1 validChars :: Gen String
+  where validChars = chr <$> choose (97, 122)
+
+instance Arbitrary String where
+   arbitrary = genName
 
 --instance Arbitrary String where
 --   arbitrary = oneof $ map return ["a", "b", "href"] 
