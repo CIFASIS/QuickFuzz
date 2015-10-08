@@ -76,6 +76,34 @@ zzufprop filename prog args encode outdir x =
               _             -> Test.QuickCheck.Monadic.assert True
            )
 
+
+
+radamprop filename prog args encode outdir x = 
+         noShrinking $ monadicIO $ do
+         run $  Control.Exception.catch (L.writeFile filename (encode x)) handler
+         size <- run $ getFileSize filename
+         if size == 0 
+            then Test.QuickCheck.Monadic.assert True 
+         else (
+           do 
+           seed <- run (randomIO :: IO Int)
+           run $ system $ "radamsa" ++ "<" ++ filename ++ " > " ++ filename ++ ".fuzzed"
+           ret <- run $ rawSystem prog args
+           run $ putStrLn (show ret)
+           case ret of
+              ExitFailure x -> (
+                                
+                                if (x < 0 || x > 128) then
+                                 do 
+                                   run $ copyFile (filename ++ ".fuzzed") (outdir ++ "/" ++ filename ++ "."++ show seed)
+                                   Test.QuickCheck.Monadic.assert True
+                                 else
+                                   Test.QuickCheck.Monadic.assert True
+                )
+              _             -> Test.QuickCheck.Monadic.assert True
+           )
+
+
 execprop filename prog args encode outdir x = 
          noShrinking $ monadicIO $ do
          run $  Control.Exception.catch (L.writeFile filename (encode x)) handler
@@ -91,7 +119,7 @@ execprop filename prog args encode outdir x =
            case ret of
               ExitFailure x -> (
                                 
-                                if (x > 128) then
+                                if (x < 0 || x > 128) then
                                  do 
                                    run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
                                    Test.QuickCheck.Monadic.assert True
