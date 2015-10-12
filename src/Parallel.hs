@@ -2,9 +2,18 @@ module Parallel where
 
 import Control.Concurrent.ParallelIO
 
--- No muy inteligente, pero empecemos a jugar un poco con la herramienta
+import GHC.Conc -- Forcing parallelism
 
-processIN :: Int -> FilePath -> String -> String -> Int -> Int -> FilePath -> (FilePath -> String -> String -> Int -> Int -> FilePath -> IO ()) -> IO ()
-processIN i name cmd prop maxSuccess maxSize outdir process = do
-    let names = map (\id -> show id ++ name) [1..i] 
-    parallel_ (map (\x -> process x (cmd++(' ' : x)) prop maxSuccess maxSize outdir) names)
+-- import Debug.Trace
+
+processIN :: FilePath -> String -> String -> Int -> Int -> FilePath -> (FilePath -> String -> String -> Int -> Int -> FilePath -> IO ()) -> IO ()
+processIN name cmd prop maxSuccess maxSize outdir process = do
+    p <- getNumProcessors
+    cap <- getNumCapabilities
+    let i = p -1 -- Leave a proc free
+    -- setNumCapabilities p  -- Forces to use p workers. i.e. -Nx not needed
+    putStrLn $ "Procs : " ++ show p
+    putStrLn $ "Capabilities: " ++ show cap
+    let total = div maxSuccess i
+    let names = map (\id -> show id ++ name) [1..p] 
+    parallel_ (map (\x -> process x (cmd++(' ' : x)) prop total maxSize outdir) names)
