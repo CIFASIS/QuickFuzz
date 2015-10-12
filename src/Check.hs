@@ -4,8 +4,10 @@ import Test.QuickCheck
 import Test.QuickCheck.Monadic (assert, monadicIO, run)
 
 import Control.Exception
+import Control.Monad
 
 import qualified Data.ByteString.Lazy as L
+import Data.Maybe
 
 import System.Random
 import System.Process
@@ -24,7 +26,7 @@ handler x = return ()
 genprop filename prog args encode outdir x = 
          monadicIO $ do
          seed <- run (randomIO :: IO Int)
-         sfilename <- run $ return (outdir ++ "/" ++ filename ++ "." ++ (show seed))
+         sfilename <- run $ return (outdir ++ "/" ++ filename ++ "." ++ show seed)
          run $ Control.Exception.catch (L.writeFile sfilename (encode x)) handler
          size <- run $ getFileSize sfilename
          if size == 0 
@@ -42,40 +44,41 @@ checkprop filename prog args encode outdir x =
             then Test.QuickCheck.Monadic.assert True 
          else (
            do 
-           seed <- run (randomIO :: IO Int)
-           ret <- run $ rawSystem "/usr/bin/valgrind" (["--log-file=vreport.out", "--quiet", prog] ++ args)
-           size <- run $ getFileSize "vreport.out"
-           if size > 0 
-              then ( 
-                  do 
-                    run $ copyFile "vreport.out" (outdir ++ "/" ++ "vreport.out."++ show seed)
-                    run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
-                    Test.QuickCheck.Monadic.assert True
-                  )
-              else Test.QuickCheck.Monadic.assert True
-           )
+               let varepname = filename ++ "vreport.out"
+               seed <- run (randomIO :: IO Int)
+               ret <- run $ rawSystem "/usr/bin/valgrind" (["--log-file="++ varepname ++ ", --quiet", prog] ++ args)
+               size <- run $ getFileSize varepname --"vreport.out"
+               if size > 0 
+                  then ( 
+                      do 
+                        run $ copyFile varepname (outdir ++ "/" ++ "vreport.out."++ show seed)
+                        -- run $ copyFile "vreport.out" (outdir ++ "/" ++ "vreport.out."++ show seed)
+                        run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
+                        Test.QuickCheck.Monadic.assert True
+                      )
+                  else Test.QuickCheck.Monadic.assert True
+               )
 
+zzufprop :: FilePath -> FilePath -> [String] -> (t -> L.ByteString) -> FilePath -> t -> Property
 zzufprop filename prog args encode outdir x = 
-         noShrinking $ monadicIO $ do
-         run $ createDirectoryIfMissing False outdir
-         run $ Control.Exception.catch (L.writeFile filename (encode x)) handler
-         size <- run $ getFileSize filename
-         if size == 0 
-            then Test.QuickCheck.Monadic.assert True 
-         else (
-           do 
-           seed <- run (randomIO :: IO Int)
-           ret <- run $ rawSystem "/usr/bin/zzuf" (["-M", "-1", "-q", "-r","0.004:0.000001", "-s", (show (seed `mod` 10024))++":"++(show (seed `mod` 10024+5)), "-I", filename, "-S", "-T", "60", "-j", "1", prog] ++ args)
-           case ret of
-              ExitFailure x -> (
-                                do
-                                 --run $ system $ "/usr/bin/zzuf -r  0.004:0.000001 -s" ++ (show (seed `mod` 10024))++":"++(show (seed `mod` 10024)) ++ "<" ++ filename ++ " > " ++ filename ++ ".fuzzed"
-                                 run $ copyFile (filename) (outdir ++ "/" ++ filename ++ "."++ show seed)
-                                 Test.QuickCheck.Monadic.assert True
-                )
+            noShrinking $ monadicIO $ do
+            run $ createDirectoryIfMissing False outdir
+            run $ Control.Exception.catch (L.writeFile filename (encode x)) handler
+            size <- run $ getFileSize filename
+            exezzuf <- run $ findExecutable "zzuf"
+            exeprog <- run $ findExecutable prog
+            unless (isJust exezzuf) $ Test.QuickCheck.Monadic.assert False -- zzuf is not present in the system. Error sys?
+            unless (isJust exeprog) $ Test.QuickCheck.Monadic.assert False -- prog is not present in the system
+            unless (size > 0) $ Test.QuickCheck.Monadic.assert True
+            let pzzuf = fromJust exezzuf
+            let exprog = fromJust exeprog
+            seed <- run (randomIO :: IO Int)
+            ret <- run $ rawSystem pzzuf (["-M", "-1", "-q", "-r","0.004:0.000001", "-s", show (seed `mod` 10024)++":"++show (seed `mod` 10024+5), "-I", filename, "-S", "-T", "60", "-j", "1", exprog] ++ args)
+            case ret of
+              ExitFailure x ->do
+                             run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
+                             Test.QuickCheck.Monadic.assert True
               _             -> Test.QuickCheck.Monadic.assert True
-           )
-
 
 
 radamprop filename prog args encode outdir x = 
