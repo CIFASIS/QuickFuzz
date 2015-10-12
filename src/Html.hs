@@ -23,6 +23,7 @@ import DeriveArbitrary
 import Vector
 import ByteString
 
+import Data.Char (chr)
 import Data.List.Split
 
 derive makeArbitrary ''Document
@@ -69,6 +70,13 @@ derive makeArbitrary ''TokenizedType
 
 type MHtml =  [Content ()]
 
+genName :: Gen String
+genName = listOf1 validChars :: Gen String
+  where validChars = chr <$> choose (97, 122)
+
+instance Arbitrary String where
+   arbitrary = genName
+
 --instance Arbitrary String where
 --   arbitrary = oneof $ map return ["a", "b", "href"] 
 
@@ -78,6 +86,7 @@ mencode x = L8.pack $ render $ htmlprint x
 main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args) = (head spl, tail spl) in
     (case prop of
         "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
+        "radamsa" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ radamprop filename prog args mencode outdir)
         "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
         "gen" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
         "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)

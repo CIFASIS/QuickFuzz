@@ -1,39 +1,27 @@
-{-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
+{-# LANGUAGE TemplateHaskell, FlexibleInstances#-}
 
-module SimpleSvg where
+module Dot where
 
 import Args
 import Test.QuickCheck
 import Check
 
 import Data.Binary( Binary(..), encode )
-
-import qualified Data.ByteString.Lazy.Char8 as LC8
-import qualified Data.ByteString.Char8 as C8
 import Data.DeriveTH
 
 import DeriveArbitrary
 import ByteString
 import Vector
+import Images
 
-import Text.XML.Light.Input( parseXMLDoc )
-import Text.XML.Light.Output( ppcTopElement, prettyConfigPP )
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy.Char8 as L8
 
---import qualified Data.Vector as V
---import qualified Data.Vector.Unboxed as VU
---import qualified Data.Vector.Storable as VS
+import Language.Dot.Syntax
+import Language.Dot.Pretty
 
-import Data.Monoid
-import Data.List.Split
 import Data.Char (chr)
-import qualified Data.Text as T
-
-import Linear
-
-import Text.XML.YJSVG
-
-
-type MSvgFile  = (Double, Double, [(String, SVG)])
+import Data.List.Split
 
 genName :: Gen String
 genName = listOf1 validChars :: Gen String
@@ -42,26 +30,36 @@ genName = listOf1 validChars :: Gen String
 instance Arbitrary String where
    arbitrary = genName
 
-instance Arbitrary Color where
-   arbitrary = do 
-     r <- arbitrary
-     g <- arbitrary
-     b <- arbitrary
-     return $ RGB r g b
+derive makeArbitrary ''Graph
+derive makeArbitrary ''Statement
+derive makeArbitrary ''Subgraph
+derive makeArbitrary ''Id
+derive makeArbitrary ''NodeId
+derive makeArbitrary ''GraphDirectedness
+derive makeArbitrary ''AttributeStatementType
+derive makeArbitrary ''Xml
+derive makeArbitrary ''Entity
+derive makeArbitrary ''GraphStrictness
+derive makeArbitrary ''XmlAttribute
 
+derive makeArbitrary ''XmlAttributeValue
+derive makeArbitrary ''XmlName
+derive makeArbitrary ''EdgeType
+derive makeArbitrary ''Attribute
+derive makeArbitrary ''Port
+derive makeArbitrary ''Compass
 
--- $(derive makeArbitrary ''MSvgFile)
-derive makeArbitrary ''SVG
-$(deriveArbitraryRec ''Transform)
-$(deriveArbitraryRec ''Position)
-$(deriveArbitraryRec ''Font)
+--instance Arbitrary Id where
+--    arbitrary = do
+--      s <- (arbitrary :: Gen String)
+--      i <- (arbitrary :: Gen Integer)
+--      x <- (arbitrary :: Gen Xml)
+--      oneof $ map return ([NameId s, StringId s, IntegerId i, FloatId 1.0, XmlId x])
 
--- $(derive makeArbitrary ''Transform)
+-- $(deriveArbitraryRec ''Graph)
 
-encodeMSvgFile (x,y,d) = LC8.pack $  showSVG x y d
-
-mencode :: MSvgFile -> LC8.ByteString
-mencode = encodeMSvgFile
+mencode :: Graph -> L8.ByteString
+mencode = L8.pack . renderDot 
 
 main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args) = (head spl, tail spl) in
     (case prop of
@@ -72,3 +70,4 @@ main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args)
         "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
         _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
+
