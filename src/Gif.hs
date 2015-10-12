@@ -63,6 +63,9 @@ process filename cmd prop maxSuccess maxSize outdir =
         "zzuf" ->
             quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize }
             (noShrinking $ zzufprop filename prog args mencode outdir)
+        "radamsa" ->
+            quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize }
+            (noShrinking $ radamprop filename prog args mencode outdir)
         "check" ->
             quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize }
             (noShrinking $ checkprop filename prog args mencode outdir)
