@@ -28,7 +28,7 @@
     <div id="content-wrapper">
       <div class="inner clearfix">
         <section id="main-content">
-          <p>QuickFuzz is grammar fuzzer powered by <a href="http://www.cse.chalmers.se/%7Erjmh/QuickCheck/">QuickCheck</a>, <a href="https://wiki.haskell.org/Template_Haskell">Template Haskell</a> and specific libraries from Hackage to generate many complex file-formats like Jpeg, Png, Svg, Xml, Zip, Tar and many more!. QuickFuzz is open-source (GPL3) and it can use other bug detection tools like <a href="http://caca.zoy.org/wiki/zzuf">zzuf</a>, <a href="https://github.com/aoh/radamsa">radamsa</a> and <a href="http://valgrind.org">valgrind</a>.</p>
+          <p>QuickFuzz is a grammar fuzzer powered by <a href="http://www.cse.chalmers.se/%7Erjmh/QuickCheck/">QuickCheck</a>, <a href="https://wiki.haskell.org/Template_Haskell">Template Haskell</a> and specific libraries from Hackage to generate many complex file-formats like Jpeg, Png, Svg, Xml, Zip, Tar and more!. QuickFuzz is open-source (GPL3) and it can use other bug detection tools like <a href="http://caca.zoy.org/wiki/zzuf">zzuf</a>, <a href="https://github.com/aoh/radamsa">radamsa</a> and <a href="http://valgrind.org">valgrind</a>.</p>
 
 <h2>
 <a id="bugs-lost-and-found" class="anchor" href="#bugs-lost-and-found" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Bugs <del>lost and</del> found</strong>
@@ -48,7 +48,7 @@
 <h2>
 <a id="quick-introduction-to-quickfuzz" class="anchor" href="#quick-introduction-to-quickfuzz" aria-hidden="true"><span class="octicon octicon-link"></span></a>Quick introduction to QuickFuzz</h2>
 
-<p>Let's generate, fuzz and test for crashes giftopnm 10 times with a maximum structural size of 300:</p>
+<p>Let's generate, fuzz and test for crashes giftopnm using zzuf:</p>
 
 <pre><code>$ QuickFuzz Gif c.gif "/usr/bin/giftopnm c.gif" -a zzuf -t 10 -s 300
 zzuf[s=1806,r=0.004:1e-06]: signal 11 (SIGSEGV)
@@ -56,7 +56,7 @@ zzuf[s=1807,r=0.004:1e-06]: signal 11 (SIGSEGV)
 +++ OK, passed 10 tests.
 </code></pre>
 
-<p>In this case, two crashes were found (actually, they are produced by the same bug).</p>
+<p>In this case, we two crashes were found (actually, they are produced by the same bug).</p>
 
 <h2>
 <a id="the-quickfuzz-team" class="anchor" href="#the-quickfuzz-team" aria-hidden="true"><span class="octicon octicon-link"></span></a>The QuickFuzz team</h2>
@@ -64,15 +64,15 @@ zzuf[s=1807,r=0.004:1e-06]: signal 11 (SIGSEGV)
 <ul>
 <li>Pablo <strong>Buiras</strong> (<a href="http://www.chalmers.se/en/Pages/default.aspx">Chalmers University of Technology</a>)</li>
 <li>Martín <strong>Ceresa</strong> (<a href="http://cifasis-conicet.gov.ar/">CIFASIS-Conicet</a>)</li>
-<li>Gustavo <strong>Grieco</strong> (<a href="http://cifasis-conicet.gov.ar/">CIFASIS-Conicet</a> and <a href="http://www-verimag.imag.fr/?lang=en">VERIMAG</a>)</li>
 <li>Martín <strong>Escarrá</strong> (<a href="http://www.unr.edu.ar/">Universidad Nacional de Rosario</a>)</li>
+<li>Gustavo <strong>Grieco</strong> (<a href="http://cifasis-conicet.gov.ar/">CIFASIS-Conicet</a> and <a href="http://www-verimag.imag.fr/?lang=en">VERIMAG</a>)</li>
 </ul>
 
 <h2>
 <a id="acknowledgement" class="anchor" href="#acknowledgement" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Acknowledgement</strong>
 </h2>
 
-<p>A special thanks goes to all the developers from the packages who made possible QuickFuzz to generate many complex file-formats.</p>
+<p>A special thanks goes to all the developers from the packages who made possible QuickFuzz to generate several complex file-formats.</p>
         </section>
 
         <aside id="sidebar">
