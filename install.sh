@@ -7,8 +7,8 @@ _PKG_DIR="packages"
 ######################################
 
 cabal update
-cabal install alex
-cabal install happy
+cabal --config-file=/home/martin/QuickFuzz/config install alex
+cabal --config-file=/home/martin/QuickFuzz/config install happy
 
 mkdir -p $_PKG_DIR
 cd $_PKG_DIR
@@ -18,9 +18,9 @@ do
     git clone https://github.com/CIFASIS/$i
     cd $i
     git pull
-    cabal install
+    cabal --config-file=/home/martin/QuickFuzz/config install
     cd ..
 done
 
 cd ..
-cabal install
+cabal --config-file=/home/martin/QuickFuzz/config install
