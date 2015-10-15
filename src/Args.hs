@@ -23,3 +23,5 @@ cli =
     <$> mkApp parser
 
 findFileType (MainArgs t _ _ _ _ _ _) = t
+findCmd (MainArgs _ _ c _ _ _ _) = c
+findAct (MainArgs _ _ _ a _ _ _) = a

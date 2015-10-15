@@ -22,9 +22,12 @@ import qualified ByteString
 
 import System.Console.ArgParser 
 import Args
+import System.Directory 
+import System.Exit
 
 dispatch :: MainArgs -> IO ()
-dispatch args = case (findFileType args) of
+dispatch args = safetyCheck args >>
+        case (findFileType args) of
 
         "Bmp"  -> Bmp.main args
         "Dot"  -> Dot.main args
@@ -43,6 +46,17 @@ dispatch args = case (findFileType args) of
         "Pnm"  -> Pnm.main args
         "Svg"  -> SimpleSvg.main args
         "BS"  -> ByteString.main args
+
+-- | Just checks that the command and the action are executables in the current
+-- system
+safetyChecks :: MainArgs -> IO ()
+safetyChecks args = do
+    let cmd = findCmd args
+    cmdex <- findExecutable cmd
+    unless (isJust cmdex) (die $ "The command \"" ++ cmd ++ "\" is not present.")
+    let act = findAct args
+    actx <- findExecutable act
+    unless (isJust actx) (die $ "The action \"" ++ act ++ "\", cannot continue.") 
         
 
 main = do
