@@ -4,7 +4,6 @@ import Control.Concurrent.ParallelIO
 
 import GHC.Conc -- Forcing parallelism
 
--- import Debug.Trace
 
 processIN :: FilePath -> String -> String -> Int -> Int -> FilePath -> (FilePath -> String -> String -> Int -> Int -> FilePath -> IO ()) -> IO ()
 processIN name cmd prop maxSuccess maxSize outdir process = do
