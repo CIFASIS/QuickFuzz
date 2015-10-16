@@ -21,7 +21,14 @@ In Ubuntu, a PPA to install GHC 7.10 is available [here](https://launchpad.net/~
 
     $ git clone https://github.com/CIFASIS/QuickFuzz.git
     $ cd QuickFuzz
-    $ ./install.sh
+
+Then, you may choose between a minimal installation (only Bmp, Png, Jpeg, Tiff and Gif supported) and
+a complete one.
+
+    **Minimal**
+        $ ./install.sh -m
+    **Complete**
+        $ ./install.sh
 
 Additionally, you may want to use QuickFuzz more easily by appending this line to your **~/.bashrc** file:
 
