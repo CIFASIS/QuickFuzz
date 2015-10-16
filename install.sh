@@ -30,7 +30,7 @@ _PKG_DIR="packages"
 
 # RECOMMENDED ########################
 # Add this line to your ~/.bashrc file
-# export PATH=$HOME/.cabal/bin:$PATH
+export PATH=$HOME/.cabal/bin:$PATH
 ######################################
 
 cabal update
