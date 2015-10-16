@@ -23,12 +23,12 @@ import Control.Monad.State
 
 $(deriveArbitraryRec ''Op)
 
-mkTable (str,xs) = Table str (ops xs)
+mkTable ((c1,c2,c3,c4),xs) = Table str (ops xs) where str = [c1,c2,c3,c4]
 
-encodeMTTFFont :: [(String, [Op])] -> L.ByteString
+encodeMTTFFont :: [((Char,Char,Char,Char), [Op])] -> L.ByteString
 encodeMTTFFont xs = fst $ compile $ compileTables (map mkTable xs) (headTable 1 1 0 0 0 0 1 1 0 0 0 1 0)    
 
-mencode :: [(String, [Op])] -> L.ByteString
+mencode :: [((Char,Char,Char,Char), [Op])] -> L.ByteString
 mencode = encodeMTTFFont
 
 main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = let (prog, args) = (Prelude.head spl, tail spl) in
