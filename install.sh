@@ -1,4 +1,4 @@
-_PKG="yjsvg_haskell Juicy.Pixels svg-tree hogg tar language-javascript"
+_PKG="yjsvg_haskell Juicy.Pixels svg-tree hogg tar language-javascript ttasm"
 _PKG_DIR="packages"
 
 # RECOMMENDED ########################

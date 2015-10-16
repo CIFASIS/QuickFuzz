@@ -19,6 +19,7 @@ import qualified SimpleSvg
 --import qualified Svg
 import qualified Dot
 import qualified ByteString
+import qualified TTF
 
 import System.Console.ArgParser 
 import Args
@@ -42,6 +43,7 @@ dispatch args = case (findFileType args) of
         "Png"  -> Png.main args
         "Pnm"  -> Pnm.main args
         "Svg"  -> SimpleSvg.main args
+        "TTF"  -> TTF.main args
         "BS"  -> ByteString.main args
         
 
