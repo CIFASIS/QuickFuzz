@@ -1,9 +1,12 @@
 # Parse options
 
-while getopts ":m" opt; do
+while getopts "sm" opt; do
     case $opt in
         m)
             _OPT_MIN=1
+            ;;
+        s) 
+            _OPT_SANDBOX=1
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -14,6 +17,11 @@ done
 [ $_OPT_MIN ] && _MSG="minimal" || _MSG="complete"
 echo "Starting ${_MSG} installation..."
 
+#Sandbox config
+
+[ $_OPT_SANDBOX ] && _MSG_SAND="activated" || _MSG_SAND="not activated"
+echo "Sandbox option ${_MSG_SAND}"
+
 # Define needed packages
 
 _PKG="Juicy.Pixels"
@@ -22,14 +30,14 @@ _PKG_DIR="packages"
 
 # RECOMMENDED ########################
 # Add this line to your ~/.bashrc file
-export PATH=$HOME/.cabal/bin:$PATH
+# export PATH=$HOME/.cabal/bin:$PATH
 ######################################
 
 cabal update
-if [ $_OPT_MIN ]; then
-    cabal install alex
-    cabal install happy
-fi
+# if [ $_OPT_MIN ]; then
+cabal --config-file=/home/martin/.cabal/config710 --sandbox-config-file=cabal.sandbox.config install alex
+cabal --config-file=/home/martin/.cabal/config710 --sandbox-config-file=cabal.sandbox.config install happy
+# fi
 
 # Clone and install forked packages
 
@@ -41,7 +49,11 @@ do
     git clone https://github.com/CIFASIS/$i
     cd $i
     git pull
-    cabal install
+    if [ $_OPT_SANDBOX ]; then
+        cabal --config-file=/home/martin/.cabal/config710 --sandbox-config-file=../../cabal.sandbox.config install
+    else
+        cabal --config-file=/home/martin/.cabal/config710 install
+    fi
     cd ..
 done
 
@@ -53,4 +65,8 @@ if [ $_OPT_MIN ]; then
     cabal configure -f minimal # Set minimal flag
 fi
 
-cabal install
+if [ $_OPT_SANDBOX ]; then
+    cabal --config-file=/home/martin/.cabal/config710 --sandbox-config-file=../cabal.sandbox.config install
+else
+    cabal --config-file=/home/martin/.cabal/config710 install
+fi
