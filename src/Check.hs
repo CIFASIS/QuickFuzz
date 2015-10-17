@@ -67,8 +67,6 @@ zzufprop filename prog args encode outdir x =
             size <- run $ getFileSize filename
             exezzuf <- run $ findExecutable "zzuf"
             exeprog <- run $ findExecutable prog
-            unless (isJust exezzuf) $ Test.QuickCheck.Monadic.assert False -- zzuf is not present in the system. Error sys?
-            unless (isJust exeprog) $ Test.QuickCheck.Monadic.assert False -- prog is not present in the system
             unless (size > 0) $ Test.QuickCheck.Monadic.assert True
             let pzzuf = fromJust exezzuf
             let exprog = fromJust exeprog
