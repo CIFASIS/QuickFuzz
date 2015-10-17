@@ -1,12 +1,9 @@
 # Parse options
 
-while getopts "sm" opt; do
+while getopts "m" opt; do
     case $opt in
         m)
             _OPT_MIN=1
-            ;;
-        s) 
-            _OPT_SANDBOX=1
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -19,8 +16,10 @@ echo "Starting ${_MSG} installation..."
 
 #Sandbox config
 
-[ $_OPT_SANDBOX ] && _MSG_SAND="activated" || _MSG_SAND="not activated"
-echo "Sandbox option ${_MSG_SAND}"
+[ -f cabal.sandbox.config ] && _OPT_SANDBOX=1 || _OPT_SANDBOX=0
+if [ $_OPT_SANDBOX ]; then
+    echo "Gentlemen we are in a presence of a sandbox!"
+fi
 
 # Define needed packages
 
@@ -34,10 +33,17 @@ export PATH=$HOME/.cabal/bin:$PATH
 ######################################
 
 cabal update
-# if [ $_OPT_MIN ]; then
-cabal --config-file=/home/martin/.cabal/config710 --sandbox-config-file=cabal.sandbox.config install alex
-cabal --config-file=/home/martin/.cabal/config710 --sandbox-config-file=cabal.sandbox.config install happy
-# fi
+# If not min install alex.
+if ! [ $_OPT_MIN ]; then
+# These are just in case
+    if [ $_OPT_SANDBOX ]; then
+        cabal --sandbox-config-file=cabal.sandbox.config install alex
+        cabal --sandbox-config-file=cabal.sandbox.config install happy
+    else
+        cabal install alex
+        cabal install happy
+    fi
+fi
 
 # Clone and install forked packages
 
@@ -50,9 +56,9 @@ do
     cd $i
     git pull
     if [ $_OPT_SANDBOX ]; then
-        cabal --config-file=/home/martin/.cabal/config710 --sandbox-config-file=../../cabal.sandbox.config install
+        cabal --sandbox-config-file=../../cabal.sandbox.config install
     else
-        cabal --config-file=/home/martin/.cabal/config710 install
+        cabal install
     fi
     cd ..
 done
@@ -66,7 +72,7 @@ if [ $_OPT_MIN ]; then
 fi
 
 if [ $_OPT_SANDBOX ]; then
-    cabal --config-file=/home/martin/.cabal/config710 --sandbox-config-file=../cabal.sandbox.config install
+    cabal --sandbox-config-file=cabal.sandbox.config install
 else
-    cabal --config-file=/home/martin/.cabal/config710 install
+    cabal install
 fi
