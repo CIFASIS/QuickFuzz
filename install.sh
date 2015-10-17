@@ -29,7 +29,7 @@ _PKG_DIR="packages"
 
 # RECOMMENDED ########################
 # Add this line to your ~/.bashrc file
-# export PATH=$HOME/.cabal/bin:$PATH
+export PATH=$HOME/.cabal/bin:$PATH
 ######################################
 
 cabal update
@@ -37,11 +37,11 @@ cabal update
 if ! [ $_OPT_MIN ]; then
 # These are just in case
     if [ $_OPT_SANDBOX ]; then
-        cabal --config-file=config710 --sandbox-config-file=cabal.sandbox.config install alex
-        cabal --config-file=config710 --sandbox-config-file=cabal.sandbox.config install happy
+        cabal --sandbox-config-file=cabal.sandbox.config install alex
+        cabal --sandbox-config-file=cabal.sandbox.config install happy
     else
-        cabal --config-file=config710 install alex
-        cabal --config-file=config710 install happy
+        cabal install alex
+        cabal install happy
     fi
 fi
 
@@ -55,25 +55,24 @@ do
     git clone https://github.com/CIFASIS/$i
     cd $i
     git pull
-
     if [ $_OPT_SANDBOX ]; then
-        cabal --config-file=config710 --sandbox-config-file=../../cabal.sandbox.config install
+        cabal --sandbox-config-file=../../cabal.sandbox.config install
     else
-        cabal --config-file=config710 install
+        cabal install
     fi
-
     cd ..
 done
 
 cd ..
+
 # Install QuickFuzz
 
 if [ $_OPT_MIN ]; then
-    cabal --config-file=config710 configure -f minimal # Set minimal flag
+    cabal configure -f minimal # Set minimal flag
 fi
 
 if [ $_OPT_SANDBOX ]; then
-    cabal --config-file=config710 --sandbox-config-file=cabal.sandbox.config install
+    cabal --sandbox-config-file=cabal.sandbox.config install
 else
-    cabal --config-file=config710 install
+    cabal install
 fi
