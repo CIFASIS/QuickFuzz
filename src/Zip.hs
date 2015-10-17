@@ -21,8 +21,6 @@ import qualified Data.Vector.Storable as VS
 import Vector
 import ByteString
 
-import Parallel
-
 import Data.List.Split
 
 $(deriveArbitraryRec ''Archive)

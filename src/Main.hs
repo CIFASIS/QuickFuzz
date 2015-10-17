@@ -54,7 +54,6 @@ dispatch args = safetyChecks args >>
         "Js"   -> Js.main args
         "Pnm"  -> Pnm.main args
         "Svg"  -> SimpleSvg.main args
-        "BS"  -> ByteString.main args
         "TTF"  -> TTF.main args
         "BS"   -> ByteString.main args
 #endif
