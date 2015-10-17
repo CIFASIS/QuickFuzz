@@ -18,7 +18,7 @@ echo "Starting ${_MSG} installation..."
 
 [ -f cabal.sandbox.config ] && _OPT_SANDBOX=1 || _OPT_SANDBOX=0
 if [ $_OPT_SANDBOX ]; then
-    echo "Gentlemen we are in a presence of a sandbox!"
+    echo "Gentlemen we are in presence of a sandbox!"
 fi
 
 # Define needed packages

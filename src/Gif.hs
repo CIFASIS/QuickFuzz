@@ -18,8 +18,6 @@ import Vector
 import ByteString
 import Images
 
-import Parallel
-
 import qualified Data.ByteString.Lazy as L
 import Data.DeriveTH
 
@@ -78,5 +76,4 @@ process filename cmd prop maxSuccess maxSize outdir =
         _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
 
-
-main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = processParPure filename cmd prop maxSuccess maxSize outdir process
+main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = process filename cmd prop maxSuccess maxSize outdir 

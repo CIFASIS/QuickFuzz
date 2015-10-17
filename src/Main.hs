@@ -28,11 +28,14 @@ import qualified TTF
 
 import System.Console.ArgParser
 import Args
+import Data.Maybe
 import System.Directory 
 import System.Exit
+import Control.Monad
+import Data.List.Split
 
 dispatch :: MainArgs -> IO ()
-dispatch args = safetyCheck args >>
+dispatch args = safetyChecks args >>
         case findFileType args of
         "Bmp"  -> Bmp.main args
         "Gif"  -> Gif.main args
@@ -61,7 +64,7 @@ dispatch args = safetyCheck args >>
 -- system
 safetyChecks :: MainArgs -> IO ()
 safetyChecks args = do
-    let cmd = findCmd args
+    let cmd = head $ splitOn " " $ findCmd args
     cmdex <- findExecutable cmd
     unless (isJust cmdex) (die $ "The command \"" ++ cmd ++ "\" is not present.")
     let act = findAct args

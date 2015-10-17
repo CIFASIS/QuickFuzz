@@ -22,16 +22,12 @@ executable QuickFuzz
         cpp-options: -DCOMPLETE
 
   other-extensions:    CPP, FlexibleContexts, TypeFamilies, TupleSections, ExistentialQuantification, BangPatterns, ScopedTypeVariables, TypeSynonymInstances, Rank2Types, FlexibleInstances, RankNTypes, MultiParamTypeClasses, GADTs, StandaloneDeriving, TypeOperators, GeneralizedNewtypeDeriving, FunctionalDependencies, OverloadedStrings
-<<<<<<< HEAD
-  build-depends:       base, bytestring, containers, vector, primitive,transformers, binary, QuickCheck, mtl, random, ghc-prim, process, deepseq,derive, tar, zip-archive >=0.2.3.5 && <0.2.3.6, unix, template-haskell, zlib,directory, HaXml, pretty, AC-PPM, hogg, argparser, split, bzlib, JuicyPixels,language-ecmascript, wl-pprint, text, linear, svg-tree, xml, yjsvg, parallel-io, language-dot
-=======
 
   if flag(minimal)
-    build-depends:     base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, mtl, random, ghc-prim, process, deepseq, derive, unix, template-haskell, zlib, pretty, argparser, split, bzlib, directory, JuicyPixels
+    build-depends:     base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, mtl, random, ghc-prim, process, deepseq, derive, unix, template-haskell, zlib, pretty, argparser, split, bzlib, directory, JuicyPixels, parallel-io
   else
-    build-depends:     base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, mtl, random, ghc-prim, process, deepseq, derive, tar, zip-archive >=0.2.3.5 && <0.2.3.6, unix, template-haskell, zlib, directory, HaXml, pretty, AC-PPM, hogg, argparser, split, bzlib, JuicyPixels, language-ecmascript, wl-pprint, text, linear, svg-tree, xml, yjsvg, language-dot, ttasm
+    build-depends:     base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, mtl, random, ghc-prim, process, deepseq, derive, tar, zip-archive >=0.2.3.5 && <0.2.3.6, unix, template-haskell, zlib, directory, HaXml, pretty, AC-PPM, hogg, argparser, split, bzlib, JuicyPixels, language-ecmascript, wl-pprint, text, linear, svg-tree, xml, yjsvg, language-dot, ttasm, parallel-io
 
->>>>>>> master
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options: -threaded -rtsopts
