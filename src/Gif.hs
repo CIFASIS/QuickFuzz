@@ -1,5 +1,4 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
-{-# OPTIONS_GHC -threaded -rtsopts #-}
 
 module Gif where
 
