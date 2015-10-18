@@ -22,6 +22,7 @@ import qualified Js
 import qualified SimpleSvg
 import qualified Svg
 --import qualified MBox
+import qualified Css
 import qualified Dot
 import qualified ByteString
 import qualified TTF
@@ -56,6 +57,8 @@ dispatch args = safetyChecks args >>
         "Pnm"  -> Pnm.main args
         "Svg"  -> Svg.main args
         "TTF"  -> TTF.main args
+        "CSS"  -> Css.main args
+
         --"MBox"   -> MBox.main args
         "BS"   -> ByteString.main args
 #endif
@@ -67,7 +70,8 @@ safetyChecks :: MainArgs -> IO ()
 safetyChecks args = do
     let cmd = head $ splitOn " " $ findCmd args
     cmdex <- findExecutable cmd
-    unless (isJust cmdex) (die $ "The command \"" ++ cmd ++ "\" is not present.")
+    return ()
+    --unless (isJust cmdex) (die $ "The command \"" ++ cmd ++ "\" is not present.")
     --let act = findAct args
     --actx <- findExecutable act
     --unless (isJust actx) (die $ "The action \"" ++ act ++ "\" cannot be done.")

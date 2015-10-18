@@ -20,14 +20,14 @@ instance Arbitrary a => Arbitrary (Tree a) where
 eaf <$> arbitrary
                | otherwise =
                  Node <$> (go (n `div` 2)) <*> arbitrary <*> (go (n `div` 2))
--}
+
 data Expr a = Var a
             | Con Int
             | Add (Expr a) (Expr a)
             | Mul (Expr a) (Expr a)
             | Neg (Expr a)
             deriving (Show, Eq)
-{-
+
 instance Arbitrary a => Arbitrary (Expr a) where
   arbitrary = (arbitrary :: Gen Int) >>= go
     where go n | n <= 1 = oneof [Var <$> arbitrary, Con <$> arbitrary]
