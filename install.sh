@@ -73,7 +73,7 @@ fi
 
 if [ $_OPT_SANDBOX ]; then
     cabal --sandbox-config-file=cabal.sandbox.config install
-    cp -u -f .cabal-sandbox/bin/QuickFuzz .
+    cp --remove-destination .cabal-sandbox/bin/QuickFuzz .
 else
     cabal install
 fi
