@@ -14,9 +14,9 @@ done
 [ $_OPT_MIN ] && _MSG="minimal" || _MSG="complete"
 echo "Starting ${_MSG} installation..."
 
-#Sandbox config
+# Sandbox config
 
-[ -f cabal.sandbox.config ] && _OPT_SANDBOX=1 || _OPT_SANDBOX=0
+[ -f cabal.sandbox.config ] && _OPT_SANDBOX=1
 if [ $_OPT_SANDBOX ]; then
     echo "Gentlemen we are in presence of a sandbox!"
 fi
@@ -33,7 +33,7 @@ export PATH=$HOME/.cabal/bin:$PATH
 ######################################
 
 cabal update
-# If not min install alex.
+# If the installation is complete then alex and happy should be added.
 if ! [ $_OPT_MIN ]; then
 # These are just in case
     if [ $_OPT_SANDBOX ]; then
