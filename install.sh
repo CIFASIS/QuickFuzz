@@ -23,8 +23,7 @@ fi
 
 # Define needed packages
 
-_PKG="Juicy.Pixels"
-[ $_OPT_MIN ] && _PKG="$_PKG yjsvg_haskell svg-tree hogg tar language-javascript ttasm"
+[ $_OPT_MIN ] && _PKG="Juicy.Pixels" || _PKG="$_PKG yjsvg_haskell svg-tree hogg tar language-javascript ttasm"
 _PKG_DIR="packages"
 
 # RECOMMENDED ########################
