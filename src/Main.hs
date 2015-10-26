@@ -49,6 +49,7 @@ dispatch args = safetyChecks args >>
         "Ogg"  -> Ogg.main args
         "Zip"  -> Zip.main args
         "Bzip" -> Bzip.main args
+        "Gzip" -> Bzip.main args
         "Tar"  -> Tar.main args
         "Tga"  -> Tga.main args
         "Xml"  -> Xml.main args
