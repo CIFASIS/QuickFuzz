@@ -39,4 +39,4 @@ process filename cmd prop maxSuccess maxSize outdir =
         ) where spl = splitOn " " cmd
     
 
-main (MainArgs _ filename cmd prop maxSuccess maxSize outdir) = process filename cmd prop maxSuccess maxSize outdir
+main (MainArgs _ cmd filename prop maxSuccess maxSize outdir) = process filename cmd prop maxSuccess maxSize outdir
