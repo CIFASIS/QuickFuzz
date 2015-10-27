@@ -5,8 +5,8 @@ import Data.Char
 
 data MainArgs = MainArgs
                         {findFileType :: String
-                        ,findFileName ::  String
                         ,findCmds :: String
+                        ,findFileName ::  String
                         ,findAct :: String
                         ,findNumTries:: Int
                         ,findSize :: Int
@@ -16,8 +16,8 @@ data MainArgs = MainArgs
 parser :: ParserSpec MainArgs
 parser = MainArgs
     `parsedBy` reqPos            "type"        `Descr` "File Type to generate (e.g. Bmp, Ogg, Gif, ...)"
-    `andBy`    optFlag []        "name"        `Descr` "Output filename"
     `andBy`    reqPos            "command"     `Descr` "Full command line to execute"
+    `andBy`    optFlag []        "name"        `Descr` "Output filename"
     `andBy`    optFlag "zzuf"    "action"      `Descr` "Action to execute (zzuf | check | gen | exec)"
     `andBy`    optFlag 100000000 "tries"       `Descr` "Number of attempts"
     `andBy`    optFlag 20        "size"        `Descr` "Maximum structural size of generated values"
@@ -32,7 +32,7 @@ cli =
 
 
 splitCmd :: MainArgs -> (String, String, String)
-splitCmd (MainArgs _ _ c _ _ _ _) = ret False c
+splitCmd args = ret False (findCmds args)
     where   ret _ [] = error "Bad command" -- TODO
             ret b (x:xs)    | x == '@' = if b then ([],[],xs) else ret True xs
                             | b = let (ls,rs,rss) = ret b xs in (ls, x:rs,rss)
