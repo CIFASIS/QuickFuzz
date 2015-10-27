@@ -37,7 +37,9 @@ import Control.Monad
 import Data.List.Split
 
 dispatch :: MainArgs -> IO ()
-dispatch args = safetyChecks args >>
+dispatch arg =
+    let args = formatArgs arg in
+     safetyChecks args >> 
         case findFileType args of
         "Bmp"  -> Bmp.main args
         "Gif"  -> Gif.main args
@@ -69,9 +71,8 @@ dispatch args = safetyChecks args >>
 -- system
 safetyChecks :: MainArgs -> IO ()
 safetyChecks args = do
-    let cmd = head $ splitOn " " $ findCmd args
-    cmdex <- findExecutable cmd
     return ()
+    --cmdex <- findExecutable cmd
     --unless (isJust cmdex) (die $ "The command \"" ++ cmd ++ "\" is not present.")
     --let act = findAct args
     --actx <- findExecutable act
