@@ -2,7 +2,8 @@ module Args where
 
 import System.Console.ArgParser
 
-data MainArgs = MainArgs String String String String Int Int String
+data MainArgs = MainArgs {findFileType :: String, findFileName ::  String, findCmds :: String, 
+    findAct :: String, findNumTries:: Int, findSize :: Int, findOutDir :: String}
                                     deriving(Show)
 
 parser :: ParserSpec MainArgs
@@ -22,6 +23,14 @@ cli =
     <$> (`setAppEpilog` "More info: QuickFuzz.org")
     <$> mkApp parser
 
-findFileType (MainArgs t _ _ _ _ _ _) = t
-findCmd (MainArgs _ _ c _ _ _ _) = c
-findAct (MainArgs _ _ _ a _ _ _) = a
+
+splitCmd :: MainArgs -> (String, String, String)
+splitCmd (MainArgs _ _ c _ _ _ _) = ret False c
+    where   ret _ [] = ([],[],[])
+            ret b (x:xs)    | x == '@' = if b then ([],[],xs) else ret True xs
+                            | b = let (ls,rs,rss) = ret b xs in (ls, x:rs,rss)
+                            | otherwise = let (ls,rs,rrs) = ret b xs in (x:ls,rs,rrs)
+
+formatArgs :: MainArgs -> MainArgs
+formatArgs args = let (hd, _, tl)  = splitCmd args in
+    args {findCmds = hd ++ (findFileName args) ++ tl}

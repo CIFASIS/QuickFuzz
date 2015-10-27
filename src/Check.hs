@@ -3,6 +3,8 @@ module Check where
 import Test.QuickCheck
 import Test.QuickCheck.Monadic (assert, monadicIO, run)
 
+--import Test.QuickCheck.Parallel
+
 import Control.Exception
 import Control.Monad
 
@@ -36,6 +38,7 @@ genprop filename prog args encode outdir x =
             else
               Test.QuickCheck.Monadic.assert True
 
+
 checkprop filename prog args encode outdir x = 
          monadicIO $ do
          run $ Control.Exception.catch (L.writeFile filename (encode x)) handler
@@ -58,7 +61,8 @@ checkprop filename prog args encode outdir x =
                       )
                   else Test.QuickCheck.Monadic.assert True
                )
-
+    
+    
 zzufprop :: FilePath -> FilePath -> [String] -> (t -> L.ByteString) -> FilePath -> t -> Property
 zzufprop filename prog args encode outdir x = 
             noShrinking $ monadicIO $ do
