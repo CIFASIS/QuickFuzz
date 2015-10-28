@@ -61,7 +61,7 @@ derive makeArbitrary ''Compass
 mencode :: Graph -> L8.ByteString
 mencode = L8.pack . renderDot 
 
-main (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, args) = (head spl, tail spl) in
+dotmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, args) = (head spl, tail spl) in
     (case prop of
         "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
         "radamsa" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ radamprop filename prog args mencode outdir)
@@ -70,3 +70,7 @@ main (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, arg
         "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
         _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
+
+
+main fargs False = dotmain $ fargs ""
+main fargs True  = processPar fargs dotmain

@@ -39,4 +39,7 @@ process filename cmd prop maxSuccess maxSize outdir =
         ) where spl = splitOn " " cmd
     
 
-main (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = process filename cmd prop maxSuccess maxSize outdir
+zipmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = process filename cmd prop maxSuccess maxSize outdir
+
+main fargs False = zipmain $ fargs ""
+main fargs True  = processPar fargs zipmain
