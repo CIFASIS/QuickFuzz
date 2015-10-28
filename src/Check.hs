@@ -49,9 +49,9 @@ checkprop filename prog args encode outdir x =
             then Test.QuickCheck.Monadic.assert True 
          else (
            do 
-               let varepname = filename ++ "vreport.out"
+               let varepname = filename ++ ".vreport.out"
                seed <- run (randomIO :: IO Int)
-               ret <- run $ rawSystem "/usr/bin/valgrind" (["--log-file="++ varepname ++ ", --quiet", prog] ++ args)
+               ret <- run $ rawSystem "/usr/bin/valgrind" (["--log-file="++ varepname, "--quiet", prog] ++ args)
                size <- run $ getFileSize varepname --"vreport.out"
                if size > 0 
                   then ( 
