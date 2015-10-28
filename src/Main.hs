@@ -37,7 +37,7 @@ import System.Exit
 import Control.Monad
 import Data.List.Split
 
-fillArgs :: MainArgs -> IO MainArgs
+fillArgs :: MainArgs -> IO (String -> MainArgs)
 fillArgs args =
     case findFileName args of
         [] -> do
@@ -49,33 +49,31 @@ fillArgs args =
 dispatch :: MainArgs -> IO ()
 dispatch arg = do
         args <- fillArgs arg
-        safetyChecks args 
-        putStrLn "Printing Args:"
-        print args
-        putStrLn "...."
-        case findFileType args of
-            "Bmp"  -> Bmp.main args
-            "Gif"  -> Gif.main args
-            "Jpeg" -> Jpeg.main args
-            "Png"  -> Png.main args
-            "Tiff" -> Tiff.main args
+        let b = findPar arg
+        safetyChecks arg 
+        case findFileType arg of
+            "Bmp"  -> Bmp.main (args "")
+            "Gif"  -> Gif.main args b
+            "Jpeg" -> Jpeg.main (args "")
+            "Png"  -> Png.main (args "")
+            "Tiff" -> Tiff.main (args "")
 #ifdef COMPLETE
-            "Dot"  -> Dot.main args
-            "Ogg"  -> Ogg.main args
-            "Zip"  -> Zip.main args
-            "Bzip" -> Bzip.main args
-            "Gzip" -> Bzip.main args
-            "Tar"  -> Tar.main args
-            "Tga"  -> Tga.main args
-            "Xml"  -> Xml.main args
-            "Html" -> Html.main args
-            "Js"   -> Js.main args
-            "Pnm"  -> Pnm.main args
-            "Svg"  -> Svg.main args
-            "TTF"  -> TTF.main args
-            "CSS"  -> Css.main args
-            --"MBox"   -> MBox.main args
-            "BS"   -> ByteString.main args
+            "Dot"  -> Dot.main (args "")
+            "Ogg"  -> Ogg.main (args "")
+            "Zip"  -> Zip.main (args "")
+            "Bzip" -> Bzip.main (args "")
+            "Gzip" -> Bzip.main (args "")
+            "Tar"  -> Tar.main (args "")
+            "Tga"  -> Tga.main (args "")
+            "Xml"  -> Xml.main (args "")
+            "Html" -> Html.main (args "")
+            "Js"   -> Js.main (args "")
+            "Pnm"  -> Pnm.main (args "")
+            "Svg"  -> Svg.main (args "")
+            "TTF"  -> TTF.main (args "")
+            "CSS"  -> Css.main (args "")
+            --"MBox"   -> MBox.main (args "")
+            "BS"   -> ByteString.main (args "")
 #endif
             _      -> print "Unsupported Type"
 

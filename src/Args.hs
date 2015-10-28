@@ -10,7 +10,8 @@ data MainArgs = MainArgs
                         ,findAct :: String
                         ,findNumTries:: Int
                         ,findSize :: Int
-                        ,findOutDir :: String}
+                        ,findOutDir :: String
+                        ,findPar :: Bool}
     deriving(Show)
 
 parser :: ParserSpec MainArgs
@@ -22,6 +23,7 @@ parser = MainArgs
     `andBy`    optFlag 100000000 "tries"       `Descr` "Number of attempts"
     `andBy`    optFlag 20        "size"        `Descr` "Maximum structural size of generated values"
     `andBy`    optFlag "outdir"  "outdir"      `Descr` "Directory to dump crashes"
+    `andBy`    boolFlag          "paralllel"   `Descr` "Activate parallel execution"
 
 
 cli :: IO (CmdLnInterface MainArgs)
@@ -42,8 +44,9 @@ formatFileName :: MainArgs -> String -> MainArgs
 formatFileName args filename = 
     args {findFileName = (filename++ '.': (map toLower (findFileType args)))}
 
-formatArgs :: MainArgs -> MainArgs
+formatArgs :: MainArgs -> (String -> MainArgs)
 formatArgs args = 
     let (hd,_,tl) = splitCmd args
-        filename = findFileName args in
-    args {findCmds = hd ++ filename ++ tl}
+        filename = findFileName args
+    in
+    \x -> args {findCmds = hd ++ (x ++ filename) ++ tl, findFileName = (x ++ filename)}

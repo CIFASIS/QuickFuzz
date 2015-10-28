@@ -3,7 +3,7 @@ module Check where
 import Test.QuickCheck
 import Test.QuickCheck.Monadic (assert, monadicIO, run)
 
---import Test.QuickCheck.Parallel
+import qualified Parallel as P
 
 import Control.Exception
 import Control.Monad
@@ -16,6 +16,8 @@ import System.Process
 import System.Posix
 import System.Exit
 import System.Directory
+
+processPar = P.processPar
 
 getFileSize :: String -> IO FileOffset
 getFileSize path = do
