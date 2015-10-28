@@ -40,7 +40,7 @@ $(deriveArbitraryRec ''TgaHeader)
 mencode :: TgaFile_t -> L.ByteString
 mencode = encode
 
-main (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, args) = (head spl, tail spl) in
+tgamain (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, args) = (head spl, tail spl) in
     (case prop of
         "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
         "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
@@ -49,3 +49,6 @@ main (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, arg
         _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
 
+
+main fargs False = tgamain $ fargs ""
+main fargs True  = processPar fargs tgamain

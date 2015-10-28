@@ -49,7 +49,7 @@ instance Arbitrary Permissions where
      w32 <- arbitrary :: Gen Word32
      return $ CMode w32
 
-main (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, args) = (head spl, tail spl) in
+tarmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, args) = (head spl, tail spl) in
     (case prop of
         "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
         "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
@@ -57,3 +57,6 @@ main (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, arg
         "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
         _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
+
+main fargs False = tarmain $ fargs ""
+main fargs True  = processPar fargs tarmain

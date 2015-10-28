@@ -52,28 +52,28 @@ dispatch arg = do
         let b = findPar arg
         safetyChecks arg 
         case findFileType arg of
-            "Bmp"  -> Bmp.main (args "")
+            "Bmp"  -> Bmp.main args b
             "Gif"  -> Gif.main args b
-            "Jpeg" -> Jpeg.main (args "")
-            "Png"  -> Png.main (args "")
-            "Tiff" -> Tiff.main (args "")
+            "Jpeg" -> Jpeg.main args b
+            "Png"  -> Png.main args b
+            "Tiff" -> Tiff.main args b
 #ifdef COMPLETE
-            "Dot"  -> Dot.main (args "")
-            "Ogg"  -> Ogg.main (args "")
-            "Zip"  -> Zip.main (args "")
-            "Bzip" -> Bzip.main (args "")
-            "Gzip" -> Bzip.main (args "")
-            "Tar"  -> Tar.main (args "")
-            "Tga"  -> Tga.main (args "")
-            "Xml"  -> Xml.main (args "")
-            "Html" -> Html.main (args "")
-            "Js"   -> Js.main (args "")
-            "Pnm"  -> Pnm.main (args "")
-            "Svg"  -> Svg.main (args "")
-            "TTF"  -> TTF.main (args "")
-            "CSS"  -> Css.main (args "")
-            --"MBox"   -> MBox.main (args "")
-            "BS"   -> ByteString.main (args "")
+            "Dot"  -> Dot.main args b
+            "Ogg"  -> Ogg.main args b
+            "Zip"  -> Zip.main args b
+            "Bzip" -> Bzip.main args b
+            "Gzip" -> Gzip.main args b
+            "Tar"  -> Tar.main args b
+            "Tga"  -> Tga.main args b
+            "Xml"  -> Xml.main args b
+            "Html" -> Html.main args b
+            "Js"   -> Js.main args b
+            "Pnm"  -> Pnm.main args b
+            "Svg"  -> Svg.main args b
+            "TTF"  -> TTF.main args b
+            "CSS"  -> Css.main args b
+            --"MBox"   -> MBox.main args b
+            "BS"   -> ByteString.main args b
 #endif
             _      -> print "Unsupported Type"
 

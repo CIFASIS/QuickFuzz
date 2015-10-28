@@ -83,7 +83,7 @@ instance Arbitrary String where
 mencode :: MHtml -> L8.ByteString
 mencode x = L8.pack $ render $ htmlprint x
 
-main (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, args) = (head spl, tail spl) in
+htmlmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, args) = (head spl, tail spl) in
     (case prop of
         "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
         "radamsa" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ radamprop filename prog args mencode outdir)
@@ -92,3 +92,6 @@ main (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, arg
         "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
         _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
+
+main fargs False = htmlmain $ fargs ""
+main fargs True  = processPar fargs htmlmain

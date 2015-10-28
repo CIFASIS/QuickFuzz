@@ -27,7 +27,7 @@ instance CoArbitrary L.ByteString where
 
 bencode = id
 
-main (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, args) = (head spl, tail spl) in
+bsmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, args) = (head spl, tail spl) in
     (case prop of
         "zzuf" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args bencode outdir)
         "check" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args bencode outdir)
@@ -35,3 +35,6 @@ main (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = let (prog, arg
         "exec" -> quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args bencode outdir)
         _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
+
+main fargs False = bsmain $ fargs ""
+main fargs True  = processPar fargs bsmain
