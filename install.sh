@@ -50,7 +50,7 @@ cd $_PKG_DIR
 
 for i in $_PKG
 do
-    git clone https://github.com/CIFASIS/$i
+    git clone --depth=1 https://github.com/CIFASIS/$i
     cd $i
     git pull
     if [ $_OPT_SANDBOX ]; then
