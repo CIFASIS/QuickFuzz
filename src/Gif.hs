@@ -75,4 +75,7 @@ process filename cmd prop maxSuccess maxSize outdir =
         _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
 
-main (MainArgs _ cmd filename prop maxSuccess maxSize outdir) = process filename cmd prop maxSuccess maxSize outdir 
+gifmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = process filename cmd prop maxSuccess maxSize outdir 
+
+main fargs False = gifmain $ fargs ""
+main fargs True  = processPar fargs gifmain
