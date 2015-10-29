@@ -53,29 +53,29 @@ encodeMGifImage (a, b) = fromRight $ encodeGifImages a b--encodeGifImageWithPale
 mencode :: MGifImage -> L.ByteString
 mencode = encodeMGifImage
 
-process :: FilePath -> String -> String -> Int -> Int -> FilePath -> IO ()
-process filename cmd prop maxSuccess maxSize outdir =
+process :: Bool -> FilePath -> String -> String -> Int -> Int -> FilePath -> IO Result 
+process par filename cmd prop maxSuccess maxSize outdir =
     let (prog, args) = (head spl, tail spl)
     in (case prop of
         "zzuf" ->
-            quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize }
+            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
             (noShrinking $ zzufprop filename prog args mencode outdir)
         "radamsa" ->
-            quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize }
+            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
             (noShrinking $ radamprop filename prog args mencode outdir)
         "check" ->
-            quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize }
+            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
             (noShrinking $ checkprop filename prog args mencode outdir)
         "gen" ->
-            quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize }
+            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
             (noShrinking $ genprop filename prog args mencode outdir)
         "exec" ->
-            quickCheckWith stdArgs { maxSuccess = maxSuccess , maxSize = maxSize }
+            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
             (noShrinking $ execprop filename prog args mencode outdir)
         _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
 
-gifmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir _) = process filename cmd prop maxSuccess maxSize outdir 
+gifmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir b) = process b filename cmd prop maxSuccess maxSize outdir 
 
-main fargs False = gifmain $ fargs ""
-main fargs True  = processPar fargs gifmain
+main fargs False = (\x -> (gifmain x) >> return ()) $ fargs ""
+main fargs True  = processPar fargs (\x -> (gifmain x) >> return ())

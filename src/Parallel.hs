@@ -6,13 +6,33 @@ import GHC.Conc -- Forcing parallelism
 
 import Args
 
-processPar :: (String -> MainArgs) -> (MainArgs -> IO ()) -> IO ()
+import Test.QuickCheck.Test
+
+import Control.Monad.Par.IO
+import Control.Monad.Par.Class
+import Control.Monad.IO.Class
+import Control.DeepSeq
+import Control.Monad
+
+instance NFData Result where
+    rnf x = seq (isSuccess x) () -- TODO improve?
+
+processPar :: (String -> MainArgs) -> (MainArgs -> IO a) -> IO ()
 processPar args process = do
     p <- getNumProcessors
     cap <- getNumCapabilities
-    let i = p -1 -- Leave a proc free
-    setNumCapabilities i  -- Forces to use p workers. i.e. -Nx not needed
-    putStrLn $ "Procs : " ++ show p
-    putStrLn $ "Capabilities: " ++ show cap
-    let args' = map (\id -> args $ show id ) [1..i] 
-    parallel_ (map process args')
+    setNumCapabilities p  -- Forces to use p workers. i.e. -Nx not needed
+    parallel_ (map (process . args . show)[1..(p*4)])
+
+parallelism :: (String -> MainArgs) -> (MainArgs -> IO Result) -> IO ()
+parallelism args process = do
+    p <- getNumProcessors
+    cap <- getNumCapabilities
+    setNumCapabilities p  -- Forces to use p workers. i.e. -Nx not needed
+    runParIO $ do
+            xs <- foldM (\xs x -> do
+                        let args' = args $ show x
+                        v <- new
+                        fork ((liftIO $ process args') >>= put v)
+                        return (v:xs)) [] [1..(p*4)]
+            mapM_ get xs

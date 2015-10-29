@@ -18,6 +18,7 @@ import System.Exit
 import System.Directory
 
 processPar = P.processPar
+parallelism = P.parallelism
 
 getFileSize :: String -> IO FileOffset
 getFileSize path = do
