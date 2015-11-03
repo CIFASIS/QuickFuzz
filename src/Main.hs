@@ -26,6 +26,8 @@ import qualified Css
 import qualified Dot
 import qualified ByteString
 import qualified TTF
+import qualified Wav
+
 #endif
 
 import System.Console.ArgParser
@@ -57,6 +59,7 @@ dispatch arg = do
             "Jpeg" -> Jpeg.main args b
             "Png"  -> Png.main args b
             "Tiff" -> Tiff.main args b
+
 #ifdef COMPLETE
             "Dot"  -> Dot.main args b
             "Ogg"  -> Ogg.main args b
@@ -72,6 +75,8 @@ dispatch arg = do
             "Svg"  -> Svg.main args b
             "TTF"  -> TTF.main args b
             "CSS"  -> Css.main args b
+            "Wav"  -> Wav.main args b
+
             --"MBox"   -> MBox.main args b
             "BS"   -> ByteString.main args b
 #endif
