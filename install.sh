@@ -22,7 +22,7 @@ if [ $_OPT_SANDBOX ]; then
 fi
 
 # Define needed packages
-[ $_OPT_MIN ] && _PKG="Juicy.Pixels" || _PKG="Juicy.Pixels yjsvg_haskell svg-tree hogg tar language-javascript ttasm"
+[ $_OPT_MIN ] && _PKG="Juicy.Pixels" || _PKG="Juicy.Pixels yjsvg_haskell svg-tree hogg tar language-javascript ttasm wavy"
 _PKG_DIR="packages"
 
 # RECOMMENDED ########################
