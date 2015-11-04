@@ -11,6 +11,7 @@ Cabal-version:       >=1.10
 Flag Minimal
   Description: Minimal installation for QuickFuzz. Supports only Png, Bmp, Jpeg, Tiff and Gif formats.
   Default:     False
+  Manual:      True
 
 executable QuickFuzz
 
