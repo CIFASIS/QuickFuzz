@@ -151,19 +151,17 @@ serve port xs = withSocketsDo $ do
     loop sock xs
 
 loop sock (x:xs) = do
+   Prelude.putStrLn "Accepting connection.."
    (conn, _) <- accept sock
    forkIO $ body conn
-   --return ()
-   loop sock (x:xs)
+   loop sock xs
   where
    body c = do sendAll c x
                sClose c
 
---loop _ [] = return ()
+loop _ [] = error "Empty list!"
 
 serveprop filename port _ encode x = 
          noShrinking $ monadicIO $ do
-         --run $ Prelude.putStrLn (show x)
-         run $ serve port (Prelude.map encode x)
-         run $ delay 2000
-         Test.QuickCheck.Monadic.assert True        
+           run $ serve port (encode x)
+           Test.QuickCheck.Monadic.assert True
