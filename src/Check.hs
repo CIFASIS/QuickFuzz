@@ -17,6 +17,13 @@ import System.Posix
 import System.Exit
 import System.Directory
 
+import Data.ByteString.Char8 as L8
+import Network hiding (accept, sClose)
+import Network.Socket 
+import Network.Socket.ByteString (sendAll)
+import Control.Concurrent
+import Control.Concurrent.Thread.Delay
+
 processPar = P.processPar
 parallelism = P.parallelism
 
@@ -97,7 +104,7 @@ radamprop filename prog args encode outdir x =
            seed <- run (randomIO :: IO Int)
            run $ system $ "radamsa" ++ "<" ++ filename ++ " > " ++ filename ++ ".fuzzed"
            ret <- run $ rawSystem prog args
-           run $ putStrLn (show ret)
+           --run $ putStrLn (show ret)
            case ret of
               ExitFailure x -> (
                                 
@@ -127,7 +134,7 @@ execprop filename prog args encode outdir x =
            case ret of
               ExitFailure x -> (
                                 
-                                if (x < 0 || x > 128) then
+                                if ((x < 0 || x > 128) && x /= 143) then
                                  do 
                                    run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
                                    Test.QuickCheck.Monadic.assert True
@@ -136,3 +143,27 @@ execprop filename prog args encode outdir x =
                 )
               _             -> Test.QuickCheck.Monadic.assert True
            )
+
+
+serve :: PortNumber -> [L8.ByteString] -> IO ()
+serve port xs = withSocketsDo $ do
+    sock <- listenOn $ PortNumber port
+    loop sock xs
+
+loop sock (x:xs) = do
+   (conn, _) <- accept sock
+   forkIO $ body conn
+   --return ()
+   loop sock (x:xs)
+  where
+   body c = do sendAll c x
+               sClose c
+
+--loop _ [] = return ()
+
+serveprop filename port _ encode x = 
+         noShrinking $ monadicIO $ do
+         --run $ Prelude.putStrLn (show x)
+         run $ serve port (Prelude.map encode x)
+         run $ delay 2000
+         Test.QuickCheck.Monadic.assert True        

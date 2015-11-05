@@ -28,8 +28,8 @@ import GHC.Word
 import Data.List.Split
 
 
---instance Arbitrary AudioFormat where
---   arbitrary = oneof $ (map return [MicrosoftPCM, ])
+instance Arbitrary AudioFormat where
+   arbitrary = oneof $ (map return [MicrosoftPCM])
 
 
 $(deriveArbitraryRec ''WaveFile)
