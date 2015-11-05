@@ -27,6 +27,7 @@ import qualified Dot
 import qualified ByteString
 import qualified TTF
 import qualified Wav
+import qualified Http
 
 #endif
 
@@ -76,6 +77,7 @@ dispatch arg = do
             "TTF"  -> TTF.main args b
             "CSS"  -> Css.main args b
             "Wav"  -> Wav.main args b
+            "Http" -> Http.main args b
 
             --"MBox"   -> MBox.main args b
             "BS"   -> ByteString.main args b
