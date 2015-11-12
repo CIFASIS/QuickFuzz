@@ -5,9 +5,10 @@ It found [some interesting bugs](http://QuickFuzz.org/).
 
 ## Authors
 
-* Pablo Buiras (Chalmers University of Technology)
-* Gustavo Grieco (CIFASIS-Conicet and VERIMAG)
-* Martín Escarrá (UNR)
+* Pablo **Buiras** ([Chalmers University of Technology](http://www.chalmers.se/en/Pages/default.aspx))
+* Martín **Ceresa** ([CIFASIS-Conicet](http://cifasis-conicet.gov.ar/))
+* Martín **Escarrá** ([Universidad Nacional de Rosario](http://www.unr.edu.ar/))
+* Gustavo **Grieco** ([CIFASIS-Conicet](http://cifasis-conicet.gov.ar/) and [VERIMAG](http://www-verimag.imag.fr/?lang=en))
 
 ## Requirements
 
