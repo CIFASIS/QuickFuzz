@@ -28,6 +28,8 @@ import qualified ByteString
 import qualified TTF
 import qualified Wav
 import qualified Http
+import qualified Tftp
+import qualified Dns
 
 #endif
 
@@ -78,6 +80,8 @@ dispatch arg = do
             "CSS"  -> Css.main args b
             "Wav"  -> Wav.main args b
             "Http" -> Http.main args b
+            "Tftp" -> Tftp.main args b
+            "Dns" -> Dns.main args b
 
             --"MBox"   -> MBox.main args b
             "BS"   -> ByteString.main args b
