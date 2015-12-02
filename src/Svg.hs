@@ -2,14 +2,11 @@
 
 module Svg where
 
-import Args
 import Test.QuickCheck
-import Check
 
-import Data.Binary( Binary(..), encode )
+--import Data.Binary( Binary(..), encode )
 import Graphics.Svg.Types
 
---import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as LC8
 import qualified Data.ByteString.Char8 as C8
 import Data.DeriveTH
@@ -32,7 +29,7 @@ import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector.Storable as VS
 
 import Data.Monoid
-import Data.List.Split
+--import Data.List.Split
 import Data.Char (chr)
 import qualified Data.Text as T
 
@@ -180,16 +177,3 @@ encodeMSvgFile = LC8.pack . ppcTopElement prettyConfigPP . xmlOfDocument
 
 mencode :: MSvgFile -> LC8.ByteString
 mencode = encodeMSvgFile
-
-svgmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir b) = let (prog, args) = (head spl, tail spl) in
-    (case prop of
-        "zzuf" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
-        "radamsa" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ radamprop filename prog args mencode outdir)
-        "check" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
-        "gen" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
-        "exec" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
-        _     -> error "Invalid action selected"
-    ) where spl = splitOn " " cmd
-
-main fargs False = svgmain $ fargs ""
-main fargs True  = processPar fargs svgmain

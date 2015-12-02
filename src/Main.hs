@@ -2,6 +2,8 @@
 
 module Main where
 
+import qualified Process
+
 import qualified Tiff
 import qualified Png
 import qualified Jpeg
@@ -19,6 +21,7 @@ import qualified Pnm
 import qualified Gzip
 import qualified Bzip
 import qualified Js
+--import qualified Sh
 import qualified SimpleSvg
 import qualified Svg
 --import qualified MBox
@@ -27,9 +30,9 @@ import qualified Dot
 import qualified ByteString
 import qualified TTF
 import qualified Wav
-import qualified Http
-import qualified Tftp
-import qualified Dns
+--import qualified Http
+--import qualified Tftp
+--import qualified Dns
 
 #endif
 
@@ -57,34 +60,36 @@ dispatch arg = do
         let b = findPar arg
         safetyChecks arg 
         case findFileType arg of
-            "Bmp"  -> Bmp.main args b
-            "Gif"  -> Gif.main args b
-            "Jpeg" -> Jpeg.main args b
-            "Png"  -> Png.main args b
-            "Tiff" -> Tiff.main args b
+
+            "Bmp"  -> Process.main Bmp.mencode args b
+            "Gif"  -> Process.main Gif.mencode args b
+            "Jpeg" -> Process.main Jpeg.mencode args b
+            "Png"  -> Process.main Png.mencode args b
+            "Tiff" -> Process.main Tiff.mencode args b
 
 #ifdef COMPLETE
-            "Dot"  -> Dot.main args b
-            "Ogg"  -> Ogg.main args b
-            "Zip"  -> Zip.main args b
-            "Bzip" -> Bzip.main args b
-            "Gzip" -> Gzip.main args b
-            "Tar"  -> Tar.main args b
-            "Tga"  -> Tga.main args b
-            "Xml"  -> Xml.main args b
-            "Html" -> Html.main args b
-            "Js"   -> Js.main args b
-            "Pnm"  -> Pnm.main args b
-            "Svg"  -> Svg.main args b
-            "TTF"  -> TTF.main args b
-            "CSS"  -> Css.main args b
-            "Wav"  -> Wav.main args b
-            "Http" -> Http.main args b
-            "Tftp" -> Tftp.main args b
-            "Dns" -> Dns.main args b
+            "Dot"  -> Process.main Dot.mencode args b
+            "Ogg"  -> Process.main Ogg.mencode args b
+            "Zip"  -> Process.main Zip.mencode args b
+            "Bzip" -> Process.main Bzip.mencode args b
+            "Gzip" -> Process.main Gzip.mencode args b
+            "Tar"  -> Process.main Tar.mencode args b
+            "Tga"  -> Process.main Tga.mencode args b
+            "Xml"  -> Process.main Xml.mencode args b
+            "Html" -> Process.main Html.mencode args b
+            "Js"   -> Process.main Js.mencode args b
+            --"Sh"   -> Sh.main args b
 
+            "Pnm"  -> Process.main Pnm.mencode args b
+            "Svg"  -> Process.main Svg.mencode args b
+            "TTF"  -> Process.main TTF.mencode args b
+            "CSS"  -> Process.main Css.mencode args b
+            "Wav"  -> Process.main Wav.mencode args b
+            --"Http" -> Http.main args b
+            --"Tftp" -> Tftp.main args b
+            --"Dns" -> Dns.main args b
             --"MBox"   -> MBox.main args b
-            "BS"   -> ByteString.main args b
+            --"BS"   -> ByteString.main args b
 #endif
             _      -> print "Unsupported Type"
 

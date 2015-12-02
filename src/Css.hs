@@ -21,8 +21,6 @@ import Text.PrettyPrint
 import Language.Css.Syntax
 import Language.Css.Pretty
 import Language.Css.Build
---import Text.XML.Light.Input( parseXMLDoc )
---import Text.XML.Light.Output( ppcTopElement, prettyConfigPP )
 
 import Data.Monoid
 import Data.List.Split
@@ -30,9 +28,6 @@ import Data.Char (chr)
 import qualified Data.Text as T
 
 import Linear
-
---import Text.XML.YJSVG
-
 
 type MCssFile  = StyleSheet
 
@@ -90,20 +85,6 @@ $(deriveArbitraryRec ''Value)
 
 encodeMCssFile x = LC8.pack $ (render (pretty x)) 
 
-
-
 mencode :: MCssFile -> LC8.ByteString
 mencode = encodeMCssFile
 
-cssmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir b) = let (prog, args) = (head spl, tail spl) in
-    (case prop of
-        "zzuf" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
-        "radamsa" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ radamprop filename prog args mencode outdir)
-        "check" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
-        "gen" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
-        "exec" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
-        _     -> error "Invalid action selected"
-    ) where spl = splitOn " " cmd
-
-main fargs False = cssmain $ fargs ""
-main fargs True  = processPar fargs cssmain
