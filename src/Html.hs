@@ -2,16 +2,9 @@
 
 module Html where
 
-import Args
 import Test.QuickCheck
-import Check
-
---import Control.Monad.Zip
---import Control.Exception
---import Data.Binary( Binary(..), encode )
 
 import Text.XML.HaXml.Types
---import Text.XML.HaXml.ByteStringPP
 import Text.XML.HaXml.Html.Generate
 import Text.PrettyPrint.HughesPJ
 
@@ -24,7 +17,7 @@ import Vector
 import ByteString
 
 import Data.Char (chr)
-import Data.List.Split
+--import Data.List.Split
 
 derive makeArbitrary ''Document
 derive makeArbitrary ''Misc
@@ -82,16 +75,3 @@ instance Arbitrary String where
 
 mencode :: MHtml -> L8.ByteString
 mencode x = L8.pack $ render $ htmlprint x
-
-htmlmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir b) = let (prog, args) = (head spl, tail spl) in
-    (case prop of
-        "zzuf" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
-        "radamsa" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ radamprop filename prog args mencode outdir)
-        "check" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
-        "gen" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
-        "exec" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
-        _     -> error "Invalid action selected"
-    ) where spl = splitOn " " cmd
-
-main fargs False = htmlmain $ fargs ""
-main fargs True  = processPar fargs htmlmain

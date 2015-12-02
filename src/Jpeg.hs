@@ -2,9 +2,7 @@
 
 module Jpeg where
 
-import Args
 import Test.QuickCheck
-import Check
 
 import Data.Binary( Binary(..), encode )
 
@@ -21,45 +19,18 @@ import qualified Data.ByteString as B
 
 import Data.DeriveTH
 import Data.Word(Word8, Word16, Word32)
-import Data.Int( Int16, Int8 )
 
 import DeriveArbitrary
 import ByteString
 import Vector
 import Images
 
-import GHC.Types
-import GHC.Word
-
---import qualified Data.Vector as V
---import qualified Data.Vector.Unboxed as VU
---import qualified Data.Vector.Storable as VS
-
---import System.Process
---import System.Exit
-
-import Data.List.Split
-
---import Codec.Picture.Jpg.Types 
-
 $(deriveArbitraryRec ''JpgImage)
 
-type MJpgImage  = JpgImage --(Word8,Metadatas, Image PixelYCbCr8)
---encodeJpgImage (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
-encodeJpgImage = encode
+--type MJpgImage  = JpgImage --(Word8,Metadatas, Image PixelYCbCr8)
+type MJpgImage  = (Word8,Metadatas, Image PixelYCbCr8)
+
+encodeJpgImage (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
 
 mencode :: MJpgImage -> L.ByteString
 mencode = encodeJpgImage
-
-jpegmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir b) = let (prog, args) = (head spl, tail spl) in
-    (case prop of
-        "zzuf" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
-        "check" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
-        "gen" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
-        "exec" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
-        _     -> error "Invalid action selected"
-    ) where spl = splitOn " " cmd
-
-
-main fargs False = jpegmain $ fargs ""
-main fargs True  = processPar fargs jpegmain

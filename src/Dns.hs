@@ -1,9 +1,7 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances #-}
 
 module Dns where
-import Args
 import Test.QuickCheck
-import Check
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Char8 as L8
@@ -12,8 +10,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Internal as IB (c2w, w2c)
 import qualified Network.TFTP.Types as TFTPB
 
-import Data.IP --(IP, IPv4, IPv6)
---import Data.IP.Addr
+import Data.IP
 
 import Network.DNS.Types
 import Network.DNS.Encode
@@ -58,15 +55,9 @@ derive makeArbitrary ''TYPE
 
 $(deriveArbitraryRec ''DNSMessage)
 
---derive makeArbitrary ''Message
---derive makeArbitrary ''TFTPError
-
--- derive makeArbitrary ''HeaderName
-
 convertL8 :: LC8.ByteString -> B.ByteString
 convertL8 =  B.pack . (map IB.c2w) .  LC8.unpack --L8.pack . (Prelude.map IB.w2c) . B.unpack
 
---mencode :: MMessage -> [L8.ByteString]
 data MMessage = MM [DNSMessage] deriving ( Show )
 
 instance Arbitrary MMessage where
@@ -76,7 +67,7 @@ instance Arbitrary MMessage where
 
 mencode (MM x) = Prelude.map (convertL8 . encode) x
 --mencode (MM x) = Prelude.map encode x
-
+{-
 tftpmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir b) = let (prog, args) = (Prelude.head spl, Prelude.tail spl) in
     (case prop of
         "serve" -> quickCheckWith stdArgs {chatty = True, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ serveprop filename 8099 [] mencode)
@@ -85,3 +76,4 @@ tftpmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir b) = let (prog,
 
 main fargs False = tftpmain $ fargs ""
 main fargs True  = processPar fargs tftpmain
+-}

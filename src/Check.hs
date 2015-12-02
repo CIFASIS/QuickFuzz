@@ -161,7 +161,7 @@ loop sock (x:xs) = do
 
 loop _ [] = error "Empty list!"
 
-serveprop filename port _ encode x = 
-         noShrinking $ monadicIO $ do
+serveprop filename port _ encode x =  
+        noShrinking $ monadicIO $ do
            run $ serve port (encode x)
            Test.QuickCheck.Monadic.assert True

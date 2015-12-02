@@ -2,10 +2,7 @@
 
 module Dot where
 
-import Args
 import Test.QuickCheck
-import Check
-
 import Data.Binary( Binary(..), encode )
 import Data.DeriveTH
 
@@ -21,7 +18,7 @@ import Language.Dot.Syntax
 import Language.Dot.Pretty
 
 import Data.Char (chr)
-import Data.List.Split
+--import Data.List.Split
 
 genName :: Gen String
 genName = listOf1 validChars :: Gen String
@@ -60,17 +57,3 @@ derive makeArbitrary ''Compass
 
 mencode :: Graph -> L8.ByteString
 mencode = L8.pack . renderDot 
-
-dotmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir b) = let (prog, args) = (head spl, tail spl) in
-    (case prop of
-        "zzuf" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ zzufprop filename prog args mencode outdir)
-        "radamsa" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ radamprop filename prog args mencode outdir)
-        "check" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ checkprop filename prog args mencode outdir)
-        "gen" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ genprop filename prog args mencode outdir)
-        "exec" -> quickCheckWith stdArgs { chatty = not b, maxSuccess = maxSuccess , maxSize = maxSize } (noShrinking $ execprop filename prog args mencode outdir)
-        _     -> error "Invalid action selected"
-    ) where spl = splitOn " " cmd
-
-
-main fargs False = dotmain $ fargs ""
-main fargs True  = processPar fargs dotmain
