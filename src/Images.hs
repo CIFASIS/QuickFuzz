@@ -72,10 +72,10 @@ instance Show (Image Pixel8) where
  
 instance Arbitrary (Image PixelRGBA8) where
    arbitrary = do
-       l <- listOf (arbitrary :: Gen Word8)
-       w <- (arbitrary :: Gen Int)
-       h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
+       xs <- infiniteListOf (arbitrary :: Gen Word8)
+       Positive w <- (arbitrary :: Gen (Positive Int))
+       Positive h <- (arbitrary :: Gen (Positive Int))
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList (take (4*w*h) xs) }
 
 instance Show (Image PixelRGBA8) where
    show x = ""
