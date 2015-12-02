@@ -24,7 +24,10 @@ import qualified Data.Text as T
 --  where validChars = chr <$> choose (97, 122)
 
 --instance Arbitrary String where
---   arbitrary = genName
+--   arbitrary = do 
+--      x <- genName
+--      y <- genName
+--      return $ x ++ "=" ++ y 
 
 instance Arbitrary a => Arbitrary (Response a) where
    arbitrary = do 
@@ -39,14 +42,14 @@ instance Arbitrary ResponseCode where
      a <- elements [1,2,3,4,5]
      b <- elements [0,1,2,3,4,5,6,7,8,9]
      c <- elements [0,1,2,3,4,5,6,7,8,9]
-     --return (3,0,1)
+     --return (2,0,0)
      return (a,b,c)
  
 data MResponse = MR [Response String] deriving ( Show )
 
 instance Arbitrary MResponse where
   arbitrary = do 
-      xs <- infiniteListOf (resize 100 (arbitrary))  --vectorOf 10000000 (resize 100 (arbitrary))
+      xs <- infiniteListOf (resize 100 (arbitrary))
       return $ MR xs
 
 derive makeArbitrary ''Header
