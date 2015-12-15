@@ -24,14 +24,14 @@ instance Arbitrary (Metadatas) where
       s <- (arbitrary :: Gen String)
       d <- (arbitrary :: Gen Double) 
       sf <- (arbitrary :: Gen SourceFormat)
-      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> dx, DpiY :=> dy, Width :=> w, Height :=> h, Title :=> ""] }
+      return $ Metadatas { getMetadatas = [ {- Format :=> sf,-} Gamma :=> d,  DpiX :=> dx, DpiY :=> dy, Width :=> w, Height :=> h, Title :=> ""] }
 
 instance Arbitrary (Image PixelYCbCr8) where
    arbitrary = do
-       l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelYCbCr8))
-       w <- (arbitrary :: Gen Int)
-       h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
+       xs <- infiniteListOf (arbitrary :: Gen (PixelBaseComponent PixelYCbCr8))
+       Positive w <- (arbitrary :: Gen (Positive Int))
+       Positive h <- (arbitrary :: Gen (Positive Int))
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList (take (4*w*h) xs) }
 
 instance Show (Image PixelYCbCr8) where
    show x = ""
@@ -39,10 +39,10 @@ instance Show (Image PixelYCbCr8) where
 
 instance Arbitrary (Image PixelCMYK16) where
    arbitrary = do
-       l <- listOf (arbitrary :: Gen (PixelBaseComponent PixelCMYK16))
-       w <- (arbitrary :: Gen Int)
-       h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
+       xs <- infiniteListOf (arbitrary :: Gen (PixelBaseComponent PixelCMYK16))
+       Positive w <- (arbitrary :: Gen (Positive Int))
+       Positive h <- (arbitrary :: Gen (Positive Int))
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList (take (w*h) xs) }
 
 instance Show (Image PixelCMYK16) where
    show x = ""
@@ -51,20 +51,21 @@ instance Show (Image PixelCMYK16) where
 
 instance Arbitrary (Image PixelRGB8) where
    arbitrary = do
-       l <- listOf (arbitrary :: Gen Word8)
-       w <- (arbitrary :: Gen Int)
-       h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList l }
+       l <- infiniteListOf (arbitrary :: Gen Word8)
+       Positive w <- (arbitrary :: Gen (Positive Int))
+       Positive h <- (arbitrary :: Gen (Positive Int))
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList (take (3*w*h) l) }
 
 instance Show (Image PixelRGB8) where
    show x = ""
 
 instance Arbitrary (Image Pixel8) where
    arbitrary = do
-       l <- listOf (arbitrary :: Gen Word8)
-       w <- (arbitrary :: Gen Int)
-       h <- (arbitrary :: Gen Int)
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.replicate 128 42}
+       --l <- listOf (arbitrary :: Gen Word8)
+       xs <- infiniteListOf (arbitrary :: Gen Word8)
+       Positive w <- (arbitrary :: Gen (Positive Int))
+       Positive h <- (arbitrary :: Gen (Positive Int))
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList (take (3*w*h) xs)}
 
 instance Show (Image Pixel8) where
    show x = ""

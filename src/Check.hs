@@ -33,7 +33,7 @@ getFileSize path = do
     return (fileSize stat)
 
 handler :: SomeException -> IO ()
-handler x = return ()
+handler x = return ()--Prelude.putStrLn (show x)--return ()
 
 genprop filename prog args encode outdir x = 
          monadicIO $ do
@@ -71,21 +71,35 @@ checkprop filename prog args encode outdir x =
                       )
                   else Test.QuickCheck.Monadic.assert True
                )
-    
-    
+
+call_honggfuzz filename exprog args seed outdir = 
+   rawSystem "honggfuzz" (["-v", "-n", "5", "-N", "500", "-r", "0.00001", "-t","10", "-f", filename,  "-W", outdir, "--", exprog] ++ args)
+
+honggprop :: FilePath -> FilePath -> [String] -> (t -> L.ByteString) -> FilePath -> t -> Property
+honggprop filename prog args encode outdir x = 
+            noShrinking $ monadicIO $ do
+               run $ Control.Exception.catch (L.writeFile filename (encode x)) handler
+               size <- run $ getFileSize filename
+               unless (size > 0) 
+                  (Test.QuickCheck.Monadic.assert True)
+               ret <- run $ call_honggfuzz filename prog args undefined outdir
+               Test.QuickCheck.Monadic.assert True
+
+
+-- write_and_check filename encode x =    
+call_zzuf filename exprog args seed outdir = 
+  rawSystem "zzuf" (["-M", "-1", "-q", "-r","0.004:0.000001", "-s", show seed ++":"++ show (seed+50), "-I", filename, "-S", "-T", "5", "-j", "1", exprog] ++ args)
+
 zzufprop :: FilePath -> FilePath -> [String] -> (t -> L.ByteString) -> FilePath -> t -> Property
 zzufprop filename prog args encode outdir x = 
             noShrinking $ monadicIO $ do
-            run $ createDirectoryIfMissing False outdir
+            --run $ createDirectoryIfMissing False outdir
             run $ Control.Exception.catch (L.writeFile filename (encode x)) handler
             size <- run $ getFileSize filename
-            exezzuf <- run $ findExecutable "zzuf"
-            exeprog <- run $ findExecutable prog
-            unless (size > 0) $ Test.QuickCheck.Monadic.assert True
-            let pzzuf = fromJust exezzuf
-            let exprog = fromJust exeprog
+            unless (size > 0) 
+              (Test.QuickCheck.Monadic.assert True)
             seed <- run (randomIO :: IO Int)
-            ret <- run $ rawSystem pzzuf (["-M", "-1", "-q", "-r","0.004:0.000001", "-s", show (seed `mod` 10024)++":"++show (seed `mod` 10024+5), "-I", filename, "-S", "-T", "60", "-j", "1", exprog] ++ args)
+            ret <- run $ call_zzuf filename prog args seed outdir
             case ret of
               ExitFailure x ->do
                              run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
@@ -121,6 +135,7 @@ radamprop filename prog args encode outdir x =
 
 execprop filename prog args encode outdir x = 
          noShrinking $ monadicIO $ do
+         --run $ Prelude.putStrLn (show x)
          run $  Control.Exception.catch (L.writeFile filename (encode x)) handler
          size <- run $ getFileSize filename
          if size == 0 

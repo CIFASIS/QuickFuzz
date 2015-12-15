@@ -35,7 +35,7 @@ cli =
 
 splitCmd :: MainArgs -> (String, String, String)
 splitCmd args = ret False (findCmds args)
-    where   ret _ [] = error "Bad command" -- TODO
+    where   ret _ [] = ("", "", "")--error "Bad command" -- TODO
             ret b (x:xs)    | x == '@' = if b then ([],[],xs) else ret True xs
                             | b = let (ls,rs,rss) = ret b xs in (ls, x:rs,rss)
                             | otherwise = let (ls,rs,rrs) = ret b xs in (x:ls,rs,rrs)

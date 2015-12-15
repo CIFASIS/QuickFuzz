@@ -25,12 +25,12 @@ import ByteString
 import Vector
 import Images
 
-$(deriveArbitraryRec ''JpgImage)
+-- $(deriveArbitraryRec ''JpgImage)
 
 --type MJpgImage  = JpgImage --(Word8,Metadatas, Image PixelYCbCr8)
-type MJpgImage  = (Word8,Metadatas, Image PixelYCbCr8)
+type MJpgImage  = (Word8,  Metadatas, Image PixelYCbCr8)
 
-encodeJpgImage (quality, metas, img) = encodeJpegAtQualityWithMetadata quality metas img
+encodeJpgImage (q, meta, img) = encodeJpegAtQualityWithMetadata q meta img
 
 mencode :: MJpgImage -> L.ByteString
 mencode = encodeJpgImage
