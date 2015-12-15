@@ -25,6 +25,10 @@ process mencode par filename cmd prop maxSuccess maxSize outdir =
         "exec" ->
             quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
             (noShrinking $ execprop filename prog args mencode outdir)
+        "honggfuzz" ->
+            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
+            (noShrinking $ honggprop filename prog args mencode outdir)
+
         --"serve" -> 
             --quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
             --stdArgs {chatty = True, maxSuccess = maxSuccess , maxSize = maxSize } 

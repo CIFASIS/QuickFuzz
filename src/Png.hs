@@ -17,10 +17,12 @@ import DeriveArbitrary
 
 $(deriveArbitraryRec ''PngImageType)
 
-type MPngImage = (Maybe Palette, PngImageType, Metadatas, Image Pixel8) --(Metadatas, PngImageType, Maybe Palette, Image Pixel8)
+--type MPngImage = (Maybe Palette, PngImageType, Metadatas, Image Pixel8) --(Metadatas, PngImageType, Maybe Palette, Image Pixel8)
+type MPngImage = (Metadatas, Image PixelRGBA8)
 
 encodePngImage :: MPngImage -> L.ByteString
-encodePngImage (a,b,c,d) = (genericEncodePng a b c d) --(encodePalettedPngWithMetadata a b c)
+--encodePngImage (a,b,c,d) = (genericEncodePng a b c d) --(encodePalettedPngWithMetadata a b c)
+encodePngImage (a,b) = encodePngWithMetadata a b
 
 mencode :: MPngImage -> L.ByteString
 mencode = encodePngImage
