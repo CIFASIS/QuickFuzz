@@ -28,15 +28,16 @@
     <div id="content-wrapper">
       <div class="inner clearfix">
         <section id="main-content">
-          <p>QuickFuzz is a grammar fuzzer powered by <a href="http://www.cse.chalmers.se/%7Erjmh/QuickCheck/">QuickCheck</a>, <a href="https://wiki.haskell.org/Template_Haskell">Template Haskell</a> and specific libraries from Hackage to generate many complex file-formats like Jpeg, Png, Svg, Xml, Zip, Tar and more!. QuickFuzz is open-source (GPL3) and it can use other bug detection tools like <a href="http://caca.zoy.org/wiki/zzuf">zzuf</a>, <a href="https://github.com/aoh/radamsa">radamsa</a> and <a href="http://valgrind.org">valgrind</a>.</p>
+          <p>QuickFuzz is a grammar fuzzer powered by <a href="http://www.cse.chalmers.se/%7Erjmh/QuickCheck/">QuickCheck</a>, <a href="https://wiki.haskell.org/Template_Haskell">Template Haskell</a> and specific libraries from Hackage to generate many complex file-formats like Jpeg, Png, Svg, Xml, Zip, Tar and more!. QuickFuzz is open-source (GPL3) and it can use other bug detection tools like <a href="http://caca.zoy.org/wiki/zzuf">zzuf</a>, <a href="https://github.com/aoh/radamsa">radamsa</a>, <a href="http://google.github.io/honggfuzz/">honggfuzz</a> and <a href="http://valgrind.org">valgrind</a>.</p>
 
 <h2>
 <a id="bugs-lost-and-found" class="anchor" href="#bugs-lost-and-found" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Bugs <del>lost and</del> found</strong>
 </h2>
 
 <ul>
-<li>Firefox (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1210745">failed assert in gif loader</a>, <a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-128/">CVE-2015-7194</a>)</li>
+<li>Firefox (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1210745">failed assert in gif loader</a>, <a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-128/">CVE-2015-7194</a>, <a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-143/">CVE-2015-7216, CVE-2015-7217</a>)</li>
 <li>Gdk-Pixbuf (<a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-88/">CVE-2015-4491</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/10">CVE-2015-7674</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/9">CVE-2015-7673</a>, undisclosed)</li>
+<li>Mplayer (<a href="http://www.openwall.com/lists/oss-security/2015/11/10/8">several reads out-of-bound in mplayer 1.1</a>)</li>
 <li>Jasper (<a href="https://bugzilla.redhat.com/show_bug.cgi?id=1254242">CVE-2015-5203</a>)</li>
 <li>Unzip (<a href="http://www.openwall.com/lists/oss-security/2015/10/11/5">CVE-2015-7696, CVE-2015-7697</a>)</li>
 <li>GNU Tar (<a href="http://www.openwall.com/lists/oss-security/2015/08/31/1">out-of-bound access</a>)</li>
@@ -69,7 +70,11 @@
 <a id="acknowledgement" class="anchor" href="#acknowledgement" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Acknowledgement</strong>
 </h2>
 
-<p>A special thanks goes to all the developers from the packages who made possible QuickFuzz to generate several complex file-formats.</p>
+<ul>
+<li>
+<a href="https://github.com/ayberkt">ayberkt</a> for the bug reports and pull requests.</li>
+<li>A special thanks goes to all the developers from the packages who made possible QuickFuzz to generate several complex file-formats.</li>
+</ul>
         </section>
 
         <aside id="sidebar">
