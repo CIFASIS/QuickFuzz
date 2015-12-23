@@ -33,7 +33,7 @@ getFileSize path = do
     return (fileSize stat)
 
 handler :: SomeException -> IO ()
-handler x = return ()--Prelude.putStrLn (show x)--return ()
+handler x = return () --Prelude.putStrLn (show x)--return ()
 
 genprop filename prog args encode outdir x = 
          monadicIO $ do
@@ -73,17 +73,17 @@ checkprop filename prog args encode outdir x =
                )
 
 call_honggfuzz filename exprog args seed outdir = 
-   rawSystem "honggfuzz" (["-v", "-n", "5", "-N", "500", "-r", "0.00001", "-t","10", "-f", filename,  "-W", outdir, "--", exprog] ++ args)
+   rawSystem "honggfuzz" (["-q", "-v", "-n", "5", "-N", "50", "-r", "0.00001", "-t","10", "-f", filename,  "-W", outdir, "--", exprog] ++ args)
 
 honggprop :: FilePath -> FilePath -> [String] -> (t -> L.ByteString) -> FilePath -> t -> Property
 honggprop filename prog args encode outdir x = 
             noShrinking $ monadicIO $ do
                run $ Control.Exception.catch (L.writeFile filename (encode x)) handler
                size <- run $ getFileSize filename
-               unless (size > 0) 
-                  (Test.QuickCheck.Monadic.assert True)
-               ret <- run $ call_honggfuzz filename prog args undefined outdir
-               Test.QuickCheck.Monadic.assert True
+               when (size > 0) $ do
+               --   (Test.QuickCheck.Monadic.assert True) $ do
+                 ret <- run $ call_honggfuzz filename prog args undefined outdir
+                 Test.QuickCheck.Monadic.assert True
 
 
 -- write_and_check filename encode x =    

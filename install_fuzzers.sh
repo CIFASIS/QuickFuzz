@@ -16,3 +16,8 @@ cd zzuf
 make install
 
 cd ..
+
+git clone https://github.com/CIFASIS/honggfuzz
+cd honggfuzz
+make
+cp ./honggfuzz $HOME/.local/bin

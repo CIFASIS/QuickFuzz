@@ -23,7 +23,9 @@ derive makeArbitrary ''OggTrack
 derive makeArbitrary ''Granulerate
 
 instance Arbitrary ContentType where
-   arbitrary = oneof $ (map return [skeleton, cmml, vorbis, theora, speex, celt, flac])
+    arbitrary = oneof $ (map return [flac])
+
+--   arbitrary = oneof $ (map return [skeleton, cmml, vorbis, theora, speex, celt, flac])
 
 instance Arbitrary MessageHeaders where
    arbitrary = do
@@ -31,7 +33,7 @@ instance Arbitrary MessageHeaders where
      x <- (arbitrary :: (Gen String))
      return $ mhAppends x y mhEmpty
 
-appendvorbis d = L.append theoraIdent d
+appendvorbis d = L.append flacIdent d
 appendh (OggPage x track cont incplt bos eos gp seqno s) = OggPage x track cont incplt bos eos gp seqno (map appendvorbis s)
 
 mencode = appendvorbis
