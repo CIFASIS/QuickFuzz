@@ -16,8 +16,8 @@ import DeriveArbitrary
 import ByteString
 import Vector
 
-instance Arbitrary AudioFormat where
-   arbitrary = oneof $ (map return [MicrosoftPCM])
+--instance Arbitrary AudioFormat where
+--   arbitrary = oneof $ (map return [MicrosoftPCM])
 
 $(deriveArbitraryRec ''WaveFile)
 

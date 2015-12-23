@@ -24,7 +24,7 @@ instance Arbitrary (Metadatas) where
       s <- (arbitrary :: Gen String)
       d <- (arbitrary :: Gen Double) 
       sf <- (arbitrary :: Gen SourceFormat)
-      return $ Metadatas { getMetadatas = [ {- Format :=> sf,-} Gamma :=> d,  DpiX :=> dx, DpiY :=> dy, Width :=> w, Height :=> h, Title :=> ""] }
+      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> dx, DpiY :=> dy, Width :=> w, Height :=> h, Title :=> ""] }
 
 instance Arbitrary (Image PixelYCbCr8) where
    arbitrary = do
