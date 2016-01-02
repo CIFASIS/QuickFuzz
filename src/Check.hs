@@ -73,7 +73,7 @@ checkprop filename prog args encode outdir x =
                )
 
 call_honggfuzz filename exprog args seed outdir = 
-   rawSystem "honggfuzz" (["-q", "-v", "-n", "5", "-N", "50", "-r", "0.00001", "-t","10", "-f", filename,  "-W", outdir, "--", exprog] ++ args)
+   rawSystem "honggfuzz" (["-v", "-n", "5", "-N", "50", "-r", "0.00001", "-t","60", "-f", filename,  "-W", outdir, "--", exprog] ++ args)
 
 honggprop :: FilePath -> FilePath -> [String] -> (t -> L.ByteString) -> FilePath -> t -> Property
 honggprop filename prog args encode outdir x = 

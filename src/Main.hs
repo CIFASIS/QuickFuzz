@@ -28,8 +28,11 @@ import qualified Svg
 import qualified Css
 import qualified Dot
 import qualified ByteString
+import qualified Unicode
 import qualified TTF
 import qualified Wav
+import qualified CPIO
+
 --import qualified Http
 --import qualified Tftp
 --import qualified Dns
@@ -85,11 +88,15 @@ dispatch arg = do
             "TTF"  -> Process.main TTF.mencode args b
             "CSS"  -> Process.main Css.mencode args b
             "Wav"  -> Process.main Wav.mencode args b
+            "CPIO" -> Process.main CPIO.mencode args b
+
             --"Http" -> Http.main args b
             --"Tftp" -> Tftp.main args b
             --"Dns" -> Dns.main args b
             --"MBox"   -> MBox.main args b
-            --"BS"   -> ByteString.main args b
+            "Unicode" -> Process.main Unicode.mencode args b
+            "BS"   -> Process.main ByteString.bencode args b
+
 #endif
             _      -> print "Unsupported Type"
 
