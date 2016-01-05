@@ -1,5 +1,8 @@
 # Parse options
 
+# This might need more time, but we should get a better compilation
+GHC_OPT='--max-backjumps=360 --reorder-goals' 
+
 while getopts "m" opt; do
     case $opt in
         m)
@@ -22,7 +25,7 @@ if [ $_OPT_SANDBOX ]; then
 fi
 
 # Define needed packages
-[ $_OPT_MIN ] && _PKG="Juicy.Pixels" || _PKG="Juicy.Pixels yjsvg_haskell svg-tree hogg tar language-javascript ttasm wavy"
+[ $_OPT_MIN ] && _PKG="Juicy.Pixels" || _PKG="wavy Juicy.Pixels yjsvg_haskell svg-tree hogg tar language-javascript ttasm"
 _PKG_DIR="packages"
 
 # RECOMMENDED ########################
@@ -35,11 +38,11 @@ cabal update
 if ! [ $_OPT_MIN ]; then
 # These are just in case
     if [ $_OPT_SANDBOX ]; then
-        cabal --sandbox-config-file=cabal.sandbox.config install alex
-        cabal --sandbox-config-file=cabal.sandbox.config install happy
+        cabal --sandbox-config-file=cabal.sandbox.config install $GHC_OPT alex
+        cabal --sandbox-config-file=cabal.sandbox.config install $GHC_OPT happy
     else
-        cabal install alex
-        cabal install happy
+        cabal install $GHC_OPT alex
+        cabal install $GHC_OPT happy
     fi
 fi
 
@@ -54,9 +57,9 @@ do
     cd $i
     git pull
     if [ $_OPT_SANDBOX ]; then
-        cabal --sandbox-config-file=../../cabal.sandbox.config install
+        cabal --sandbox-config-file=../../cabal.sandbox.config install $GHC_OPT
     else
-        cabal install
+        cabal install $GHC_OPT
     fi
     cd ..
 done
@@ -70,8 +73,8 @@ if [ $_OPT_MIN ]; then
 fi
 
 if [ $_OPT_SANDBOX ]; then
-    cabal --sandbox-config-file=cabal.sandbox.config install
+    cabal --sandbox-config-file=cabal.sandbox.config install $GHC_OPT
     cp --remove-destination .cabal-sandbox/bin/QuickFuzz .
 else
-    cabal install
+    cabal install $GHC_OPT
 fi
