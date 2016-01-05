@@ -32,6 +32,7 @@ import qualified Unicode
 import qualified TTF
 import qualified Wav
 import qualified CPIO
+import qualified MarkUp
 
 --import qualified Http
 --import qualified Tftp
@@ -89,6 +90,7 @@ dispatch arg = do
             "CSS"  -> Process.main Css.mencode args b
             "Wav"  -> Process.main Wav.mencode args b
             "CPIO" -> Process.main CPIO.mencode args b
+            "MarkUp" -> Process.main MarkUp.mencode args b
 
             --"Http" -> Http.main args b
             --"Tftp" -> Tftp.main args b
