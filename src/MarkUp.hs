@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
+{-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances, TupleSections, OverloadedStrings #-}
 
 module MarkUp where
 
@@ -19,13 +19,13 @@ import Vector
 import Text.Blaze.Internal
 import Text.Blaze.Html
 import Text.Blaze.Html5 as H5
+import Text.Blaze.Html5.Attributes as HAtt
 import Text.Blaze.Html.Renderer.Pretty
 import Data.Text
 import Data.Char (chr)
 
 instance Show Markup where
     show = renderHtml
-
 
 genName :: Gen String
 genName = listOf1 validChars :: Gen String
@@ -46,12 +46,45 @@ instance Arbitrary StaticString where
         bt <- arbitrary 
         return $ StaticString (const ns) bt t
 
-instance Arbitrary Attribute where
+instance Arbitrary AttributeValue where
     arbitrary = do
         t <- arbitrary
-        t1 <- arbitrary
-        oneof $ Prelude.map return [ mempty
-                , t1 `mappend` t ]
+        return $ stringValue t
+
+instance Arbitrary Attribute where
+    arbitrary = do
+        attr <- arbitrary
+        oneof $ Prelude.map (\f -> return $ f attr)
+            [ alt, src, accept, acceptCharset
+            , accesskey, action, async, autocomplete
+            , autofocus, autoplay, challenge, charset, checked
+            , HAtt.cite, class_, cols, colspan, content, contenteditable
+            , contextmenu, controls, coords, data_, HAtt.datetime, defer
+            , dir, disabled, draggable, enctype, for, HAtt.form, formaction
+            , formenctype, formmethod, formnovalidate, formtarget, headers
+            , height, hidden, high, href, hreflang, httpEquiv, icon, HAtt.id
+            , ismap, item, itemprop, itemscope, itemtype, keytype, HAtt.label
+            , lang, list, HAtt.loop, low, manifest, HAtt.max, maxlength, media, method
+            , HAtt.min, multiple, name, novalidate, onbeforeonload, onbeforeprint
+            , onblur, oncanplay, oncanplaythrough, onchange, onclick
+            , oncontextmenu, ondblclick, ondrag, ondragend, ondragenter
+            , ondragleave, ondragover, ondragstart, ondrop, ondurationchange
+            , onemptied, onended, onerror, onfocus, onformchange, onforminput
+            , onhaschange, oninput, oninvalid, onkeydown, onkeyup, onload
+            , onloadeddata, onloadedmetadata, onloadstart, onmessage
+            , onmousedown, onmousemove, onmouseout, onmouseover, onmouseup
+            , onmousewheel, ononline, onpagehide, onpageshow, onpause, onplay
+            , onplaying, onprogress, onpropstate, onratechange
+            , onreadystatechange, onredo, onresize, onscroll, onseeked
+            , onseeking, onselect, onstalled, onstorage, onsubmit, onsuspend
+            , ontimeupdate, onundo, onunload, onvolumechange, onwaiting
+            , open, optimum, pattern, ping, placeholder, preload, pubdate
+            , radiogroup, readonly, rel, required, reversed, rows, rowspan
+            , sandbox, scope, scoped, seamless, selected, shape, size, sizes
+            , HAtt.span, spellcheck, srcdoc, start, step, HAtt.style, subject, HAtt.summary
+            , tabindex, target, HAtt.title, type_, usemap, value, width, wrap
+            , xmlns
+            ]
 
 instance Arbitrary ChoiceString where
     arbitrary = do
@@ -93,47 +126,59 @@ instance Arbitrary Html where
     arbitrary = do
         ht <- oneof [tags , basura ]
         att <- arbitrary
-        att1 <- arbitrary
-        oneof $ (Prelude.map return
-                    [ docType
-                    , att ! att1
-                    , area 
-                    , base
-                    , br, col, embed, hr, img, input
-                    , keygen, link, menuitem, meta
-                    , param, source, track, wbr
-                    ])
-                ++ (Prelude.map (\f -> return $ f ht)
-                    [ docTypeHtml 
-                    , a 
-                    , abbr 
-                    , address 
-                    , article 
-                    , aside 
-                    , audio 
-                    , b 
-                    , bdo 
-                    , blockquote 
-                    , body
-                    , button
-                    , canvas , caption, cite, code
-                    , colgroup, command, datalist
-                    , dd, del, details, dfn, H5.div
-                    , dl, dt, em, fieldset
-                    , figcaption, figure, footer
-                    , form, h1, h2, h3, h4, h5, h6
-                    , H5.head, header, hgroup, html, i
-                    , ins, kbd, H5.label, legend
-                    , iframe, main, H5.map, mark, menu
-                    , meter, nav, noscript, object, ol
-                    , optgroup, option, H5.output, p, pre
-                    , progress, q, rp, rt, ruby, samp, script
-                    , section, select, small, H5.span, strong
-                    , style, sub, summary, sup, table
-                    , tbody, td, textarea, tfoot, th, thead, time, title
-                    , tr, ul, var, video             
-                    ]
-                    )
+        att1 <- (arbitrary :: Gen Attribute)
+        --oneof $
+        frequency $ 
+                ( (15, return $ att ! att1) :
+                   (Prelude.map ((10,) . return)
+                       [ 
+                       --att ! att1
+                        link
+                       , source 
+                       , meta
+                       , hr, img
+                       ])
+                   ++ (Prelude.map (\f -> (10, return $ f ht))
+                       [ iframe
+                       , a, figure
+                       , article, ol, tr, ul
+                       , H5.form, h1, h2, h3, h4, h5, h6
+                       , body
+                       , tbody, td, textarea, tfoot, th, thead, time, H5.title
+                       ])
+                   ++ (Prelude.map ((1,) . return)
+                       [ docType
+                       , area 
+                       , base
+                       , br, col, embed, input
+                       , keygen, menuitem
+                       , param, track, wbr
+                       ])
+                   ++ (Prelude.map (\f -> (1, return $ f ht))
+                       [ docTypeHtml 
+                       , abbr 
+                       , address 
+                       , aside 
+                       , audio 
+                       , b 
+                       , bdo 
+                       , blockquote 
+                       , button
+                       , canvas , caption, H5.cite, code
+                       , colgroup, command, datalist
+                       , dd, del, details, dfn, H5.div
+                       , dl, dt, em, fieldset
+                       , figcaption, footer
+                       , H5.head, header, hgroup, html, i
+                       , ins, kbd, H5.label, legend
+                       , main, H5.map, mark, menu
+                       , meter, nav, noscript, object
+                       , optgroup, option, H5.output, p, pre
+                       , progress, q, rp, rt, ruby, samp, script
+                       , section, select, small, H5.span, strong
+                       , H5.style, sub, H5.summary, sup, table
+                       , var, video             
+                       ]))
 
 mencode :: Html -> LC8.ByteString
 mencode x = LC8.pack $ renderHtml x
