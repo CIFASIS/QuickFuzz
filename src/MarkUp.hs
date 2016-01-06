@@ -53,8 +53,11 @@ instance Arbitrary Tag where
 
 instance Arbitrary AttributeValue where
     arbitrary = do
-        t <- arbitrary
-        return $ stringValue t
+        s <- arbitrary :: Gen String
+        n <- arbitrary :: Gen Int
+        b <- arbitrary :: Gen Bool
+        f <- arbitrary :: Gen Float
+        oneof $ Prelude.map return [toValue s, toValue n, toValue b, toValue f]
 
 instance Arbitrary Attribute where
     arbitrary = do
@@ -141,14 +144,15 @@ tags = arbitrary
 instance Arbitrary Html where
     arbitrary = do
         ht <- oneof [tags , basura ]
-        att <- arbitrary
+        --att <- arbitrary
         att1 <- (arbitrary :: Gen Attribute)
         tag <- arbitrary
         boop <- arbitrary
-        --oneof $
-        frequency $ 
-                ( (65, return $ att ! att1) :
-                   (Prelude.map ((10,) . return)
+        frequency $
+                --Prelude.map (\(p,x) -> (p, x !! att1))
+ 
+                ( 
+                   (Prelude.map ((10,) . (\x -> return (x!att1)))
                        [ 
                        --att ! att1
                         link
