@@ -143,6 +143,8 @@ instance Arbitrary Html where
         ht <- oneof [tags , basura ]
         att <- arbitrary
         att1 <- (arbitrary :: Gen Attribute)
+        tag <- arbitrary
+        boop <- arbitrary
         --oneof $
         frequency $ 
                 ( (15, return $ att ! att1) :
@@ -154,6 +156,9 @@ instance Arbitrary Html where
                        , meta
                        , hr, img
                        ])
+                    ++
+                    ([(1,return $ customParent tag ht),(1,return $ customLeaf tag boop)]
+                    )
                    ++ (Prelude.map (\f -> (10, return $ f ht))
                        [ iframe
                        , a, figure
