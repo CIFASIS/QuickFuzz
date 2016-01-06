@@ -147,7 +147,7 @@ instance Arbitrary Html where
         boop <- arbitrary
         --oneof $
         frequency $ 
-                ( (15, return $ att ! att1) :
+                ( (65, return $ att ! att1) :
                    (Prelude.map ((10,) . return)
                        [ 
                        --att ! att1
