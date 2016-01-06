@@ -46,6 +46,11 @@ instance Arbitrary StaticString where
         bt <- arbitrary 
         return $ StaticString (const ns) bt t
 
+instance Arbitrary Tag where
+    arbitrary = do
+        t <- arbitrary
+        return $ stringTag t
+
 instance Arbitrary AttributeValue where
     arbitrary = do
         t <- arbitrary
@@ -54,7 +59,17 @@ instance Arbitrary AttributeValue where
 instance Arbitrary Attribute where
     arbitrary = do
         attr <- arbitrary
-        oneof $ Prelude.map (\f -> return $ f attr)
+        tag1 <- arbitrary
+        tag2 <- arbitrary
+        oneof $
+            ( Prelude.map return
+                [
+                 attribute tag1 tag2 attr
+                , dataAttribute tag1 attr
+                , customAttribute tag1 attr
+                ]
+            ++
+             Prelude.map (\f -> return $ f attr)
             [ alt, src, accept, acceptCharset
             , accesskey, action, async, autocomplete
             , autofocus, autoplay, challenge, charset, checked
@@ -85,6 +100,7 @@ instance Arbitrary Attribute where
             , tabindex, target, HAtt.title, type_, usemap, value, width, wrap
             , xmlns
             ]
+            )
 
 instance Arbitrary ChoiceString where
     arbitrary = do
