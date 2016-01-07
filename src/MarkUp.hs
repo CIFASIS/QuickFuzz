@@ -6,10 +6,17 @@ import Args
 import Test.QuickCheck
 import Check
 
+import qualified Text.Blaze.Renderer.XmlHtml as XML
+import qualified Text.XmlHtml as RXML
+import qualified Blaze.ByteString.Builder as PB
+import Text.XML.Light.Output( ppcTopElement, prettyConfigPP )
+
+
 import Data.Binary( Binary(..), encode )
 
 import qualified Data.ByteString.Lazy.Char8 as LC8
 import qualified Data.ByteString.Char8 as C8
+import qualified Data.ByteString.Lazy as LB
 import Data.DeriveTH
 
 import DeriveArbitrary
@@ -253,5 +260,8 @@ instance Arbitrary Html where
                        , var, video             
                        ]))
 
-mencode :: Html -> LC8.ByteString
-mencode x = LC8.pack $ renderHtml x
+mencodeHtml :: Html -> LC8.ByteString
+mencodeHtml x = LC8.pack $ renderHtml x
+
+mencodeXml :: Html -> LB.ByteString
+mencodeXml x = PB.toLazyByteString $ RXML.render $ XML.renderHtml x

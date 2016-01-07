@@ -37,7 +37,8 @@ executable QuickFuzz
                         split, bzlib, JuicyPixels, language-ecmascript, wl-pprint, text,
                         linear, svg-tree, xml, yjsvg, language-dot, ttasm, parallel-io, 
                         language-css, monad-par, abstract-par, wavy, network, HTTP, unbounded-delays, 
-                        concurrent-extra,base16-bytestring,blaze-html,blaze-markup, network-uri
+                        concurrent-extra,base16-bytestring,blaze-html,blaze-markup,network-uri,xmlhtml,
+                        blaze-builder
 
   hs-source-dirs:      src
   default-language:    Haskell2010

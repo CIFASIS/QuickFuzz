@@ -80,7 +80,8 @@ dispatch arg = do
             "Tar"  -> Process.main Tar.mencode args b
             "Tga"  -> Process.main Tga.mencode args b
             "Xml"  -> Process.main Xml.mencode args b
-            "Html" -> Process.main MarkUp.mencode args b
+            "Html" -> Process.main MarkUp.mencodeHtml args b
+            "XHtml" -> Process.main MarkUp.mencodeXml args b
             "Js"   -> Process.main Js.mencode args b
             --"Sh"   -> Sh.main args b
 
@@ -90,7 +91,7 @@ dispatch arg = do
             "CSS"  -> Process.main Css.mencode args b
             "Wav"  -> Process.main Wav.mencode args b
             "CPIO" -> Process.main CPIO.mencode args b
-            "MarkUp" -> Process.main MarkUp.mencode args b
+            "MarkUp" -> Process.main MarkUp.mencodeHtml args b
 
             --"Http" -> Http.main args b
             --"Tftp" -> Tftp.main args b
