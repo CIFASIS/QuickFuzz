@@ -80,7 +80,7 @@ dispatch arg = do
             "Tar"  -> Process.main Tar.mencode args b
             "Tga"  -> Process.main Tga.mencode args b
             "Xml"  -> Process.main Xml.mencode args b
-            "Html" -> Process.main Html.mencode args b
+            "Html" -> Process.main MarkUp.mencode args b
             "Js"   -> Process.main Js.mencode args b
             --"Sh"   -> Sh.main args b
 

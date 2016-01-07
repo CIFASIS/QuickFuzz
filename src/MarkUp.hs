@@ -21,8 +21,14 @@ import Text.Blaze.Html
 import Text.Blaze.Html5 as H5
 import Text.Blaze.Html5.Attributes as HAtt
 import Text.Blaze.Html.Renderer.Pretty
+
+import Network.URI
 import Data.Text
 import Data.Char (chr)
+
+
+derive makeArbitrary ''URI
+derive makeArbitrary ''URIAuth
 
 instance Show Markup where
     show = renderHtml
@@ -30,6 +36,7 @@ instance Show Markup where
 genName :: Gen String
 genName = listOf1 validChars :: Gen String
   where validChars = chr <$> choose (97, 122)
+--genName = return "a"
 
 genText :: Gen Text
 genText = do
@@ -57,7 +64,9 @@ instance Arbitrary AttributeValue where
         n <- arbitrary :: Gen Int
         b <- arbitrary :: Gen Bool
         f <- arbitrary :: Gen Float
-        oneof $ Prelude.map return [toValue s, toValue n, toValue b, toValue f]
+        u <- arbitrary :: Gen URI
+        oneof $ Prelude.map return [toValue s, toValue n, toValue b, toValue f, toValue (show u)]
+        --oneof $ Prelude.map return [toValue (show u)]
 
 instance Arbitrary Attribute where
     arbitrary = do
@@ -149,21 +158,19 @@ instance Arbitrary Html where
         tag <- arbitrary
         boop <- arbitrary
         frequency $
-                --Prelude.map (\(p,x) -> (p, x !! att1))
+                Prelude.map (\x -> (1, return $ x ! att1))
  
                 ( 
-                   (Prelude.map ((10,) . (\x -> return (x!att1)))
+                   
                        [ 
-                       --att ! att1
                         link
                        , source 
                        , meta
                        , hr, img
-                       ])
+                       ]
                     ++
-                    ([(1,return $ customParent tag ht),(1,return $ customLeaf tag boop)]
-                    )
-                   ++ (Prelude.map (\f -> (10, return $ f ht))
+                    [customParent tag ht, customLeaf tag boop]                 
+                   ++ (Prelude.map (\f -> f ht)
                        [ iframe
                        , a, figure
                        , article, ol, tr, ul
@@ -171,15 +178,15 @@ instance Arbitrary Html where
                        , body
                        , tbody, td, textarea, tfoot, th, thead, time, H5.title
                        ])
-                   ++ (Prelude.map ((1,) . return)
+                   ++ 
                        [ docType
                        , area 
                        , base
                        , br, col, embed, input
                        , keygen, menuitem
                        , param, track, wbr
-                       ])
-                   ++ (Prelude.map (\f -> (1, return $ f ht))
+                       ]
+                   ++ (Prelude.map (\f -> f ht)
                        [ docTypeHtml 
                        , abbr 
                        , address 
