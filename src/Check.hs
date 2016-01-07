@@ -73,7 +73,7 @@ checkprop filename prog args encode outdir x =
                )
 
 call_honggfuzz filename exprog args seed outdir = 
-   rawSystem "honggfuzz" (["-v", "-n", "5", "-N", "50", "-r", "0.00001", "-t","60", "-f", filename,  "-W", outdir, "--", exprog] ++ args)
+   rawSystem "honggfuzz" (["-q", "-v", "-n", "2", "-N", "5", "-r", "0.00001", "-t","60", "-f", filename,  "-W", outdir, "--", exprog] ++ args)
 
 honggprop :: FilePath -> FilePath -> [String] -> (t -> L.ByteString) -> FilePath -> t -> Property
 honggprop filename prog args encode outdir x = 
@@ -109,14 +109,15 @@ zzufprop filename prog args encode outdir x =
 
 radamprop filename prog args encode outdir x = 
          noShrinking $ monadicIO $ do
-         run $  Control.Exception.catch (L.writeFile filename (encode x)) handler
-         size <- run $ getFileSize filename
+         let tmp_filename = ".qf." ++ filename
+         run $  Control.Exception.catch (L.writeFile tmp_filename (encode x)) handler
+         size <- run $ getFileSize tmp_filename
          if size == 0 
             then Test.QuickCheck.Monadic.assert True 
          else (
            do 
            seed <- run (randomIO :: IO Int)
-           run $ system $ "radamsa" ++ "<" ++ filename ++ " > " ++ filename ++ ".fuzzed"
+           run $ system $ "radamsa" ++ "<" ++ tmp_filename ++ " > " ++ filename
            ret <- run $ rawSystem prog args
            --run $ putStrLn (show ret)
            case ret of
@@ -124,7 +125,7 @@ radamprop filename prog args encode outdir x =
                                 
                                 if (x < 0 || x > 128) then
                                  do 
-                                   run $ copyFile (filename ++ ".fuzzed") (outdir ++ "/" ++ filename ++ "."++ show seed)
+                                   run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
                                    Test.QuickCheck.Monadic.assert True
                                  else
                                    Test.QuickCheck.Monadic.assert True
