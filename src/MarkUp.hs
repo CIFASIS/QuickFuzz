@@ -23,12 +23,53 @@ import Text.Blaze.Html5.Attributes as HAtt
 import Text.Blaze.Html.Renderer.Pretty
 
 import Network.URI
-import Data.Text
+import Data.List           (intercalate)
+import Control.Applicative ((<$>), (<*>), pure)
+import Data.Text (pack, Text(..) )
 import Data.Char (chr)
 
 
-derive makeArbitrary ''URI
-derive makeArbitrary ''URIAuth
+genWord :: Gen String
+genWord = listOf1 (choose ('a', 'z'))
+
+genCanonicalURI :: Gen URI
+genCanonicalURI =
+    URI <$> elements ["http:", "https:"]
+        <*> (Just <$> genURIAuthority)
+        <*> (('/':) <$> genPaths)
+        <*> pure ""
+        <*> pure ""
+  where
+    genURIAuthority =
+      URIAuth <$> pure ""
+              <*> genRegName
+              <*> pure ""
+    genRegName = do
+      domainName <- elements ["noomii", "google", "yahoo"]
+      return $ Prelude.concat ["www.", domainName, ".com"]
+    genPaths = resize 10 (intercalate "/" <$> listOf genWord)
+
+genNormalURI :: URI -> Gen URI
+genNormalURI uri = do
+    qs  <- genQueryString
+    fragment <-  genFragment
+    return $ uri { uriQuery = qs, uriFragment = fragment }
+  where
+    genParam = do
+      name  <- genWord
+      value <- genWord
+      return $ name ++ "=" ++ value
+    genQueryString = resize 10 $
+      ('?':) <$> (intercalate "&" <$> listOf genParam)
+    genFragment = ('#':) <$> genWord
+
+instance Arbitrary URI where
+  arbitrary = do
+    uri <- genCanonicalURI
+    genNormalURI uri
+
+--derive makeArbitrary ''URI
+--derive makeArbitrary ''URIAuth
 
 instance Show Markup where
     show = renderHtml
