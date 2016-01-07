@@ -32,7 +32,8 @@ import qualified Unicode
 import qualified TTF
 import qualified Wav
 import qualified CPIO
-import qualified MarkUp
+--import qualified MarkUp
+import qualified MarkUpSvg
 
 --import qualified Http
 --import qualified Tftp
@@ -80,18 +81,20 @@ dispatch arg = do
             "Tar"  -> Process.main Tar.mencode args b
             "Tga"  -> Process.main Tga.mencode args b
             "Xml"  -> Process.main Xml.mencode args b
-            "Html" -> Process.main MarkUp.mencodeHtml args b
-            "XHtml" -> Process.main MarkUp.mencodeXml args b
+            --"Html" -> Process.main MarkUp.mencodeHtml args b
+            --"XHtml" -> Process.main MarkUp.mencodeXml args b
             "Js"   -> Process.main Js.mencode args b
             --"Sh"   -> Sh.main args b
 
             "Pnm"  -> Process.main Pnm.mencode args b
-            "Svg"  -> Process.main Svg.mencode args b
+            --"Svg"  -> Process.main Svg.mencode args b
+            "Svg"  -> Process.main MarkUpSvg.mencode args b
             "TTF"  -> Process.main TTF.mencode args b
             "CSS"  -> Process.main Css.mencode args b
             "Wav"  -> Process.main Wav.mencode args b
             "CPIO" -> Process.main CPIO.mencode args b
-            "MarkUp" -> Process.main MarkUp.mencodeHtml args b
+            --"MarkUp" -> Process.main MarkUp.mencodeHtml args b
+            "MarkUpSvg" -> Process.main MarkUpSvg.mencode args b
 
             --"Http" -> Http.main args b
             --"Tftp" -> Tftp.main args b
