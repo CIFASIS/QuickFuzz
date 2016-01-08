@@ -37,7 +37,7 @@ import Data.Char (chr)
 
 
 genWord :: Gen String
-genWord = listOf1 (choose ('a', 'z'))
+genWord = vectorOf 8 (choose ('a', 'z'))
 
 genCanonicalURI :: Gen URI
 genCanonicalURI =
@@ -82,7 +82,7 @@ instance Show Markup where
     show = renderHtml
 
 genName :: Gen String
-genName = listOf1 validChars :: Gen String
+genName = vectorOf 8 validChars :: Gen String
   where validChars = chr <$> choose (97, 122)
 --genName = return "a"
 
@@ -166,9 +166,10 @@ instance Arbitrary ChoiceString where
     arbitrary = do
         st <- arbitrary
         str <- genName
+        bstr <- genName
         tx <- genText
-        bt <- arbitrary
-        oneof $ Prelude.map return [Static st, String str, Text tx, ByteString bt]
+        --bt <- arbitrary
+        oneof $ Prelude.map return [Static st, String str, Text tx, ByteString (C8.pack bstr)]
 
 instance Arbitrary (MarkupM a) where
     arbitrary = do
@@ -260,8 +261,17 @@ instance Arbitrary Html where
                        , var, video             
                        ]))
 
-mencodeHtml :: Html -> LC8.ByteString
-mencodeHtml x = LC8.pack $ renderHtml x
 
-mencodeXml :: Html -> LB.ByteString
-mencodeXml x = PB.toLazyByteString $ RXML.render $ XML.renderHtml x
+type MHtml = (NonEmptyList Html)
+
+merge (x:[]) = x
+merge (x:xs) = do 
+                 _ <- x
+                 merge xs
+
+
+mencodeHtml :: MHtml -> LC8.ByteString
+mencodeHtml (NonEmpty xs) = LC8.pack $ renderHtml $ merge xs
+
+mencodeXml :: MHtml -> LB.ByteString
+mencodeXml (NonEmpty xs) = PB.toLazyByteString $ RXML.render $ XML.renderHtml $ merge xs

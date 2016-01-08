@@ -9,7 +9,7 @@ import Check
 import Data.Binary( Binary(..), encode )
 
 import qualified Data.ByteString.Lazy.Char8 as LC8
-
+import Control.Monad( foldM_ )
 --import Text.Blaze.Internal
 import Text.Blaze.Svg.Renderer.String
 import Text.Blaze.Svg as S
@@ -35,27 +35,35 @@ instance Arbitrary Path where
                 , s a1 a2 a3 a4, sr a1 a2 a3 a4
                 , q a1 a2 a3 a4
                 , qr a1 a2 a3 a4, t a1 a2, tr a1 a2
-                , aa a1 a2 a3 a4 a5 a6 a7
-                , ar a1 a2 a3 a4 a5 a6 a7
+                --, aa a1 a2 a3 a4 a5 a6 a7
+                --, ar a1 a2 a3 a4 a5 a6 a7
             ]
 
 
 svgGen :: Gen S11.AttributeValue
 svgGen = do
-    p <- arbitrary
+    --p <- arbitrary
     a1 <- (arbitrary :: Gen Float)
     a2 <- (arbitrary :: Gen Float)
     a3 <- (arbitrary :: Gen Float)
     a4 <- (arbitrary :: Gen Float)
     a5 <- (arbitrary :: Gen Float)
     a6 <- (arbitrary :: Gen Float)
+    --s <- arbitrary :: Gen String
+    n <- arbitrary :: Gen Int
+    b <- arbitrary :: Gen Bool
+    f <- arbitrary :: Gen Float
+ 
     oneof $ Prelude.map return
-             [ mkPath p
-             , translate a1 a2, S.rotate a1
-             , rotateAround a1 a2 a3
-             , S.scale a1 a2
-             , skewX a1, skewY a1
-             , matrix a1 a2 a3 a4 a5 a6 ]
+             [ 
+               toValue f
+--             , mkPath p
+--             , translate a1 a2, S.rotate a1
+--             , rotateAround a1 a2 a3
+--             , S.scale a1 a2
+--             , skewX a1, skewY a1
+--             , matrix a1 a2 a3 a4 a5 a6 
+             ]
 
 svgAttr :: Gen Attribute
 svgAttr = do
@@ -263,8 +271,8 @@ svgAttr = do
                 , stroke
                 , strokeDasharray
                 , strokeDashoffset
-                , strokeLinecap
-                , strokeLinejoin
+                --, strokeLinecap
+                --, strokeLinejoin
                 , strokeMiterlimit
                 , strokeOpacity
                 , strokeWidth
@@ -334,12 +342,12 @@ instance Arbitrary Svg where
         gsvg <- arbitrary
         attr <- svgAttr 
         frequency $ (
-            [ (20, return (gsvg ! attr)) ]
-            ++
-             Prelude.map (\x -> (1, return x))
+            -- [ (20, return (gsvg ! attr)) ]
+            -- ++
+             Prelude.map (\x -> (1, return (x ! attr)))
             [
-                docType, docTypeSvg gsvg
-                , a gsvg
+                --docType, docTypeSvg gsvg
+                  a gsvg
                 , altglyph
                 , altglyphdef
                 , altglyphitem
@@ -426,11 +434,21 @@ instance Show Svg where
 
 type Viewport = (Positive Float, Positive Float, Positive Float, Positive Float)
 
-type MSvg = (Svg, Positive Float, Positive Float, Viewport)
+type MSvg = (NonEmptyList Svg, Positive Float, Positive Float, Viewport)
+
+merge (x:[]) = x
+merge (x:xs) = do 
+                      _ <- x
+                      merge xs
+
 
 prepare :: MSvg -> Svg
-prepare (x, Positive w, Positive h, (Positive x0, Positive y0, Positive x1, Positive y1)) =
-   (S11.docTypeSvg ! S11A.version "1.1" ! width (toValue w) ! height (toValue h) ! S11A.viewbox (toValue (show x0 ++ " " ++ show y0 ++ show x1 ++ show y1))) x
+prepare (NonEmpty xs, Positive w, Positive h, (Positive x0, Positive y0, Positive x1, Positive y1)) = (S11.docTypeSvg ! S11A.version "1.1") (merge xs)
+
+--   (S11.docTypeSvg ! S11A.version "1.1" ! width (toValue w) ! height (toValue h) ! S11A.viewbox (toValue (show x0 ++ " " ++ show y0 ++ show x1 ++ show y1))) (merge xs)
+--   (S11.docTypeSvg ! S11A.version "1.1") (merge xs)
+
+
     
 mencode :: MSvg -> LC8.ByteString
 mencode x = LC8.pack $ renderSvg (prepare x)
