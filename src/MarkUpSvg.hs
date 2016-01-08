@@ -423,7 +423,14 @@ instance Arbitrary Svg where
 
 instance Show Svg where
     show = renderSvg
-   
+
+type Viewport = (Positive Float, Positive Float, Positive Float, Positive Float)
+
+type MSvg = (Svg, Positive Float, Positive Float, Viewport)
+
+prepare :: MSvg -> Svg
+prepare (x, Positive w, Positive h, (Positive x0, Positive y0, Positive x1, Positive y1)) =
+   (S11.docTypeSvg ! S11A.version "1.1" ! width (toValue w) ! height (toValue h) ! S11A.viewbox (toValue (show x0 ++ " " ++ show y0 ++ show x1 ++ show y1))) x
     
-mencode :: Svg -> LC8.ByteString
-mencode x = LC8.pack $ renderSvg (x ! S11A.version "1.1" ! width "150" ! height "100")
+mencode :: MSvg -> LC8.ByteString
+mencode x = LC8.pack $ renderSvg (prepare x)
