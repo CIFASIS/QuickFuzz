@@ -1,8 +1,8 @@
-{-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
+{-# LANGUAGE TemplateHaskell, FlexibleInstances #-}
 
 module Dot where
 
-import Test.QuickCheck
+import Test.QuickCheck 
 import Data.Binary( Binary(..), encode )
 import Data.DeriveTH
 
@@ -24,7 +24,7 @@ genName :: Gen String
 genName = listOf1 validChars :: Gen String
   where validChars = chr <$> choose (97, 122)
 
-instance Arbitrary String where
+instance {-# OVERLAPPING #-} Arbitrary String where
    arbitrary = genName
 
 derive makeArbitrary ''Graph
@@ -38,22 +38,13 @@ derive makeArbitrary ''Xml
 derive makeArbitrary ''Entity
 derive makeArbitrary ''GraphStrictness
 derive makeArbitrary ''XmlAttribute
-
+   
 derive makeArbitrary ''XmlAttributeValue
 derive makeArbitrary ''XmlName
 derive makeArbitrary ''EdgeType
 derive makeArbitrary ''Attribute
 derive makeArbitrary ''Port
 derive makeArbitrary ''Compass
-
---instance Arbitrary Id where
---    arbitrary = do
---      s <- (arbitrary :: Gen String)
---      i <- (arbitrary :: Gen Integer)
---      x <- (arbitrary :: Gen Xml)
---      oneof $ map return ([NameId s, StringId s, IntegerId i, FloatId 1.0, XmlId x])
-
--- $(deriveArbitraryRec ''Graph)
 
 mencode :: Graph -> L8.ByteString
 mencode = L8.pack . renderDot 
