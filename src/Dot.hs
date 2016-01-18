@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, FlexibleInstances#-}
+{-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
 
 module Dot where
 
