@@ -33,6 +33,8 @@ import qualified TTF
 import qualified Wav
 import qualified CPIO
 import qualified MarkUp
+import qualified Regex
+
 --import qualified MarkUpSvg
 
 --import qualified Http
@@ -92,6 +94,8 @@ dispatch arg = do
             "CSS"  -> Process.main Css.mencode args b
             "Wav"  -> Process.main Wav.mencode args b
             "CPIO" -> Process.main CPIO.mencode args b
+            "Regex" -> Process.main Regex.mencode args b
+
             --"MarkUp" -> Process.main MarkUp.mencodeHtml args b
             --"MarkUpSvg" -> Process.main MarkUpSvg.mencode args b
 
