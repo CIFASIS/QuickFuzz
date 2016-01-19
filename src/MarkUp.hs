@@ -54,7 +54,7 @@ genCanonicalURI =
     genRegName = do
       domainName <- elements ["noomii", "google", "yahoo"]
       return $ Prelude.concat ["www.", domainName, ".com"]
-    genPaths = resize 10 (intercalate "/" <$> listOf genWord)
+    genPaths = resize 10 (intercalate "/" <$> vectorOf 2 genWord)
 
 genNormalURI :: URI -> Gen URI
 genNormalURI uri = do
@@ -67,7 +67,7 @@ genNormalURI uri = do
       value <- genWord
       return $ name ++ "=" ++ value
     genQueryString = resize 10 $
-      ('?':) <$> (intercalate "&" <$> listOf genParam)
+      ('?':) <$> (intercalate "&" <$> vectorOf 2 genParam)
     genFragment = ('#':) <$> genWord
 
 instance Arbitrary URI where
