@@ -43,7 +43,6 @@ data Entry = Entry
 
 data MCPIO = CPIO [Entry] deriving Show
 
--- $(deriveArbitraryRec ''MCPIO)
 derive makeArbitrary ''MCPIO
 derive makeArbitrary ''Entry
 
@@ -93,36 +92,6 @@ instance Binary Entry where
                put $ BS.replicate (alignTo4 (fromInteger $ toInteger file_size)) 0
              
   get = undefined
-
-{-
-write_entry entry = do
-      case cpioCRC32 entry of
-        Nothing -> "070701"
-        Just _ -> "070702"
-      encodeR32 $ cpioInode entry
-      encodeR32 $ cpioMode entry
-      encodeR32 $ cpioUid entry
-      encodeR32 $ cpioGid entry
-      encodeR32 $ cpioNLink entry
-      encodeR32 $ cpioMTime entry
-      let file_size = cpioFileSize entry
-      encodeR32 $ file_size
-      encodeR32 $ cpioDevMaj entry
-      encodeR32 $ cpioDevMin entry
-      encodeR32 $ cpioRDevMaj entry
-      encodeR32 $ cpioRDevMin entry
-      let filename_length =
-            1 + (fromInteger $ toInteger $ BS.length $ cpioFileName entry)
-      encodeR32 $ (filename_length :: Word32)
-      case cpioCRC32 entry of
-        Nothing -> encodeR32 0
-        Just x -> encodeR32 x
-      yield $ cpioFileName entry
-      yield $ "\NUL"
-      yield $ BS.replicate (alignTo4 $ 110 + filename_length) 0
-      forM_ (BL.toChunks $ cpioFileData entry) yield
-      yield $ BS.replicate (alignTo4 (fromInteger $ toInteger file_size)) 0
--}
 
 encodeCPIO :: MCPIO -> BL.ByteString
 encodeCPIO = encode
