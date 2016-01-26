@@ -4,6 +4,7 @@ module Images where
 
 import Codec.Picture.Types
 import Codec.Picture.Metadata
+import Codec.Picture.ColorQuant
 import Test.QuickCheck
 
 import Data.Word(Word8, Word16, Word32)
@@ -11,6 +12,7 @@ import qualified Data.Vector.Storable as VS
 
 import GHC.Types
 import DeriveArbitrary
+import Data.DeriveTH
 
 $(deriveArbitraryRec ''SourceFormat)
 
@@ -91,3 +93,7 @@ instance Arbitrary (Image PixelRGB16) where
 instance Show (Image PixelRGB16) where
    show x = ""
 
+$(deriveArbitraryRec ''PaletteOptions)
+
+derive makeShow ''PaletteOptions
+derive makeShow ''PaletteCreationMethod
