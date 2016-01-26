@@ -27,12 +27,18 @@ import Images
 
 $(deriveArbitraryRec ''JpgImage)
 
-type MJpgImage  = JpgImage --(Word8,Metadatas, Image PixelYCbCr8)
+data MJpgImage  = Jpg0 JpgImage | Jpg1 (Word8,Metadatas, Image PixelYCbCr8) | Jpg2 (Word8, Image PixelYCbCr8) deriving Show
+
+derive makeArbitrary ''MJpgImage
+
 --type MJpgImage  = (Word8, Metadatas, Image PixelYCbCr8)
 
 --encodeJpgImage (q, meta, img) = encodeJpegAtQualityWithMetadata q meta img
 --encodeJpgImage (q, _, img) = encodeJpegAtQuality q img
-encodeJpgImage = encode
+encodeJpgImage (Jpg0 x) = encode x
+encodeJpgImage (Jpg1 (q, meta, img)) = encodeJpegAtQualityWithMetadata q meta img
+encodeJpgImage (Jpg2 (q, img)) = encodeJpegAtQuality q img
+
 
 mencode :: MJpgImage -> L.ByteString
 mencode = encodeJpgImage

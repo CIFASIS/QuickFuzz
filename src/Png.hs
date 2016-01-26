@@ -8,6 +8,7 @@ import Codec.Picture.Png
 import Codec.Picture.Png.Type
 import Codec.Picture.Png.Export
 import Codec.Picture.Metadata
+import Codec.Picture.ColorQuant
 
 import qualified Data.ByteString.Lazy as L
 
@@ -20,23 +21,29 @@ import ByteString
 import Data.DeriveTH
 
 
---derive makeArbitrary ''ChunkSignature
---derive makeArbitrary ''PngRawImage
+fromRight (Right x)  = x
+fromRight (Left x) = error x
+
 
 $(deriveArbitraryRec ''PngRawImage)
 
-type MPngImage = PngRawImage
-
-instance Show MPngImage where
+instance Show PngRawImage where
    show x = "(no show)"
 
---type MPngImage = (Maybe Palette, PngImageType, Metadatas, Image Pixel8) --(Metadatas, PngImageType, Maybe Palette, Image Pixel8)
---type MPngImage = PngImageType --(Metadatas, Image PixelRGBA8)
+data MPngImage =   Png0 PngRawImage 
+                 | Png1 (Metadatas, PngImageType, Maybe Palette, Image Pixel8) 
+                 | Png2 (Metadatas, Palette, Image Pixel8) 
+                 | Png3 (Metadatas, Image PixelRGB8) deriving Show
+ 
+derive makeArbitrary ''MPngImage
 
 encodePngImage :: MPngImage -> L.ByteString
---encodePngImage (a,b,c,d) = (genericEncodePng a b c d) --(encodePalettedPngWithMetadata a b c)
---encodePngImage (a,b) = encodePngWithMetadata a b
-encodePngImage = encode
+encodePngImage (Png0 x) = encode x
+encodePngImage (Png1 (a,b,c,d)) = genericEncodePng c b a d
+encodePngImage (Png2 (a,b,c)) = fromRight $ encodePalettedPngWithMetadata a b c 
+encodePngImage (Png3 (a,b)) = fromRight $ encodePalettedPngWithMetadata a pal img'
+                              where (img', pal) = palettize defaultPaletteOptions b
 
+ 
 mencode :: MPngImage -> L.ByteString
 mencode = encodePngImage
