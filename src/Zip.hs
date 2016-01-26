@@ -9,8 +9,19 @@ import Codec.Archive.Zip
 import qualified Data.ByteString.Lazy as L
 import Vector
 import ByteString
+import Data.DeriveTH
+
+
+data MArchive = Archive0 Archive | Archive1 [(FilePath, Integer, L.ByteString)] deriving Show
 
 $(deriveArbitraryRec ''Archive)
+$(deriveArbitraryRec ''MArchive)
 
-mencode :: Archive -> L.ByteString
-mencode = encode
+--derive makeArbitrary ''MArchive
+--derive makeShow ''MArchive
+
+
+
+mencode :: MArchive -> L.ByteString
+mencode (Archive0 x) = encode x
+mencode (Archive1 xs) = encode $ foldr addEntryToArchive emptyArchive (map (\(x,y,z) -> toEntry x y z) xs) 
