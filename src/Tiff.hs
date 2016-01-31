@@ -16,22 +16,29 @@ import Codec.Picture.Metadata
 import qualified Data.ByteString.Lazy as L
 
 import Data.DeriveTH
---import Data.Binary.Put( runPut )
+import Data.Binary.Put( runPut )
 
 import DeriveArbitrary
 import Vector
 import Images
 
---import Codec.Picture.VectorByteConversion( toByteString )
-
-type TiffFile  = (Image PixelCMYK16)
-
-encodeTiffFile :: TiffFile -> L.ByteString
-encodeTiffFile = encodeTiff--runPut $ putP rawPixelData hdr
-                       --    where rawPixelData = toByteString $ imageData img
+import Codec.Picture.VectorByteConversion( toByteString )
 
 derive makeArbitrary ''TiffInfo
 derive makeShow ''TiffInfo
+
+data MTiffFile  = Tiff0 (TiffInfo, Image Pixel8) | Tiff1 (Image PixelCMYK16) | Tiff2 (Image PixelYA8) | Tiff3 (Image PixelRGBA8) | Tiff4 (Image PixelYCbCr8) deriving Show
+
+derive makeArbitrary ''MTiffFile
+
+encodeTiffFile :: MTiffFile -> L.ByteString
+encodeTiffFile (Tiff0 (hdr, img)) = runPut $ putP rawPixelData hdr
+                                  where rawPixelData = toByteString $ imageData img
+
+encodeTiffFile (Tiff1 img) = encodeTiff img
+encodeTiffFile (Tiff2 img) = encodeTiff img
+encodeTiffFile (Tiff3 img) = encodeTiff img
+encodeTiffFile (Tiff4 img) = encodeTiff img
 
 
 derive makeArbitrary ''Predictor
@@ -54,5 +61,5 @@ derive makeArbitrary ''Endianness
 derive makeShow ''TiffPlanarConfiguration
 derive makeShow ''TiffColorspace
 
-mencode :: TiffFile -> L.ByteString
+mencode :: MTiffFile -> L.ByteString
 mencode = encodeTiffFile
