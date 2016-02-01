@@ -33,7 +33,7 @@ instance Arbitrary (Image PixelYCbCr8) where
        xs <- infiniteListOf (arbitrary :: Gen (PixelBaseComponent PixelYCbCr8))
        Positive w <- (arbitrary :: Gen (Positive Int))
        Positive h <- (arbitrary :: Gen (Positive Int))
-       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList (take (4*w*h) xs) }
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList (take (3*w*h) xs) }
 
 instance Show (Image PixelYCbCr8) where
    show x = ""
