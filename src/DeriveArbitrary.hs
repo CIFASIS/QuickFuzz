@@ -10,14 +10,20 @@ import Control.Monad
 import Control.Applicative
 import Data.List
 
+import qualified Data.Set as S
+import qualified Data.Graph as G
+import qualified Data.Map.Strict as M
+import Control.Monad.Trans.State.Lazy
+import qualified Control.Monad.Trans.Class as TC
+
+
 --data Tree a = Leaf a
 --            | Node (Tree a) a (Tree a)
 --            deriving (Eq, Show)
 {-
 instance Arbitrary a => Arbitrary (Tree a) where
   arbitrary = (arbitrary :: Gen Int) >>= go
-    where go n | n <= 1 = Lyy
-eaf <$> arbitrary
+    where go n | n <= 1 = Leaf <$> arbitrary
                | otherwise =
                  Node <$> (go (n `div` 2)) <*> arbitrary <*> (go (n `div` 2))
 
@@ -29,12 +35,22 @@ data Expr a = Var a
             deriving (Show, Eq)
 
 instance Arbitrary a => Arbitrary (Expr a) where
-  arbitrary = (arbitrary :: Gen Int) >>= go
+  arbitrary = sized go
+    --(arbitrary :: Gen Int) >>= go
     where go n | n <= 1 = oneof [Var <$> arbitrary, Con <$> arbitrary]
                | otherwise =
-                 oneof [Add <$> (go (n `div` 2)) <*> (go (n `div` 2))
+                 oneof [ go 1, Add <$> (go (n `div` 2)) <*> (go (n `div` 2))
                        ,Mul <$> (go (n `div` 2)) <*> (go (n `div` 2))
                        ,Neg <$> (go (n - 1))]
+
+data A .. = C1 B | C2 ... 
+
+data B .. = B1 A | B2 ...
+
+instance Arbitrary ... => Arbitrary (A ..) where
+    arbitrary = sized go
+        where go n | n <= 1 = oneof [C2 ....]
+                   | otherwise = resize (n-1) $ oneof [B1 .....]  
 -}
 
 data Point = L | H deriving (Show, Eq)
@@ -51,6 +67,8 @@ data Expr2 a = Var2 a
 data ConView = SimpleCon Name Integer [Type]
 
 bf (SimpleCon _ n _) = n
+nm (SimpleCon n _ _) = n
+tt (SimpleCon _ _ t) = n
 
 countCons :: (Name -> Bool) -> Type -> Integer
 countCons p ty =
@@ -96,7 +114,12 @@ headOf (SigT ty _) = headOf ty
 headOf (ConT n) = n
 headOf (VarT n) = n
 
+isPrim :: Info -> Bool
+isPrim (PrimTyConI _ _ _ ) = True
+isPrim _ = False
+
 chooseExpQ :: Name -> Integer -> Type -> ExpQ
+chooseExpQ t bf (AppT ListT ty) = appE ( varE (mkName "listOf")) (appE (appE (varE (mkName "resize")) ([| ($(varE (mkName "n")) `div` 10) |])) (varE 'arbitrary))
 chooseExpQ t bf ty | headOf ty /= t = varE 'arbitrary
 chooseExpQ t bf ty =
   case bf of
@@ -118,24 +141,26 @@ simpleConView tyName c =
   ForallC _ _ innerCon -> simpleConView tyName innerCon
                                               
 
-deriveArbitrary t = do
+deriveArbitrary :: Name -> (Name -> Bool) -> Q [Dec]
+deriveArbitrary t cc = do
   TyConI (DataD _ _ params constructors _) <- reify t
   let mkList xs = map (fmap fixAppl)
                   [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ t bf ty)) (conE name) tys' | SimpleCon name bf tys' <- xs]
   let ns  = map varT $ paramNames params
       scons = map (simpleConView t) constructors
       fcs = filter ((==0) . bf) scons
+      fcs' = filter (cc . nm) fcs
   if length ns > 0 then
    [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
                 => Arbitrary $(applyTo (conT t) ns) where
                   arbitrary = sized go --(arbitrary :: Gen Int) >>= go
-                    where go n | n <= 1 = oneof $(listE (mkList fcs))
-                               | otherwise = oneof $(listE (mkList scons)) |]
+                    where go n | n <= 1 = oneof $(listE (mkList fcs'))
+                               | otherwise = oneof ( ($(listE (mkList fcs))) ++ $(listE (mkList scons))) |]
    else
     [d| instance Arbitrary $(applyTo (conT t) ns) where
                    arbitrary = sized go --(arbitrary :: Gen Int) >>= go
                      where go n | n <= 1 = oneof $(listE (mkList fcs))
-                                | otherwise = oneof $(listE (mkList scons)) |]
+                                | otherwise = oneof ( ($(listE (mkList fcs)))++ $(listE (mkList scons))) |]
 
 
 isVarT (VarT _) = True
@@ -148,15 +173,78 @@ findLeafTypes (AppT (ConT _) ty) = findLeafTypes ty
 findLeafTypes (AppT ty1 ty2) = findLeafTypes ty1 ++ findLeafTypes ty2
 findLeafTypes ty = [ty]
 
-deriveArbitraryRec t = do
-  TyConI (DataD _ _ _ constructors _) <- reify t
-  let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ 0 tys) <- constructors, ty <- tys, not (isVarT ty) ]
-  runIO $ print innerTypes
-  decs <- fmap concat $ forM innerTypes $ \ty ->
-    do q <- isInstance ''Arbitrary [ty]
-       if not q
-         then do runIO $ putStrLn ("recursively deriving Arbitrary instance for " ++ show (headOf ty))
-                 deriveArbitraryRec (headOf ty)
-         else return []
-  d <- deriveArbitrary t
-  return (decs ++ d)
+deriveArbitraryRec :: Name -> (Name -> Bool) -> Q [Dec]
+deriveArbitraryRec t ci = do
+  d <- reify t
+  case d of
+       TyConI (DataD _ _ _ constructors _) -> do
+          let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ 0 tys) <- constructors, ty <- tys, not (isVarT ty) ]
+          runIO $ print innerTypes
+          decs <- fmap concat $ forM innerTypes $ \ty ->
+            do q <- isInstance ''Arbitrary [ty]
+               if not q
+                 then do runIO $ putStrLn ("recursively deriving Arbitrary instance for " ++ show (headOf ty))
+                         if (ci $ headOf ty) then do 
+                                        runIO $ print "======================================================= CICLA"
+                                        return []
+                            else deriveArbitraryRec (headOf ty) ci
+                 else return []
+          d <- deriveArbitrary t ci
+          return (decs ++ d)
+       e -> do
+            runIO $ print $ "+++++++++++" ++ show e
+            return []
+
+--prueba de concepto
+type StQ s a = StateT s Q a
+type Names = [Name]
+
+member :: Name -> StQ (M.Map Name Names) Bool
+member t = do
+    mk <- get
+    return $ M.member t mk
+
+addDep :: Name -> Names -> StQ (M.Map Name Names) ()
+addDep n ns = do
+    mapp <- get
+    let newmapp = M.insert n ns mapp
+    put newmapp
+
+getDeps :: Name -> StQ (M.Map Name Names) ()
+getDeps t = do
+  visited <- member t
+  if visited then return ()
+  else do
+              tip <- TC.lift $ reify t
+              case tip of
+                TyConI (DataD _ _ _ constructors _) -> do
+                      let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ 0 tys) <- constructors, ty <- tys, not (isVarT ty) ]
+                      TC.lift $ runIO $ print $ "InnerTypes de ::" ++ show t
+                      TC.lift $ runIO $ print innerTypes
+                      goodInnerTypes <- TC.lift $ filterM (\t -> do
+                            i <- reify $ headOf t
+                            if (isPrim i) then return True else isInstance ''Arbitrary [t]) innerTypes 
+                      let hof = map headOf goodInnerTypes
+                      addDep t hof
+                      mapM_ getDeps hof
+                TyConI (TySynD _ _ t) -> getDeps $ headOf t
+                d -> do
+                    TC.lift $ runIO $ print $ "Different?" ++ show d
+                    return ()
+
+
+-- Prueba de concepto, esto debe ser muy lento.
+showDeps :: Name -> Q [Dec]
+showDeps t = do
+        mapp <- execStateT (getDeps t) M.empty 
+        let rs = M.foldrWithKey (\ k d ds -> (k,k,d) : ds) [] mapp
+        let (graph, v2ter, f) = G.graphFromEdges rs
+        let topsorted = reverse $ G.topSort graph
+        let ts' = map (\p -> (let (n,_,_) = v2ter p in n)) topsorted
+        let cicla n = case f n of
+                        Nothing -> False
+                        Just n' -> G.path graph n' n'
+        --runIO $ print $ "Deberíamos derivar en este roden? Cicla?---" ++ show ts'
+        -- Veamos si podemos detectar ciclos de forma muy cabeza.
+        ts <- mapM (flip deriveArbitraryRec cicla) ts'  -- Ya podemos ir haciendo esto, total esta ordenado
+        return $ concat ts
