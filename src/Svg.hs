@@ -42,7 +42,7 @@ instance  Arbitrary DT.Text where
      a1 <- arbitrary 
      return $ a1
    
-$(showDeps ''Element)
+-- $(showDeps ''Element)
 $(showDeps ''MSvgFile)
 
 instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
