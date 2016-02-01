@@ -39,6 +39,7 @@ genprop filename prog args encode outdir x =
          monadicIO $ do
          seed <- run (randomIO :: IO Int)
          sfilename <- run $ return (outdir ++ "/" ++ filename ++ "." ++ show seed)
+         --run $ print x
          run $ Control.Exception.catch (L.writeFile sfilename (encode x)) handler
          size <- run $ getFileSize sfilename
          if size == 0 

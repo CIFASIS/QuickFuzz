@@ -10,6 +10,7 @@ import qualified Data.ByteString.Lazy as L
 import Vector
 import ByteString
 import Data.DeriveTH
+import Test.QuickCheck
 
 
 data MArchive = Archive0 Archive | Archive1 [(FilePath, Integer, L.ByteString)] deriving Show

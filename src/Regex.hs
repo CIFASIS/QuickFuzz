@@ -18,6 +18,8 @@ import ByteString
 
 import Data.Char (chr)
 
+data Pep = Pep Int
+
 data Regex = Sym Char
            | InRange [Char]
            | NotInRange [Char]
@@ -26,24 +28,29 @@ data Regex = Sym Char
            | Rep Regex
            | Plus Regex
            | OrNothing Regex
+           | Tincho [Pep]
 
 genchar = oneof $ map return ['a', 'b', 'c']
 
-instance Arbitrary Regex where
-    arbitrary = sized mk_regex
 
-mk_regex :: Int -> Gen Regex
-mk_regex 0     = do
-                  x <- genchar
-                  xs <- listOf1 $ genchar
-                  oneof $ map return [Sym x, InRange xs, NotInRange xs]
+$(deriveArbitraryRec ''Regex)
 
-mk_regex n     = do
-                     s <- (mk_regex 0)
-                     r1 <- (mk_regex (n-1))
-                     r2 <- (mk_regex (n-1))
-                     frequency $ map (\(x,y) -> (x, return y)) [(1,s), (10,Alt r1 r2), (10,Seq r1 r2), (10,Rep r1), (10, Plus r1), (10, OrNothing r1)]
-
+{-
+   instance Arbitrary Regex where
+       arbitrary = sized mk_regex
+   
+   mk_regex :: Int -> Gen Regex
+   mk_regex 0     = do
+                     x <- genchar
+                     xs <- listOf1 $ genchar
+                     oneof $ map return [Sym x, InRange xs, NotInRange xs]
+   
+   mk_regex n     = do
+                        s <- (mk_regex 0)
+                        r1 <- (mk_regex (n-1))
+                        r2 <- (mk_regex (n-1))
+                        frequency $ map (\(x,y) -> (x, return y)) [(1,s), (10,Alt r1 r2), (10,Seq r1 r2), (10,Rep r1), (10, Plus r1), (10, OrNothing r1)]
+-}
 instance Show Regex where
   show (Sym s)  =  [s]
   show (Alt p q)  =  "(" ++ (show p) ++ "|" ++ (show q) ++ ")"
