@@ -134,7 +134,7 @@ simpleConView tyName c =
   NormalC n sts -> let ts = map snd sts
                    in SimpleCon n (count ts) ts
   RecC n vsts   -> let ts = map proj3 vsts
-                       proj3 (x,y,z) = z
+                       proj3 (_,_,z) = z
                    in SimpleCon n (count ts) ts
   InfixC (_,t1) n (_,t2) ->
     SimpleCon n (countCons (== tyName) t1 + countCons (== tyName) t2) [t1,t2]
@@ -149,6 +149,8 @@ deriveArbitrary t = do
   let ns  = map varT $ paramNames params
       scons = map (simpleConView t) constructors
       fcs = filter ((==0) . bf) scons
+  runIO $ print $ "Der Arb ************************************************ ************************************************" ++ show t
+  runIO $ print $ paramNames params
   if length ns > 0 then
    [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
                 => Arbitrary $(applyTo (conT t) ns) where
@@ -172,8 +174,6 @@ findLeafTypes (AppT (ConT _) ty) = findLeafTypes ty
 findLeafTypes (AppT ty1 ty2) = findLeafTypes ty1 ++ findLeafTypes ty2
 findLeafTypes ty = [ty]
 
-isArbInsName :: Name -> Q Bool
-isArbInsName n = (isInstance ''Arbitrary [(ConT n)]) >>= (return . not)
 
 deriveArbitraryRec :: Name -> Q [Dec]
 deriveArbitraryRec t = do
@@ -237,7 +237,13 @@ getDeps t = do
                     TC.lift $ runIO $ print $ "Different?" ++ show d
                     return ()
 
--- Prueba de concepto, esto debe ser muy lento.
+isArbInsName :: Name -> Q Bool
+isArbInsName n = do
+        TyConI (DataD _ _ preq _  _) <- reify n
+        if length preq > 0 then
+            return False
+        else (isInstance ''Arbitrary [(ConT n)]) >>= (return . not)
+
 showDeps :: Name -> Q [Dec]
 showDeps t = do
         mapp <- execStateT (getDeps t) M.empty 
