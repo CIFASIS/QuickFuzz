@@ -143,26 +143,30 @@ simpleConView tyName c =
 
 deriveArbitrary :: Name -> Q [Dec]
 deriveArbitrary t = do
-  TyConI (DataD _ _ params constructors _) <- reify t
-  let mkList xs = map (fmap fixAppl)
-                  [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ t bf ty)) (conE name) tys' | SimpleCon name bf tys' <- xs]
-  let ns  = map varT $ paramNames params
-      scons = map (simpleConView t) constructors
-      fcs = filter ((==0) . bf) scons
-  runIO $ print $ "Der Arb ************************************************ ************************************************" ++ show t
-  runIO $ print $ paramNames params
-  if length ns > 0 then
-   [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
-                => Arbitrary $(applyTo (conT t) ns) where
-                  arbitrary = sized go --(arbitrary :: Gen Int) >>= go
-                    where go n | n <= 1 = oneof $(listE (mkList fcs))
-                               | otherwise = oneof ( ($(listE (mkList fcs))) ++ $(listE (mkList scons))) |]
-   else
-    [d| instance Arbitrary $(applyTo (conT t) ns) where
-                   arbitrary = sized go --(arbitrary :: Gen Int) >>= go
-                     where go n | n <= 1 = oneof $(listE (mkList fcs))
-                                | otherwise = oneof ( ($(listE (mkList fcs)))++ $(listE (mkList scons))) |]
-
+    inf <- reify t
+    case inf of
+        TyConI (DataD _ _ params constructors _) -> do
+              let mkList xs = map (fmap fixAppl)
+                              [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ t bf ty)) (conE name) tys' | SimpleCon name bf tys' <- xs]
+              let ns  = map varT $ paramNames params
+                  scons = map (simpleConView t) constructors
+                  fcs = filter ((==0) . bf) scons
+              runIO $ print $ "Der Arb ************************************************ ************************************************" ++ show t
+              runIO $ print $ paramNames params
+              if length ns > 0 then
+               [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
+                            => Arbitrary $(applyTo (conT t) ns) where
+                              arbitrary = sized go --(arbitrary :: Gen Int) >>= go
+                                where go n | n <= 1 = oneof $(listE (mkList fcs))
+                                           | otherwise = oneof ( ($(listE (mkList fcs))) ++ $(listE (mkList scons))) |]
+               else
+                [d| instance Arbitrary $(applyTo (conT t) ns) where
+                               arbitrary = sized go --(arbitrary :: Gen Int) >>= go
+                                 where go n | n <= 1 = oneof $(listE (mkList fcs))
+                                            | otherwise = oneof ( ($(listE (mkList fcs)))++ $(listE (mkList scons))) |]
+        d -> do
+          if (isPrim inf) then return [] else
+            (fail $ "Caso no definido: " ++ show d)
 
 isVarT (VarT _) = True
 isVarT _ = False
@@ -170,7 +174,7 @@ isVarT _ = False
 findLeafTypes :: Type -> [Type]
 findLeafTypes (AppT ListT ty) = findLeafTypes ty
 findLeafTypes (AppT (TupleT n) ty) = findLeafTypes ty
-findLeafTypes (AppT (ConT _) ty) = findLeafTypes ty
+findLeafTypes (AppT p@(ConT _) ty) = p : findLeafTypes ty
 findLeafTypes (AppT ty1 ty2) = findLeafTypes ty1 ++ findLeafTypes ty2
 findLeafTypes ty = [ty]
 
@@ -222,8 +226,8 @@ getDeps t = do
               case tip of
                 TyConI (DataD _ _ _ constructors _) -> do
                       let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ 0 tys) <- constructors, ty <- tys, not (isVarT ty) ]
-                      TC.lift $ runIO $ print $ "InnerTypes de ::" ++ show t
-                      TC.lift $ runIO $ print innerTypes
+                      --TC.lift $ runIO $ print $ "InnerTypes de ::" ++ show t
+                      --TC.lift $ runIO $ print innerTypes
                       {-
                          goodInnerTypes <- TC.lift $ filterM (\t -> do
                                i <- reify $ headOf t
@@ -232,17 +236,35 @@ getDeps t = do
                       let hof = map headOf innerTypes
                       addDep t hof
                       mapM_ getDeps hof
+                TyConI (NewtypeD _ nm _ constructor _) -> do 
+                      TC.lift $ runIO $ print $ "NewType!!! " ++ show tip
+                      let (SimpleCon _ _ ts )= simpleConView nm constructor
+                      --let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ 0 tys) <- constructors, ty <- tys, not (isVarT ty) ]
+                      TC.lift $ runIO $ print $ "TS !" ++ show ts
+                      let innerTypes = nub $ filter (not . isVarT) $ concat $  Prelude.map findLeafTypes ts 
+                      let hof = map headOf innerTypes
+                      TC.lift $ runIO $ print $ "DEPS!" ++ show hof
+                      addDep t hof
+                      mapM_ getDeps hof
                 TyConI (TySynD _ _ t) -> getDeps $ headOf t
                 d -> do
-                    TC.lift $ runIO $ print $ "Different?" ++ show d
-                    return ()
+                    if (isPrim tip) then return () else
+                            fail $ "Caso no definido: " ++ show d
 
 isArbInsName :: Name -> Q Bool
 isArbInsName n = do
-        TyConI (DataD _ _ preq _  _) <- reify n
-        if length preq > 0 then
-            return False
-        else (isInstance ''Arbitrary [(ConT n)]) >>= (return . not)
+        inf <- reify n
+        case inf of
+            TyConI (DataD _ _ preq _  _) -> do
+                        if length preq > 0 then
+                            ((runIO $ print $  "CASO AFORA ????" ++  show n) >> return True)
+                        else (isInstance ''Arbitrary [(ConT n)]) >>= (return . not) 
+            d -> do
+                runIO $ print $ "Caso raro :: " ++ show d
+                isInstance ''Arbitrary [(ConT n)] >>= (return . not) -- Acá pincha como loco...
+                -- Tengo que construir un nombre para formar algo de la forma
+                -- es instance A a ?
+                -- Tal vez: \forall a. instance A a ??!!! Pablo HALP!
 
 showDeps :: Name -> Q [Dec]
 showDeps t = do
@@ -253,5 +275,5 @@ showDeps t = do
         let ts' = map (\p -> (let (n,_,_) = v2ter p in n)) topsorted
         ts'' <- filterM isArbInsName ts'
         runIO $ print $ "Deberiamos derivar en este roden? ---" ++ show ts''
-        ts <- mapM deriveArbitrary ts''  -- Ya podemos ir haciendo esto, total esta ordenado
+        ts <- mapM (\t -> (runIO $ print $ "PEPE" ++ show t) >> deriveArbitrary t) ts''  -- Ya podemos ir haciendo esto, total esta ordenado
         return $ concat ts
