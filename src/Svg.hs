@@ -28,6 +28,8 @@ import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector.Storable as VS
 
+import Data.Text.Array
+
 import Data.Monoid
 --import Data.List.Split
 import Data.Char (chr)
@@ -42,57 +44,67 @@ instance  Arbitrary DT.Text where
      a1 <- arbitrary 
      return $ a1
    
--- $(showDeps ''Element)
-instance Arbitrary a => Arbitrary (V2 a) where
-   arbitrary = do
+{-
+   instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
+      arbitrary = do 
         a1 <- arbitrary
         a2 <- arbitrary
-        return $ V2 a1 a2
-instance Arbitrary Tree where
-  arbitrary = do
-               a1 <- arbitrary
-               a2 <- arbitrary
-               a3 <- arbitrary
-               a4 <- arbitrary
-               a5 <- arbitrary
-               a6 <- arbitrary
-               a7 <- arbitrary
-               a10 <- arbitrary
-               oneof $ Prelude.map return [PathTree a1, CircleTree a2, PolyLineTree a3, PolygonTree a4, EllipseTree a5, LineTree a6, RectangleTree a7,  ImageTree a10] 
-
-instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
-   arbitrary = do 
-     a1 <- arbitrary
-     a2 <- arbitrary
-     a3 <- arbitrary
-     a4 <- arbitrary
-     a5 <- arbitrary
-     a6 <- arbitrary
-     return $ (a1, a2, a3, a4, a5, a6)
+        a3 <- arbitrary
+        a4 <- arbitrary
+        a5 <- arbitrary
+        a6 <- arbitrary
+        return $ (a1, a2, a3, a4, a5, a6)
+-}
 
 instance Arbitrary a => Arbitrary (Last a) where
     arbitrary = do
         ga <- arbitrary
         oneof $ Prelude.map (return . Last) [Nothing, Just ga]
 
-$(showDeps ''MSvgFile)
 
-instance Arbitrary (Map String Element) where
-   arbitrary = do
-     x <- arbitrary
-     y <- arbitrary 
-     return $ singleton x y
+instance Arbitrary Data.Text.Array.Array where
+      arbitrary
+        = undefined
 
-genName :: Gen String
-genName = listOf1 validChars :: Gen String
-  where validChars = chr <$> choose (97, 122)
 
--- $(deriveArbitraryRec ''Graphics.Svg.Types.Tree)
+{-
+   instance Arbitrary Tree where
+     arbitrary = do
+                  a1 <- arbitrary
+                  a2 <- arbitrary
+                  a3 <- arbitrary
+                  a4 <- arbitrary
+                  a5 <- arbitrary
+                  a6 <- arbitrary
+                  a7 <- arbitrary
+                  a10 <- arbitrary
+                  oneof $ Prelude.map return [PathTree a1, CircleTree a2, PolyLineTree a3, PolygonTree a4, EllipseTree a5, LineTree a6, RectangleTree a7,  ImageTree a10] 
+-}
 
-instance Arbitrary String where
-   arbitrary = genName
-   --arbitrary = oneof $ Prelude.map return ["a", "b", "c", "d", "e"]--genName
+type TS = Symbol Tree
 
+-- $(showDeps ''RPoint)
+$(showDeps ''Use)
+$(showDeps ''Symbol)
+-- $(showDeps ''MSvgFile)
+
+{-
+   instance Arbitrary (Map String Element) where
+      arbitrary = do
+        x <- arbitrary
+        y <- arbitrary 
+        return $ singleton x y
+   
+   genName :: Gen String
+   genName = listOf1 validChars :: Gen String
+     where validChars = chr <$> choose (97, 122)
+   
+   -- $(deriveArbitraryRec ''Graphics.Svg.Types.Tree)
+   
+   instance Arbitrary String where
+      arbitrary = genName
+      --arbitrary = oneof $ Prelude.map return ["a", "b", "c", "d", "e"]--genName
+-}
 
 -- $(derive makeArbitrary ''Graphics.Svg.Types.Tree)
 -- $(deriveArbitraryRec ''Graphics.Svg.Types.Tree)
