@@ -42,22 +42,23 @@ instance  Arbitrary DT.Text where
      a1 <- arbitrary 
      return $ a1
    
-{-
-   instance Arbitrary RPoint where
-      arbitrary = do 
-        a1 <- arbitrary
-        a2 <- arbitrary
-        return $ V2 a1 a2
--}
 -- $(showDeps ''Element)
 instance Arbitrary a => Arbitrary (V2 a) where
    arbitrary = do
         a1 <- arbitrary
         a2 <- arbitrary
         return $ V2 a1 a2
-    where
-
-$(showDeps ''MSvgFile)
+instance Arbitrary Tree where
+  arbitrary = do
+               a1 <- arbitrary
+               a2 <- arbitrary
+               a3 <- arbitrary
+               a4 <- arbitrary
+               a5 <- arbitrary
+               a6 <- arbitrary
+               a7 <- arbitrary
+               a10 <- arbitrary
+               oneof $ Prelude.map return [PathTree a1, CircleTree a2, PolyLineTree a3, PolygonTree a4, EllipseTree a5, LineTree a6, RectangleTree a7,  ImageTree a10] 
 
 instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
    arbitrary = do 
@@ -68,6 +69,13 @@ instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
      a5 <- arbitrary
      a6 <- arbitrary
      return $ (a1, a2, a3, a4, a5, a6)
+
+instance Arbitrary a => Arbitrary (Last a) where
+    arbitrary = do
+        ga <- arbitrary
+        oneof $ Prelude.map (return . Last) [Nothing, Just ga]
+
+$(showDeps ''MSvgFile)
 
 instance Arbitrary (Map String Element) where
    arbitrary = do
@@ -89,22 +97,6 @@ instance Arbitrary String where
 -- $(derive makeArbitrary ''Graphics.Svg.Types.Tree)
 -- $(deriveArbitraryRec ''Graphics.Svg.Types.Tree)
 
-{-
-   instance Arbitrary Tree where
-     arbitrary = do
-                  a1 <- arbitrary
-                  a2 <- arbitrary
-                  a3 <- arbitrary
-                  a4 <- arbitrary
-                  a5 <- arbitrary
-                  a6 <- arbitrary
-                  a7 <- arbitrary
-                  --a8 <- arbitrary
-                  --a9 <- arbitrary
-                  a10 <- arbitrary
-                  --oneof $ Prelude.map return [PathTree a1, CircleTree a2, PolyLineTree a3, PolygonTree a4, EllipseTree a5, LineTree a6, RectangleTree a7, TextTree a8 a9, ImageTree a10] 
-                  oneof $ Prelude.map return [PathTree a1, CircleTree a2, PolyLineTree a3, PolygonTree a4, EllipseTree a5, LineTree a6, RectangleTree a7,  ImageTree a10] 
--}
 {-
    -- $(derive makeArbitrary ''Origin)
    
