@@ -42,7 +42,21 @@ instance  Arbitrary DT.Text where
      a1 <- arbitrary 
      return $ a1
    
+{-
+   instance Arbitrary RPoint where
+      arbitrary = do 
+        a1 <- arbitrary
+        a2 <- arbitrary
+        return $ V2 a1 a2
+-}
 -- $(showDeps ''Element)
+instance Arbitrary a => Arbitrary (V2 a) where
+   arbitrary = do
+        a1 <- arbitrary
+        a2 <- arbitrary
+        return $ V2 a1 a2
+    where
+
 $(showDeps ''MSvgFile)
 
 instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
@@ -54,14 +68,6 @@ instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
      a5 <- arbitrary
      a6 <- arbitrary
      return $ (a1, a2, a3, a4, a5, a6)
-
-
-instance Arbitrary RPoint where
-   arbitrary = do 
-     a1 <- arbitrary
-     a2 <- arbitrary
-     return $ V2 a1 a2
-
 
 instance Arbitrary (Map String Element) where
    arbitrary = do

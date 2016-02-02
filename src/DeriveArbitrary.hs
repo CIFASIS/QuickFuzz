@@ -141,15 +141,14 @@ simpleConView tyName c =
   ForallC _ _ innerCon -> simpleConView tyName innerCon
                                               
 
-deriveArbitrary :: Name -> (Name -> Name -> Bool) -> Q [Dec]
-deriveArbitrary t cc = do
+deriveArbitrary :: Name -> Q [Dec]
+deriveArbitrary t = do
   TyConI (DataD _ _ params constructors _) <- reify t
   let mkList xs = map (fmap fixAppl)
                   [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ t bf ty)) (conE name) tys' | SimpleCon name bf tys' <- xs]
   let ns  = map varT $ paramNames params
       scons = map (simpleConView t) constructors
       fcs = filter ((==0) . bf) scons
-      --fcs' = filter (cc . nm) fcs
   if length ns > 0 then
    [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
                 => Arbitrary $(applyTo (conT t) ns) where
@@ -173,8 +172,11 @@ findLeafTypes (AppT (ConT _) ty) = findLeafTypes ty
 findLeafTypes (AppT ty1 ty2) = findLeafTypes ty1 ++ findLeafTypes ty2
 findLeafTypes ty = [ty]
 
-deriveArbitraryRec :: Name -> (Name -> Name -> Bool) -> Q [Dec]
-deriveArbitraryRec t ci = do
+isArbInsName :: Name -> Q Bool
+isArbInsName n = (isInstance ''Arbitrary [(ConT n)]) >>= (return . not)
+
+deriveArbitraryRec :: Name -> Q [Dec]
+deriveArbitraryRec t = do
   d <- reify t
   case d of
        TyConI (DataD _ _ _ constructors _) -> do
@@ -188,16 +190,9 @@ deriveArbitraryRec t ci = do
                        q <- isInstance ''Arbitrary [ty]
                        if not q
                          then do runIO $ putStrLn ("recursively deriving Arbitrary instance for " ++ show (headOf ty))
-                                 runIO $ print $ ci t (headOf ty)
-                                 {-
-                                    if (ci $ headOf ty) then do 
-                                                   runIO $ print "======================================================= CICLA"
-                                                   return []
-                                 -}
-                                 if (ci (headOf ty) t) then deriveArbitraryRec (headOf ty) ci
-                                 else return []
+                                 deriveArbitraryRec (headOf ty)
                          else return []
-          d <- deriveArbitrary t ci
+          d <- deriveArbitrary t
           return (decs ++ d)
        e -> do
             runIO $ print $ "+++++++++++" ++ show e
@@ -229,22 +224,18 @@ getDeps t = do
                       let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ 0 tys) <- constructors, ty <- tys, not (isVarT ty) ]
                       TC.lift $ runIO $ print $ "InnerTypes de ::" ++ show t
                       TC.lift $ runIO $ print innerTypes
-                      goodInnerTypes <- TC.lift $ filterM (\t -> do
-                            i <- reify $ headOf t
-                            if (isPrim i) then return True else isInstance ''Arbitrary [t]) innerTypes 
-                      let hof = map headOf goodInnerTypes
+                      {-
+                         goodInnerTypes <- TC.lift $ filterM (\t -> do
+                               i <- reify $ headOf t
+                               if (isPrim i) then return False else (isInstance ''Arbitrary [t]) >>= (return . not)) innerTypes 
+                      -}
+                      let hof = map headOf innerTypes
                       addDep t hof
                       mapM_ getDeps hof
                 TyConI (TySynD _ _ t) -> getDeps $ headOf t
                 d -> do
                     TC.lift $ runIO $ print $ "Different?" ++ show d
                     return ()
-
-prim' :: G.Vertex -> G.Vertex -> [G.Vertex] -> Bool
-prim' a b [] = False
-prim' a b (x:xs) | x == b = False
-                | x == a = True
-                | otherwise = prim' a b xs
 
 -- Prueba de concepto, esto debe ser muy lento.
 showDeps :: Name -> Q [Dec]
@@ -254,10 +245,7 @@ showDeps t = do
         let (graph, v2ter, f) = G.graphFromEdges rs
         let topsorted = reverse $ G.topSort graph
         let ts' = map (\p -> (let (n,_,_) = v2ter p in n)) topsorted
-        let cicla n _ = case (f n) of
-                        Just _ -> True
-                        Nothing -> False
-        --runIO $ print $ "Deberíamos derivar en este roden? Cicla?---" ++ show ts'
-        -- Veamos si podemos detectar ciclos de forma muy cabeza.
-        ts <- mapM (flip deriveArbitraryRec cicla) ts'  -- Ya podemos ir haciendo esto, total esta ordenado
+        ts'' <- filterM isArbInsName ts'
+        runIO $ print $ "Deberiamos derivar en este roden? ---" ++ show ts''
+        ts <- mapM deriveArbitrary ts''  -- Ya podemos ir haciendo esto, total esta ordenado
         return $ concat ts
