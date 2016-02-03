@@ -236,20 +236,20 @@ getDeps t = do
                       let hof = map headOf innerTypes
                       addDep t hof
                       mapM_ getDeps hof
-                TyConI (NewtypeD _ nm _ constructor _) -> do 
-                      TC.lift $ runIO $ print $ "NewType!!! " ++ show tip
-                      let (SimpleCon _ _ ts )= simpleConView nm constructor
+                --TyConI (NewtypeD _ nm _ constructor _) -> do 
+                      --TC.lift $ runIO $ print $ "NewType!!! " ++ show tip
+                      --let (SimpleCon _ _ ts )= simpleConView nm constructor
                       --let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ 0 tys) <- constructors, ty <- tys, not (isVarT ty) ]
-                      TC.lift $ runIO $ print $ "TS !" ++ show ts
-                      let innerTypes = nub $ filter (not . isVarT) $ concat $  Prelude.map findLeafTypes ts 
-                      let hof = map headOf innerTypes
-                      TC.lift $ runIO $ print $ "DEPS!" ++ show hof
-                      addDep t hof
-                      mapM_ getDeps hof
+                      --TC.lift $ runIO $ print $ "TS !" ++ show ts
+                      --let innerTypes = nub $ filter (not . isVarT) $ concat $  Prelude.map findLeafTypes ts 
+                      --let hof = map headOf innerTypes
+                      --TC.lift $ runIO $ print $ "DEPS!" ++ show hof
+                      --addDep t hof
+                      --mapM_ getDeps hof
                 TyConI (TySynD _ _ t) -> getDeps $ headOf t
                 d -> do
-                    if (isPrim tip) then return () else
-                            fail $ "Caso no definido: " ++ show d
+                    if (isPrim tip) then return () else return ()
+                            --fail $ "Caso no definido: " ++ show d
 
 isArbInsName :: Name -> Q Bool
 isArbInsName n = do
@@ -257,7 +257,7 @@ isArbInsName n = do
         case inf of
             TyConI (DataD _ _ preq _  _) -> do
                         if length preq > 0 then
-                            ((runIO $ print $  "CASO AFORA ????" ++  show n) >> return True)
+                            ((runIO $ print $  "CASO AFORA ????" ++  show n) >> return False)
                         else (isInstance ''Arbitrary [(ConT n)]) >>= (return . not) 
             d -> do
                 runIO $ print $ "Caso raro :: " ++ show d
@@ -274,6 +274,6 @@ showDeps t = do
         let topsorted = reverse $ G.topSort graph
         let ts' = map (\p -> (let (n,_,_) = v2ter p in n)) topsorted
         ts'' <- filterM isArbInsName ts'
-        runIO $ print $ "Deberiamos derivar en este roden? ---" ++ show ts''
-        ts <- mapM (\t -> (runIO $ print $ "PEPE" ++ show t) >> deriveArbitrary t) ts''  -- Ya podemos ir haciendo esto, total esta ordenado
+        --runIO $ print $ "Deberiamos derivar en este roden? ---" ++ show ts''
+        ts <- mapM (\t -> (runIO $ print $ show t) >> deriveArbitrary t) ts''  -- Ya podemos ir haciendo esto, total esta ordenado
         return $ concat ts

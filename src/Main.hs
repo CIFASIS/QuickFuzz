@@ -6,23 +6,23 @@ import qualified Process
 
 import qualified Tiff
 import qualified Png
-import qualified Jpeg
+--import qualified Jpeg
 import qualified Bmp
-import qualified Gif
+--import qualified Gif
 
 #ifdef COMPLETE
-import qualified Zip
+--import qualified Zip
 import qualified Tga
 import qualified Ogg
 import qualified Tar
 import qualified Xml
 import qualified Html
 import qualified Pnm
-import qualified Gzip
+--import qualified Gzip
 import qualified Bzip
 import qualified Js
 --import qualified Sh
-import qualified SimpleSvg
+--import qualified SimpleSvg
 import qualified Svg
 --import qualified MBox
 import qualified Css
@@ -30,7 +30,7 @@ import qualified Dot
 import qualified ByteString
 import qualified Unicode
 import qualified TTF
-import qualified Wav
+--import qualified Wav
 import qualified CPIO
 import qualified MarkUp
 import qualified Regex
@@ -69,17 +69,17 @@ dispatch arg = do
         case findFileType arg of
 
             "Bmp"  -> Process.main Bmp.mencode args b
-            "Gif"  -> Process.main Gif.mencode args b
-            "Jpeg" -> Process.main Jpeg.mencode args b
+            --"Gif"  -> Process.main Gif.mencode args b
+            --"Jpeg" -> Process.main Jpeg.mencode args b
             "Png"  -> Process.main Png.mencode args b
             "Tiff" -> Process.main Tiff.mencode args b
 
 #ifdef COMPLETE
             "Dot"  -> Process.main Dot.mencode args b
             "Ogg"  -> Process.main Ogg.mencode args b
-            "Zip"  -> Process.main Zip.mencode args b
+            --"Zip"  -> Process.main Zip.mencode args b
             "Bzip" -> Process.main Bzip.mencode args b
-            "Gzip" -> Process.main Gzip.mencode args b
+            --"Gzip" -> Process.main Gzip.mencode args b
             "Tar"  -> Process.main Tar.mencode args b
             "Tga"  -> Process.main Tga.mencode args b
             "Xml"  -> Process.main Xml.mencode args b
@@ -92,7 +92,7 @@ dispatch arg = do
             "Svg"  -> Process.main Svg.mencode args b
             "TTF"  -> Process.main TTF.mencode args b
             "CSS"  -> Process.main Css.mencode args b
-            "Wav"  -> Process.main Wav.mencode args b
+            --"Wav"  -> Process.main Wav.mencode args b
             "CPIO" -> Process.main CPIO.mencode args b
             "Regex" -> Process.main Regex.mencode args b
 

@@ -41,20 +41,14 @@ type MSvgFile  = Document
 
 instance  Arbitrary DT.Text where
    arbitrary = do 
-     a1 <- arbitrary 
-     return $ a1
-   
-{-
-   instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
-      arbitrary = do 
-        a1 <- arbitrary
-        a2 <- arbitrary
-        a3 <- arbitrary
-        a4 <- arbitrary
-        a5 <- arbitrary
-        a6 <- arbitrary
-        return $ (a1, a2, a3, a4, a5, a6)
--}
+     --a1 <- arbitrary 
+     oneof $ Prelude.map (return . T.pack) ["a", "b", "c", "d", "e"]--genName
+ -- $ a1
+  
+
+instance Arbitrary String where
+  --arbitrary = genName
+  arbitrary = oneof $ Prelude.map return ["a", "b", "c", "d", "e"]--genName
 
 instance Arbitrary a => Arbitrary (Last a) where
     arbitrary = do
@@ -62,133 +56,39 @@ instance Arbitrary a => Arbitrary (Last a) where
         oneof $ Prelude.map (return . Last) [Nothing, Just ga]
 
 
+instance Arbitrary RPoint where
+   arbitrary = do 
+     a1 <- arbitrary
+     a2 <- arbitrary
+     return $ V2 a1 a2
+
 instance Arbitrary Data.Text.Array.Array where
       arbitrary
         = undefined
 
+instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
+   arbitrary = do 
+     a1 <- arbitrary
+     a2 <- arbitrary
+     a3 <- arbitrary
+     a4 <- arbitrary
+     a5 <- arbitrary
+     a6 <- arbitrary
+     return $ (a1, a2, a3, a4, a5, a6)
 
-{-
-   instance Arbitrary Tree where
-     arbitrary = do
-                  a1 <- arbitrary
-                  a2 <- arbitrary
-                  a3 <- arbitrary
-                  a4 <- arbitrary
-                  a5 <- arbitrary
-                  a6 <- arbitrary
-                  a7 <- arbitrary
-                  a10 <- arbitrary
-                  oneof $ Prelude.map return [PathTree a1, CircleTree a2, PolyLineTree a3, PolygonTree a4, EllipseTree a5, LineTree a6, RectangleTree a7,  ImageTree a10] 
--}
+derive makeArbitrary ''Symbol
+derive makeArbitrary ''Group
 
-type TS = Symbol Tree
-
--- $(showDeps ''RPoint)
 $(showDeps ''Use)
-$(showDeps ''Symbol)
--- $(showDeps ''MSvgFile)
+-- $(showDeps ''Symbol)
+$(showDeps ''MSvgFile)
 
-{-
-   instance Arbitrary (Map String Element) where
-      arbitrary = do
-        x <- arbitrary
-        y <- arbitrary 
-        return $ singleton x y
+genName :: Gen String
+genName = listOf1 validChars :: Gen String
+  where validChars = chr <$> choose (97, 122)
    
-   genName :: Gen String
-   genName = listOf1 validChars :: Gen String
-     where validChars = chr <$> choose (97, 122)
+  
+encodeMSvgFile = LC8.pack . ppcTopElement prettyConfigPP . xmlOfDocument
    
-   -- $(deriveArbitraryRec ''Graphics.Svg.Types.Tree)
-   
-   instance Arbitrary String where
-      arbitrary = genName
-      --arbitrary = oneof $ Prelude.map return ["a", "b", "c", "d", "e"]--genName
--}
-
--- $(derive makeArbitrary ''Graphics.Svg.Types.Tree)
--- $(deriveArbitraryRec ''Graphics.Svg.Types.Tree)
-
-{-
-   -- $(derive makeArbitrary ''Origin)
-   
-   --derive makeArbitrary ''Document
-   --
-   -- $(showDeps ''Document)
-   {-
-      instance Arbitrary Document where
-         arbitrary = do
-           a1 <- arbitrary
-           a2 <- arbitrary
-           a3 <- arbitrary
-           a4 <- arbitrary
-           a5 <- arbitrary
-           a6 <- arbitrary
-           a7 <- arbitrary
-      
-           return $ Document { _viewBox = a1
-                             , _width = a2
-                             , _height =  a3
-                             , _elements = a4
-                             ,_definitions = a7
-                             , _description = a5
-                             ,  _styleRules = [], _documentLocation = a6 }
-   -}
-   derive makeArbitrary ''ElementRef
-   derive makeArbitrary ''Texture
-   -- derive makeArbitrary ''DrawAttributes
-   
-   instance Arbitrary DrawAttributes where
-     arbitrary = do 
-       x1 <- arbitrary
-       x2 <- arbitrary
-       return $ mempty { _transform = x1, _strokeColor = x2 }
-   
-   derive makeArbitrary ''TextSpan
-   derive makeArbitrary ''CssElement
-   derive makeArbitrary ''Element
-   derive makeArbitrary ''CssDeclaration
-   derive makeArbitrary ''CssSelector
-   derive makeArbitrary ''CssDescriptor
-   derive makeArbitrary ''Mask
-   derive makeArbitrary ''Marker
-   derive makeArbitrary ''MarkerUnit
-   derive makeArbitrary ''MarkerOrientation
-   derive makeArbitrary ''Text
-   derive makeArbitrary ''TextAdjust
-   
-   derive makeArbitrary ''TextSpanContent
-   derive makeArbitrary ''Pattern
-   derive makeArbitrary ''TextPath
-   derive makeArbitrary ''PathCommand
-   derive makeArbitrary ''Symbol
-   derive makeArbitrary ''Rectangle
-   derive makeArbitrary ''Polygon
-   derive makeArbitrary ''PolyLine
-   -- $(derive makeArbitrary ''DT.Text)
-   
-   $(deriveArbitraryRec ''TextInfo)
-   $(deriveArbitraryRec ''CssRule)
-   $(deriveArbitraryRec ''RadialGradient)
-   $(deriveArbitraryRec ''LinearGradient)
-   $(deriveArbitraryRec ''ClipPath)
-   $(deriveArbitraryRec ''Use)
-   $(deriveArbitraryRec ''TextAnchor)
-   $(deriveArbitraryRec ''TextPathSpacing)
-   $(deriveArbitraryRec ''TextPathMethod)
-   $(deriveArbitraryRec ''Path)
-   $(deriveArbitraryRec ''Line)
-   $(deriveArbitraryRec ''LineJoin) 
-   $(deriveArbitraryRec ''Image)
-   $(deriveArbitraryRec ''Group)
-   $(deriveArbitraryRec ''Ellipse)
-   $(deriveArbitraryRec ''Circle)
-   $(deriveArbitraryRec ''FontStyle)
-   $(deriveArbitraryRec ''FillRule)
-   $(deriveArbitraryRec ''Cap)
-   
-   encodeMSvgFile = LC8.pack . ppcTopElement prettyConfigPP . xmlOfDocument
-   
-   mencode :: MSvgFile -> LC8.ByteString
-   mencode = encodeMSvgFile
--}
+mencode :: MSvgFile -> LC8.ByteString
+mencode = encodeMSvgFile
