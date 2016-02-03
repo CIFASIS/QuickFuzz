@@ -26,12 +26,5 @@ instance Arbitrary Permissions where
 derive makeArbitrary ''LinkTarget
 $(deriveArbitraryRec ''Entry)
 
-derive makeShow ''Entry
-derive makeShow ''EntryContent
-derive makeShow ''TarPath
-derive makeShow ''LinkTarget
-derive makeShow ''Format
-derive makeShow ''Ownership
-
 mencode ::  [Entry] -> L.ByteString
 mencode = write
