@@ -3,9 +3,10 @@
 module Xml where
 
 import Test.QuickCheck
-
-import Text.XML.Light.Output( ppcTopElement, prettyConfigPP )
-import Text.XML.Light.Types
+import Text.XML.HaXml.Types
+import Text.XML.HaXml.ByteStringPP
+--import Text.XML.Light.Output( ppcTopElement, prettyConfigPP )
+-- import Text.XML.Light.Types
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as LC8
@@ -35,7 +36,7 @@ instance Arbitrary String where
    arbitrary = oneof $ map return ["a", "b", "defs"]
    --arbitrary = sized sgenName 
 
-type MXml = Element
+type MXml = Prolog
 
 {-
    sizedElement :: Int -> Gen Element
@@ -58,8 +59,16 @@ type MXml = Element
            return $ Element en ea ec el
 -}
 -- | Element and contet are mutually recursive.
+derive makeArbitrary ''EncodingDecl
+derive makeArbitrary ''PubidLiteral
+derive makeArbitrary ''SystemLiteral
+derive makeArbitrary ''PublicID
+derive makeArbitrary ''NDataDecl
 
-$(showDeps ''Element)
+-- $(showDeps ''EncodingDecl)
+$(showDeps ''MXml)
+-- $(showDeps ''MXml)
+
 {-
    $(deriveArbitraryRec ''Element)
    
@@ -92,7 +101,8 @@ $(showDeps ''Element)
    
    -- | Attr is al right, there is no mention of the other two types.
    $(deriveArbitraryRec ''Attr)
-   
-   mencode :: MXml -> LC8.ByteString
-   mencode x = LC8.pack $ ppcTopElement prettyConfigPP x
--}
+-}   
+
+mencode :: MXml -> LC8.ByteString
+mencode x = prolog x  --LC8.pack $ ppcTopElement prettyConfigPP x
+
