@@ -67,14 +67,22 @@ instance Arbitrary Data.Text.Array.Array where
         = undefined
 
 instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
-   arbitrary = do 
-     a1 <- arbitrary
-     a2 <- arbitrary
-     a3 <- arbitrary
-     a4 <- arbitrary
-     a5 <- arbitrary
-     a6 <- arbitrary
-     return $ (a1, a2, a3, a4, a5, a6)
+   arbitrary = (,,,,,)  <*>arbitrary
+                        <*> arbitrary
+                        <*> arbitrary
+                        <*> arbitrary
+                        <*> arbitrary
+                        <*> arbitrary
+ --do 
+     -- a1 <- arbitrary
+     -- a2 <- arbitrary
+     -- a3 <- arbitrary
+     -- a4 <- arbitrary
+     -- a5 <- arbitrary
+     -- a6 <- arbitrary
+     -- return $ (a1, a2, a3, a4, a5, a6)
+
+
 
 derive makeArbitrary ''Symbol
 derive makeArbitrary ''Group
