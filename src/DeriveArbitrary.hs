@@ -144,6 +144,8 @@ simpleConView tyName c =
 
 makeArbs t xs = map (fmap fixAppl) [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ t bf ty)) (conE name) tys' | SimpleCon name bf tys' <- xs]
 
+genTupleArbs n = foldl (\ h _ -> uInfixE h (varE '(<*>)) (varE 'arbitrary) ) (tupE []) (n-1)
+
 deriveArbitrary :: Name -> Q [Dec]
 deriveArbitrary t = do
     inf <- reify t
@@ -177,6 +179,15 @@ deriveArbitrary t = do
                                arbitrary = sized go --(arbitrary :: Gen Int) >>= go
                                 where go n | n <= 1 = oneof $(listE (makeArbs t [scon]))
                                            | otherwise = oneof ($(listE (makeArbs t [scon]))) |]
+        TyConI (TySynD _ params ty@(TupleT n)) -> 
+            let ns = map varT $ paramNames params in
+            if (length ns > 0 ) then
+               [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
+                            => Arbitrary $(applyTo (conT t) ns) where
+                              arbitrary = genTupleArbs n |]
+            else -- Dont think we could ever enter here
+               [d| instance Arbitrary $(applyTo (conT t) ns) where
+                              arbitrary = genTupleArbs n |]
         d -> do
           if (isPrim inf) then return [] else
             (fail $ "Caso no definido: " ++ show d)
