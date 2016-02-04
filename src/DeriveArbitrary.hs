@@ -120,7 +120,7 @@ isPrim _ = False
 
 chooseExpQ :: Name -> Integer -> Type -> ExpQ
 chooseExpQ t bf (AppT ListT ty) = appE ( varE (mkName "listOf")) (appE (appE (varE (mkName "resize")) ([| ($(varE (mkName "n")) `div` 10) |])) (varE 'arbitrary))
-chooseExpQ t bf ty | headOf ty /= t = varE 'arbitrary
+chooseExpQ t bf ty | headOf ty /= t = appE (appE (varE (mkName "resize")) ([|$(varE (mkName "n"))|])) (varE 'arbitrary)
 chooseExpQ t bf ty =
   case bf of
     0  -> varE 'arbitrary
@@ -141,29 +141,42 @@ simpleConView tyName c =
   ForallC _ _ innerCon -> simpleConView tyName innerCon
                                               
 
+
+makeArbs t xs = map (fmap fixAppl) [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ t bf ty)) (conE name) tys' | SimpleCon name bf tys' <- xs]
+
 deriveArbitrary :: Name -> Q [Dec]
 deriveArbitrary t = do
     inf <- reify t
     case inf of
         TyConI (DataD _ _ params constructors _) -> do
-              let mkList xs = map (fmap fixAppl)
-                              [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ t bf ty)) (conE name) tys' | SimpleCon name bf tys' <- xs]
               let ns  = map varT $ paramNames params
                   scons = map (simpleConView t) constructors
                   fcs = filter ((==0) . bf) scons
-              runIO $ print $ "Der Arb ************************************************ ************************************************" ++ show t
-              runIO $ print $ paramNames params
               if length ns > 0 then
                [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
                             => Arbitrary $(applyTo (conT t) ns) where
                               arbitrary = sized go --(arbitrary :: Gen Int) >>= go
-                                where go n | n <= 1 = oneof $(listE (mkList fcs))
-                                           | otherwise = oneof ( ($(listE (mkList fcs))) ++ $(listE (mkList scons))) |]
+                                where go n | n <= 1 = oneof $(listE (makeArbs t fcs))
+                                           | otherwise = oneof ( ($(listE (makeArbs t fcs))) ++ $(listE (makeArbs t scons))) |]
                else
                 [d| instance Arbitrary $(applyTo (conT t) ns) where
                                arbitrary = sized go --(arbitrary :: Gen Int) >>= go
-                                 where go n | n <= 1 = oneof $(listE (mkList fcs))
-                                            | otherwise = oneof ( ($(listE (mkList fcs)))++ $(listE (mkList scons))) |]
+                                 where go n | n <= 1 = oneof $(listE (makeArbs t fcs))
+                                            | otherwise = oneof ( ($(listE (makeArbs t fcs)))++ $(listE (makeArbs t scons))) |]
+        TyConI (NewtypeD _ _ params con _) -> do
+            let ns = map varT $ paramNames params
+                scon = simpleConView t con
+            if length ns > 0 then
+               [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
+                            => Arbitrary $(applyTo (conT t) ns) where
+                              arbitrary = sized go --(arbitrary :: Gen Int) >>= go
+                                where go n | n <= 1 = oneof $(listE (makeArbs t [scon]))
+                                           | otherwise = oneof ($(listE (makeArbs t [scon]))) |]
+               else
+                [d| instance Arbitrary $(applyTo (conT t) ns) where
+                               arbitrary = sized go --(arbitrary :: Gen Int) >>= go
+                                where go n | n <= 1 = oneof $(listE (makeArbs t [scon]))
+                                           | otherwise = oneof ($(listE (makeArbs t [scon]))) |]
         d -> do
           if (isPrim inf) then return [] else
             (fail $ "Caso no definido: " ++ show d)
@@ -226,45 +239,45 @@ getDeps t = do
               case tip of
                 TyConI (DataD _ _ _ constructors _) -> do
                       let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ 0 tys) <- constructors, ty <- tys, not (isVarT ty) ]
-                      --TC.lift $ runIO $ print $ "InnerTypes de ::" ++ show t
-                      --TC.lift $ runIO $ print innerTypes
-                      {-
-                         goodInnerTypes <- TC.lift $ filterM (\t -> do
-                               i <- reify $ headOf t
-                               if (isPrim i) then return False else (isInstance ''Arbitrary [t]) >>= (return . not)) innerTypes 
-                      -}
                       let hof = map headOf innerTypes
                       addDep t hof
                       mapM_ getDeps hof
-                --TyConI (NewtypeD _ nm _ constructor _) -> do 
-                      --TC.lift $ runIO $ print $ "NewType!!! " ++ show tip
-                      --let (SimpleCon _ _ ts )= simpleConView nm constructor
-                      --let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ 0 tys) <- constructors, ty <- tys, not (isVarT ty) ]
-                      --TC.lift $ runIO $ print $ "TS !" ++ show ts
-                      --let innerTypes = nub $ filter (not . isVarT) $ concat $  Prelude.map findLeafTypes ts 
-                      --let hof = map headOf innerTypes
-                      --TC.lift $ runIO $ print $ "DEPS!" ++ show hof
-                      --addDep t hof
-                      --mapM_ getDeps hof
+                TyConI (NewtypeD _ nm _ constructor _) -> do 
+                      TC.lift $ runIO $ print $ "NewType!!! " ++ show tip
+                      let (SimpleCon _ 0 ts )= simpleConView nm constructor
+                      let innerTypes = nub $ concat $ map findLeafTypes $ filter (not . isVarT) ts
+                      let hof = map headOf innerTypes
+                      TC.lift $ runIO $ print $ "DEPS!" ++ show hof
+                      addDep t hof
+                      mapM_ getDeps hof
                 TyConI (TySynD _ _ t) -> getDeps $ headOf t
                 d -> do
                     if (isPrim tip) then return () else return ()
                             --fail $ "Caso no definido: " ++ show d
 
+
+tocheck :: [TyVarBndr] -> Name -> Type
+tocheck bndrs nm =
+    let ns = map VarT $ paramNames bndrs in foldl (\r a -> AppT r a) (ConT nm) ns
+    
+
 isArbInsName :: Name -> Q Bool
 isArbInsName n = do
         inf <- reify n
         case inf of
-            TyConI (DataD _ _ preq _  _) -> do
+            TyConI (DataD _ _ preq _ _) -> 
                         if length preq > 0 then
-                            ((runIO $ print $  "CASO AFORA ????" ++  show n) >> return False)
-                        else (isInstance ''Arbitrary [(ConT n)]) >>= (return . not) 
+                                (isInstance ''Arbitrary [tocheck preq n]) >>= (return . not)
+                        else
+                                (isInstance ''Arbitrary [(ConT n)]) >>= (return . not)
+            TyConI (NewtypeD _ _ preq _ _) -> 
+                        if length preq > 0 then
+                                (isInstance ''Arbitrary [tocheck preq n]) >>= (return . not)
+                        else
+                                (isInstance ''Arbitrary [(ConT n)]) >>= (return . not)
             d -> do
                 runIO $ print $ "Caso raro :: " ++ show d
-                isInstance ''Arbitrary [(ConT n)] >>= (return . not) -- Acá pincha como loco...
-                -- Tengo que construir un nombre para formar algo de la forma
-                -- es instance A a ?
-                -- Tal vez: \forall a. instance A a ??!!! Pablo HALP!
+                isInstance ''Arbitrary [(ConT n)] >>= (return . not)
 
 showDeps :: Name -> Q [Dec]
 showDeps t = do
@@ -273,7 +286,8 @@ showDeps t = do
         let (graph, v2ter, f) = G.graphFromEdges rs
         let topsorted = reverse $ G.topSort graph
         let ts' = map (\p -> (let (n,_,_) = v2ter p in n)) topsorted
+        runIO $ print $ "los que estamos" ++ show ts'
         ts'' <- filterM isArbInsName ts'
-        --runIO $ print $ "Deberiamos derivar en este roden? ---" ++ show ts''
+        runIO $ print $ "Deberiamos derivar en este roden? ---" ++ show ts''
         ts <- mapM (\t -> (runIO $ print $ show t) >> deriveArbitrary t) ts''  -- Ya podemos ir haciendo esto, total esta ordenado
         return $ concat ts
