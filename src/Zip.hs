@@ -15,13 +15,7 @@ import Test.QuickCheck
 
 data MArchive = Archive0 Archive | Archive1 [(FilePath, Integer, L.ByteString)] deriving Show
 
-$(deriveArbitraryRec ''Archive)
-$(deriveArbitraryRec ''MArchive)
-
---derive makeArbitrary ''MArchive
---derive makeShow ''MArchive
-
-
+$(showDeps ''MArchive)
 
 mencode :: MArchive -> L.ByteString
 mencode (Archive0 x) = encode x
