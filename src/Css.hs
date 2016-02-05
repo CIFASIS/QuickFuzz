@@ -36,7 +36,6 @@ genName = listOf1 validChars :: Gen String
   where validChars = chr <$> choose (97, 122)
 
 instance Arbitrary String where
-   --arbitrary = genName
    arbitrary = oneof $ Prelude.map return ["a", "b", "c", "d", "e"]
 
 $(showDeps ''MCssFile)

@@ -84,10 +84,10 @@ instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
 
 
 
-derive makeArbitrary ''Symbol
-derive makeArbitrary ''Group
+-- derive makeArbitrary ''Symbol
+-- derive makeArbitrary ''Group
 
-$(showDeps ''Use)
+-- $(showDeps ''Use)
 -- $(showDeps ''Symbol)
 $(showDeps ''MSvgFile)
 

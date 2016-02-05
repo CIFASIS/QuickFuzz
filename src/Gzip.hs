@@ -14,7 +14,7 @@ import ByteString
 
 type MGzipFile  = (CompressParams,L.ByteString)
 
-$(deriveArbitraryRec ''CompressParams)
+$(showDeps ''CompressParams)
 
 mencode :: MGzipFile -> L.ByteString
 mencode (p,bs) = compressWith p bs

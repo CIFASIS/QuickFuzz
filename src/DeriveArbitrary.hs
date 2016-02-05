@@ -118,6 +118,7 @@ isPrim :: Info -> Bool
 isPrim (PrimTyConI _ _ _ ) = True
 isPrim _ = False
 
+
 chooseExpQ :: Name -> Integer -> Type -> ExpQ
 chooseExpQ t bf (AppT ListT ty) = appE ( varE (mkName "listOf")) (appE (appE (varE (mkName "resize")) ([| ($(varE (mkName "n")) `div` 10) |])) (varE 'arbitrary))
 chooseExpQ t bf ty | headOf ty /= t = appE (appE (varE (mkName "resize")) ([|$(varE (mkName "n"))|])) (varE 'arbitrary)
@@ -244,9 +245,10 @@ addDep n ns = do
 getDeps :: Name -> StQ (M.Map Name Names) ()
 getDeps t = do
   visited <- member t
-  if visited then return ()
+  if (visited || hasArbIns t) then return ()
   else do
               tip <- TC.lift $ reify t
+              TC.lift $ runIO $ print $ "Visiting: " ++ show tip
               case tip of
                 TyConI (DataD _ _ _ constructors _) -> do
                       let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ 0 tys) <- constructors, ty <- tys, not (isVarT ty) ]
@@ -271,6 +273,10 @@ tocheck :: [TyVarBndr] -> Name -> Type
 tocheck bndrs nm =
     let ns = map VarT $ paramNames bndrs in foldl (\r a -> AppT r a) (ConT nm) ns
     
+
+hasArbIns :: Name -> Bool
+hasArbIns n = isPrefixOf "GHC." (show n) || isPrefixOf "Data.Vector" (show n) || isPrefixOf "Codec.Picture" (show n)
+
 
 isArbInsName :: Name -> Q Bool
 isArbInsName n = do
@@ -299,6 +305,7 @@ showDeps t = do
         let ts' = map (\p -> (let (n,_,_) = v2ter p in n)) topsorted
         runIO $ print $ "los que estamos" ++ show ts'
         ts'' <- filterM isArbInsName ts'
+        --ts'' <- filterM isNotBasic ts''
         runIO $ print $ "Deberiamos derivar en este roden? ---" ++ show ts''
         ts <- mapM (\t -> (runIO $ print $ show t) >> deriveArbitrary t) ts''  -- Ya podemos ir haciendo esto, total esta ordenado
         return $ concat ts

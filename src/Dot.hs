@@ -27,24 +27,7 @@ genName = listOf1 validChars :: Gen String
 instance {-# OVERLAPPING #-} Arbitrary String where
    arbitrary = genName
 
-derive makeArbitrary ''Graph
-derive makeArbitrary ''Statement
-derive makeArbitrary ''Subgraph
-derive makeArbitrary ''Id
-derive makeArbitrary ''NodeId
-derive makeArbitrary ''GraphDirectedness
-derive makeArbitrary ''AttributeStatementType
-derive makeArbitrary ''Xml
-derive makeArbitrary ''Entity
-derive makeArbitrary ''GraphStrictness
-derive makeArbitrary ''XmlAttribute
-   
-derive makeArbitrary ''XmlAttributeValue
-derive makeArbitrary ''XmlName
-derive makeArbitrary ''EdgeType
-derive makeArbitrary ''Attribute
-derive makeArbitrary ''Port
-derive makeArbitrary ''Compass
+$(showDeps ''Graph)
 
 mencode :: Graph -> L8.ByteString
 mencode = L8.pack . renderDot 
