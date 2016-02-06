@@ -180,8 +180,9 @@ deriveArbitrary t = do
                                arbitrary = sized go --(arbitrary :: Gen Int) >>= go
                                 where go n | n <= 1 = oneof $(listE (makeArbs t [scon]))
                                            | otherwise = oneof ($(listE (makeArbs t [scon]))) |]
-        TyConI (TySynD _ params ty@(TupleT n)) -> 
-            let ns = map varT $ paramNames params in
+        TyConI (TySynD _ params ty@(TupleT n)) -> do
+            let ns = map varT $ paramNames params 
+            runIO $ print $ "We are in a Type to a tuple"
             if (length ns > 0 ) then
                [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
                             => Arbitrary $(applyTo (conT t) ns) where
@@ -242,11 +243,19 @@ addDep n ns = do
     let newmapp = M.insert n ns mapp
     put newmapp
 
+headOfNoVar :: Type -> [Name]
+headOfNoVar (ConT n) = [n]
+headOfNoVar (VarT _) = []
+headOfNoVar (SigT t _ ) = headOfNoVar t
+headOfNoVar (AppT ty1 ty2) = headOfNoVar ty1 ++ headOfNoVar ty2
+headOfNoVar _ = []
+
 getDeps :: Name -> StQ (M.Map Name Names) ()
 getDeps t = do
   visited <- member t
   if (visited || hasArbIns t) then return ()
   else do
+              TC.lift $ runIO $ print $ "PreVisiting:" ++ show t
               tip <- TC.lift $ reify t
               TC.lift $ runIO $ print $ "Visiting: " ++ show tip
               case tip of
@@ -263,8 +272,8 @@ getDeps t = do
                       TC.lift $ runIO $ print $ "DEPS!" ++ show hof
                       addDep t hof
                       mapM_ getDeps hof
-                TyConI (TySynD _ _ t) -> getDeps $ headOf t
-                d -> do
+                TyConI (TySynD _ _ t) -> mapM_  getDeps (headOfNoVar t) -- Rethink this part...
+                d -> 
                     if (isPrim tip) then return () else return ()
                             --fail $ "Caso no definido: " ++ show d
 
