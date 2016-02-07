@@ -180,9 +180,9 @@ deriveArbitrary t = do
                                arbitrary = sized go --(arbitrary :: Gen Int) >>= go
                                 where go n | n <= 1 = oneof $(listE (makeArbs t [scon]))
                                            | otherwise = oneof ($(listE (makeArbs t [scon]))) |]
-        TyConI (TySynD _ params ty@(TupleT n)) -> do
+        TyConI (TySynD _ params ty) -> do
             let ns = map varT $ paramNames params 
-            runIO $ print $ "We are in a Type to a tuple"
+            let (Just n) = getTupleN ty -- What can we do If is not a tuple?
             if (length ns > 0 ) then
                [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
                             => Arbitrary $(applyTo (conT t) ns) where
@@ -193,6 +193,11 @@ deriveArbitrary t = do
         d -> do
           if (isPrim inf) then return [] else
             (fail $ "Caso no definido: " ++ show d)
+
+getTupleN :: Type -> Maybe Int
+getTupleN (TupleT n) = Just n
+getTupleN (AppT t _) = getTupleN t
+getTupleN _ = Nothing
 
 isVarT (VarT _) = True
 isVarT _ = False
@@ -272,7 +277,9 @@ getDeps t = do
                       TC.lift $ runIO $ print $ "DEPS!" ++ show hof
                       addDep t hof
                       mapM_ getDeps hof
-                TyConI (TySynD _ _ t) -> mapM_  getDeps (headOfNoVar t) -- Rethink this part...
+                TyConI (TySynD _ _ m) -> do
+                    addDep t (headOfNoVar m)
+                    mapM_ getDeps (headOfNoVar m) -- Rethink this part...
                 d -> 
                     if (isPrim tip) then return () else return ()
                             --fail $ "Caso no definido: " ++ show d
@@ -297,6 +304,11 @@ isArbInsName n = do
                         else
                                 (isInstance ''Arbitrary [(ConT n)]) >>= (return . not)
             TyConI (NewtypeD _ _ preq _ _) -> 
+                        if length preq > 0 then
+                                (isInstance ''Arbitrary [tocheck preq n]) >>= (return . not)
+                        else
+                                (isInstance ''Arbitrary [(ConT n)]) >>= (return . not)
+            TyConI (TySynD _ preq _ ) -> 
                         if length preq > 0 then
                                 (isInstance ''Arbitrary [tocheck preq n]) >>= (return . not)
                         else
