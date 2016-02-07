@@ -157,6 +157,11 @@ genTupleArbs n =
              map (\x -> bindS (varP x) (varE 'arbitrary)) xs
             ++ [ noBindS $ appE (varE 'return) (tupE (map varE xs))]
 
+-- Improve this on demand...
+getTy :: Type -> Type
+getTy (AppT t _) = getTy t
+getTy t = t
+
 deriveArbitrary :: Name -> Q [Dec]
 deriveArbitrary t = do
     inf <- reify t
@@ -191,25 +196,28 @@ deriveArbitrary t = do
                                arbitrary = sized go --(arbitrary :: Gen Int) >>= go
                                 where go n | n <= 1 = oneof $(listE (makeArbs t [scon]))
                                            | otherwise = oneof ($(listE (makeArbs t [scon]))) |]
-        TyConI (TySynD _ params ty) -> do
-            let ns = map varT $ paramNames params 
-            let (Just n) = getTupleN ty -- What can we do If is not a tuple?
-            if (length ns > 0 ) then
-               [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
-                            => Arbitrary $(applyTo (conT t) ns) where
-                              arbitrary = $(genTupleArbs n) |]
-            else -- Dont think we could ever enter here
-               return [] --[d| instance Arbitrary $(applyTo (conT t) ns) where
-                         --               arbitrary = $(genTupleArbs n) |]
+        TyConI (TySynD _ params ty) ->
+            case (getTy ty) of
+                (TupleT n) -> do
+                        let ns = map varT $ paramNames params 
+                        if (length ns > 0 ) then
+                           [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
+                                        => Arbitrary $(applyTo (conT t) ns) where
+                                          arbitrary = $(genTupleArbs n) |]
+                        else -- Dont think we could ever enter here
+                            do
+                                runIO $ print "Tenemos una tupla nula??!!"
+                                runIO $ print inf
+                                fail "WAT?!"
+                                -- return [] 
+                (ConT n) -> deriveArbitrary n
+                pepe -> do
+                     runIO $ print "======"
+                     runIO $ print ty
+                     return []
         d -> do
           if (isPrim inf) then return [] else
             (fail $ "Caso no definido: " ++ show d)
-
-getTupleN :: Type -> Maybe Int
-getTupleN (TupleT n) = Just n
-getTupleN (AppT t _) = getTupleN t
-getTupleN (ConT t) = Just 1
-getTupleN _ = Nothing
 
 isVarT (VarT _) = True
 isVarT _ = False
