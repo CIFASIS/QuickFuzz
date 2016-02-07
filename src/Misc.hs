@@ -16,6 +16,8 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Map a b) where
      y <- arbitrary 
      return $ singleton x y
 
+-- Esto está definido en Test.QuickCheck.Arbitrary ??
+
 instance (Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d, Arbitrary e, Arbitrary f)
       => Arbitrary (a,b,c,d,e,f)
  where

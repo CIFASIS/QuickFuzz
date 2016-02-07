@@ -60,15 +60,6 @@ instance Arbitrary Data.Text.Array.Array where
       arbitrary
         = undefined
 
---do 
-     -- a1 <- arbitrary
-     -- a2 <- arbitrary
-     -- a3 <- arbitrary
-     -- a4 <- arbitrary
-     -- a5 <- arbitrary
-     -- a6 <- arbitrary
-     -- return $ (a1, a2, a3, a4, a5, a6)
-
 --derive makeArbitrary ''Group
 --derive makeArbitrary ''Symbol
 --derive makeArbitrary ''Tree
