@@ -36,10 +36,10 @@ instance Arbitrary String where
    arbitrary = oneof $ map return ["a", "b", "c"]
    --arbitrary = sized sgenName 
 
-type MXml = Prolog
+type MXml = Document ()
 
 $(showDeps ''MXml)
 
 mencode :: MXml -> LC8.ByteString
-mencode x = prolog x  --LC8.pack $ ppcTopElement prettyConfigPP x
+mencode x = document x  --LC8.pack $ ppcTopElement prettyConfigPP x
 

@@ -207,6 +207,7 @@ findLeafTypes (AppT ListT ty) = findLeafTypes ty
 findLeafTypes (AppT (TupleT n) ty) = findLeafTypes ty
 findLeafTypes (AppT p@(ConT _) ty) = p : findLeafTypes ty
 findLeafTypes (AppT ty1 ty2) = findLeafTypes ty1 ++ findLeafTypes ty2
+findLeafTypes (VarT _) = []
 findLeafTypes ty = [ty]
 
 
