@@ -11,10 +11,10 @@ import Data.Word(Word8, Word16, Word32)
 import qualified Data.Vector.Storable as VS
 
 import GHC.Types
-import DeriveArbitrary
+-- import DeriveArbitrary
 import Data.DeriveTH
 
-$(deriveArbitraryRec ''SourceFormat)
+-- $(deriveArbitraryRec ''SourceFormat)
 
 instance Arbitrary (Metadatas) where
   arbitrary = do
@@ -25,8 +25,8 @@ instance Arbitrary (Metadatas) where
 
       s <- (arbitrary :: Gen String)
       d <- (arbitrary :: Gen Double) 
-      sf <- (arbitrary :: Gen SourceFormat)
-      return $ Metadatas { getMetadatas = [ Format :=> sf, Gamma :=> d,  DpiX :=> dx, DpiY :=> dy, Width :=> w, Height :=> h, Title :=> ""] }
+      --sf <- (arbitrary :: Gen SourceFormat)
+      return $ Metadatas { getMetadatas = [Gamma :=> d,  DpiX :=> dx, DpiY :=> dy, Width :=> w, Height :=> h, Title :=> ""] }
 
 instance Arbitrary (Image PixelYCbCr8) where
    arbitrary = do
@@ -93,7 +93,7 @@ instance Arbitrary (Image PixelRGB16) where
 instance Show (Image PixelRGB16) where
    show x = ""
 
-$(deriveArbitraryRec ''PaletteOptions)
+-- $(deriveArbitraryRec ''PaletteOptions)
 
-derive makeShow ''PaletteOptions
-derive makeShow ''PaletteCreationMethod
+-- derive makeShow ''PaletteOptions
+-- derive makeShow ''PaletteCreationMethod

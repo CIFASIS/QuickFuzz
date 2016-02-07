@@ -16,6 +16,9 @@ import qualified Data.Map.Strict as M
 import Control.Monad.Trans.State.Lazy
 import qualified Control.Monad.Trans.Class as TC
 
+import Misc
+import Images
+import Vector 
 
 --data Tree a = Leaf a
 --            | Node (Tree a) a (Tree a)
@@ -157,6 +160,7 @@ genTupleArbs n =
 deriveArbitrary :: Name -> Q [Dec]
 deriveArbitrary t = do
     inf <- reify t
+    runIO $ print $ "Deriving:" ++ show inf
     case inf of
         TyConI (DataD _ _ params constructors _) -> do
               let ns  = map varT $ paramNames params
@@ -195,8 +199,8 @@ deriveArbitrary t = do
                             => Arbitrary $(applyTo (conT t) ns) where
                               arbitrary = $(genTupleArbs n) |]
             else -- Dont think we could ever enter here
-               [d| instance Arbitrary $(applyTo (conT t) ns) where
-                              arbitrary = $(genTupleArbs n) |]
+               return [] --[d| instance Arbitrary $(applyTo (conT t) ns) where
+                         --               arbitrary = $(genTupleArbs n) |]
         d -> do
           if (isPrim inf) then return [] else
             (fail $ "Caso no definido: " ++ show d)
@@ -204,6 +208,7 @@ deriveArbitrary t = do
 getTupleN :: Type -> Maybe Int
 getTupleN (TupleT n) = Just n
 getTupleN (AppT t _) = getTupleN t
+getTupleN (ConT t) = Just 1
 getTupleN _ = Nothing
 
 isVarT (VarT _) = True
@@ -299,7 +304,7 @@ tocheck bndrs nm =
     
 
 hasArbIns :: Name -> Bool
-hasArbIns n = isPrefixOf "GHC." (show n) || isPrefixOf "Data.Vector" (show n) || isPrefixOf "Codec.Picture" (show n)
+hasArbIns n = isPrefixOf "GHC." (show n) || isPrefixOf "Data.Vector" (show n) -- || isPrefixOf "Codec.Picture" (show n)
 
 
 isArbInsName :: Name -> Q Bool

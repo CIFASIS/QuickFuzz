@@ -23,7 +23,7 @@ import qualified Bzip
 import qualified Js
 --import qualified Sh
 --import qualified SimpleSvg
---import qualified Svg
+import qualified Svg
 --import qualified MBox
 import qualified Css
 import qualified Dot
@@ -89,7 +89,7 @@ dispatch arg = do
             --"Sh"   -> Sh.main args b
 
             "Pnm"  -> Process.main Pnm.mencode args b
-            --"Svg"  -> Process.main Svg.mencode args b
+            "Svg"  -> Process.main Svg.mencode args b
             "TTF"  -> Process.main TTF.mencode args b
             "CSS"  -> Process.main Css.mencode args b
             "Wav"  -> Process.main Wav.mencode args b
