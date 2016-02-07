@@ -50,12 +50,6 @@ instance Arbitrary String where
   --arbitrary = genName
   arbitrary = oneof $ Prelude.map return ["a", "b", "c", "d", "e"]--genName
 
-instance Arbitrary a => Arbitrary (Last a) where
-    arbitrary = do
-        ga <- arbitrary
-        oneof $ Prelude.map (return . Last) [Nothing, Just ga]
-
-
 instance Arbitrary RPoint where
    arbitrary = do 
      a1 <- arbitrary
@@ -66,14 +60,7 @@ instance Arbitrary Data.Text.Array.Array where
       arbitrary
         = undefined
 
-instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
-   arbitrary = (,,,,,)  <*>arbitrary
-                        <*> arbitrary
-                        <*> arbitrary
-                        <*> arbitrary
-                        <*> arbitrary
-                        <*> arbitrary
- --do 
+--do 
      -- a1 <- arbitrary
      -- a2 <- arbitrary
      -- a3 <- arbitrary
@@ -82,14 +69,14 @@ instance Arbitrary ((Coord, Coord, Coord, Bool, Bool, RPoint)) where
      -- a6 <- arbitrary
      -- return $ (a1, a2, a3, a4, a5, a6)
 
+--derive makeArbitrary ''Group
+--derive makeArbitrary ''Symbol
+--derive makeArbitrary ''Tree
+--derive makeArbitrary ''Use
 
-
--- derive makeArbitrary ''Symbol
--- derive makeArbitrary ''Group
-
--- $(showDeps ''Use)
--- $(showDeps ''Symbol)
-$(showDeps ''MSvgFile)
+$(showDeps ''Use)
+$(showDeps ''Symbol)
+$(showDeps ''Document)
 
 genName :: Gen String
 genName = listOf1 validChars :: Gen String
