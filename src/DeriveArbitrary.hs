@@ -10,6 +10,7 @@ import Control.Monad
 import Control.Applicative
 import Data.List
 
+--import qualified Data.Text as T
 import qualified Data.Set as S
 import qualified Data.Graph as G
 import qualified Data.Map.Strict as M
@@ -17,6 +18,7 @@ import Control.Monad.Trans.State.Lazy
 import qualified Control.Monad.Trans.Class as TC
 
 import Misc
+import ByteString
 import Images
 import Vector 
 
@@ -210,7 +212,7 @@ deriveArbitrary t = do
                                 runIO $ print inf
                                 fail "WAT?!"
                                 -- return [] 
-                (ConT n) -> deriveArbitrary n
+                (ConT n) -> return []--deriveArbitrary n
                 pepe -> do
                      runIO $ print "======"
                      runIO $ print ty
@@ -312,7 +314,7 @@ tocheck bndrs nm =
     
 
 hasArbIns :: Name -> Bool
-hasArbIns n = isPrefixOf "GHC." (show n) || isPrefixOf "Data.Vector" (show n) -- || isPrefixOf "Codec.Picture" (show n)
+hasArbIns n = isPrefixOf "GHC." (show n) || isPrefixOf "Data.Vector" (show n) || isPrefixOf "Data.Text" (show n) || isPrefixOf "Codec.Image" (show n) 
 
 
 isArbInsName :: Name -> Q Bool

@@ -56,9 +56,9 @@ instance Arbitrary RPoint where
      a2 <- arbitrary
      return $ V2 a1 a2
 
-instance Arbitrary Data.Text.Array.Array where
-      arbitrary
-        = undefined
+--instance Arbitrary Data.Text.Array.Array where
+--      arbitrary
+--        = undefined
 
 --derive makeArbitrary ''Group
 --derive makeArbitrary ''Symbol
@@ -67,7 +67,7 @@ instance Arbitrary Data.Text.Array.Array where
 
 $(showDeps ''Use)
 $(showDeps ''Symbol)
-$(showDeps ''Document)
+$(showDeps ''MSvgFile)
 
 genName :: Gen String
 genName = listOf1 validChars :: Gen String

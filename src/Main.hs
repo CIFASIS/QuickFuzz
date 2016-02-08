@@ -6,7 +6,7 @@ import qualified Process
 
 import qualified Tiff
 import qualified Png
---import qualified Jpeg
+import qualified Jpeg
 import qualified Bmp
 --import qualified Gif
 
@@ -70,7 +70,7 @@ dispatch arg = do
 
             "Bmp"  -> Process.main Bmp.mencode args b
             --"Gif"  -> Process.main Gif.mencode args b
-            --"Jpeg" -> Process.main Jpeg.mencode args b
+            "Jpeg" -> Process.main Jpeg.mencode args b
             "Png"  -> Process.main Png.mencode args b
             "Tiff" -> Process.main Tiff.mencode args b
 
