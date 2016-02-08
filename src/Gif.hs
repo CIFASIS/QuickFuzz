@@ -10,9 +10,11 @@ import Codec.Picture.Gif
 import Codec.Picture.Types
 import Codec.Picture.ColorQuant
 
---import Vector
---import ByteString
---import Images
+
+import DeriveArbitrary
+import ByteString
+import Vector
+import Images
 
 import qualified Data.ByteString.Lazy as L
 import Data.DeriveTH
