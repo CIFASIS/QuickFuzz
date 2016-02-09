@@ -10,11 +10,13 @@ instance Arbitrary a => Arbitrary (Last a) where
         oneof $ Prelude.map (return . Last) [Nothing, Just ga]
 
 
-instance (Arbitrary a, Arbitrary b) => Arbitrary (Map a b) where
-   arbitrary = do
-     x <- arbitrary
-     y <- arbitrary 
-     return $ singleton x y
+{-
+   instance (Arbitrary a, Arbitrary b) => Arbitrary (Map a b) where
+      arbitrary = do
+        x <- arbitrary
+        y <- arbitrary 
+        return $ singleton x y
+-}
 
 -- Esto está definido en Test.QuickCheck.Arbitrary ??
 
