@@ -288,16 +288,14 @@ getDeps t = do
               TC.lift $ runIO $ print $ "Visiting: " ++ show tip
               case tip of
                 TyConI (DataD _ _ _ constructors _) -> do
-                      let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ 0 tys) <- constructors, ty <- tys, not (isVarT ty) ]
+                      let innerTypes = nub $ concat [ findLeafTypes ty | (simpleConView t -> SimpleCon _ _ tys) <- constructors, ty <- tys, not (isVarT ty) ]
                       let hof = map headOf innerTypes
                       addDep t hof
                       mapM_ getDeps hof
                 TyConI (NewtypeD _ nm _ constructor _) -> do 
-                      TC.lift $ runIO $ print $ "NewType!!! " ++ show tip
                       let (SimpleCon _ 0 ts )= simpleConView nm constructor
                       let innerTypes = nub $ concat $ map findLeafTypes $ filter (not . isVarT) ts
                       let hof = map headOf innerTypes
-                      TC.lift $ runIO $ print $ "DEPS!" ++ show hof
                       addDep t hof
                       mapM_ getDeps hof
                 TyConI (TySynD _ _ m) -> do
@@ -305,7 +303,6 @@ getDeps t = do
                     mapM_ getDeps (headOfNoVar m) -- Rethink this part...
                 d -> 
                     if (isPrim tip) then return () else return ()
-                            --fail $ "Caso no definido: " ++ show d
 
 
 tocheck :: [TyVarBndr] -> Name -> Type
@@ -350,6 +347,6 @@ showDeps t = do
         runIO $ print $ "los que estamos" ++ show ts'
         ts'' <- filterM isArbInsName ts'
         --ts'' <- filterM isNotBasic ts''
-        runIO $ print $ "Deberiamos derivar en este roden? ---" ++ show ts''
+        runIO $ print $ "Deberiamos derivar en este orden? ---" ++ show ts''
         ts <- mapM (\t -> (runIO $ print $ show t) >> deriveArbitrary t) ts''  -- Ya podemos ir haciendo esto, total esta ordenado
         return $ concat ts

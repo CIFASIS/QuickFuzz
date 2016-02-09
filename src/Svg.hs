@@ -65,8 +65,8 @@ instance Arbitrary RPoint where
 --derive makeArbitrary ''Tree
 --derive makeArbitrary ''Use
 
-$(showDeps ''Use)
-$(showDeps ''Symbol)
+-- $(showDeps ''Use)
+-- $(showDeps ''Symbol)
 $(showDeps ''MSvgFile)
 
 genName :: Gen String
