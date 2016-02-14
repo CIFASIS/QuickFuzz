@@ -75,6 +75,9 @@ bf (SimpleCon _ n _) = n
 nm (SimpleCon n _ _) = n
 tt (SimpleCon _ _ n) = n
 
+-- | Count 'how many times' a type is recursive to himself.
+-- Used to make an arbitrary instance that reduce more accurate
+-- the size.
 countCons :: (Name -> Bool) -> Type -> Integer
 countCons p ty =
   case ty of
@@ -83,17 +86,6 @@ countCons p ty =
     SigT t _       -> countCons p t
     ConT t         -> if p t then 1 else 0
     _              -> 0
-{-
-branchingFactor :: Name -> Con -> Integer
-branchingFactor tyName (NormalC _ sts) =
-  sum $ map (countCons (== tyName) . snd) sts
-branchingFactor tyName (RecC _ vsts) =
-  sum $ map (countCons (== tyName) . proj3) vsts
-    where proj3 (x,y,z) = z
-branchingFactor tyName (InfixC (_,t1) _ (_,t2)) =
-  countCons (== tyName) t1 +   countCons (== tyName) t2
-branchingFactor tyName (ForallC _ _ c) = branchingFactor tyName c  
--}
 
 varNames = map (('a':) . show) [0..]
 
@@ -111,19 +103,23 @@ fixAppl (UInfixE e1@(UInfixE {}) op e2) = UInfixE (fixAppl e1) op e2
 fixAppl (UInfixE con op e) = UInfixE con (VarE '(<$>)) e
 fixAppl e = AppE (VarE 'return) e
                                           
+-- | Look up  the first type name in a type structure.
 headOf :: Type -> Name
 headOf (AppT ListT ty) = headOf ty
-headOf (AppT (TupleT n) ty) = headOf ty 
-headOf (AppT ty1 ty2) = headOf ty1
+headOf (AppT (TupleT _) ty) = headOf ty 
+headOf (AppT ty1 _) = headOf ty1
 headOf (SigT ty _) = headOf ty
 headOf (ConT n) = n
 headOf (VarT n) = n
 
+-- | Check whether a type is a Primitive Type.
+-- Something like Int#, Bool#, etc.
 isPrim :: Info -> Bool
 isPrim (PrimTyConI _ _ _ ) = True
 isPrim _ = False
 
 
+-- | Build the arbitrary function.
 chooseExpQ :: Name -> Integer -> Type -> ExpQ
 chooseExpQ t bf (AppT ListT ty) = appE ( varE (mkName "listOf")) (appE (appE (varE (mkName "resize")) ([| ($(varE (mkName "n")) `div` 10) |])) (varE 'arbitrary))
 chooseExpQ t bf ty | headOf ty /= t = appE (appE (varE (mkName "resize")) ([|$(varE (mkName "n"))|])) (varE 'arbitrary)
@@ -133,6 +129,7 @@ chooseExpQ t bf ty =
     1  -> appE (varE (mkName "go")) [| ($(varE (mkName "n")) - 1) |]
     bf -> appE (varE (mkName "go")) [| ($(varE (mkName "n")) `div` bf) |]
 
+-- | View Pattern for Constructors
 simpleConView :: Name -> Con -> ConView
 simpleConView tyName c =
   let count = sum . map (countCons (== tyName))
@@ -147,9 +144,14 @@ simpleConView tyName c =
   ForallC _ _ innerCon -> simpleConView tyName innerCon
                                               
 
-
 makeArbs t xs = map (fmap fixAppl) [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ t bf ty)) (conE name) tys' | SimpleCon name bf tys' <- xs]
 
+-- | Generic function used to create arbitrarily large tuples
+-- do
+--  a1 <- arbitrary
+--  a2 <- arbitrary
+--  ....
+--  return $ (a1,a2,...)
 genTupleArbs :: Int -> ExpQ
 genTupleArbs n = 
     let ys = take n varNames
@@ -159,11 +161,16 @@ genTupleArbs n =
              map (\x -> bindS (varP x) (varE 'arbitrary)) xs
             ++ [ noBindS $ appE (varE 'return) (tupE (map varE xs))]
 
--- Improve this on demand...
+-- | Get the first type in a type application.
+-- Maybe we should improve this one
 getTy :: Type -> Type
 getTy (AppT t _) = getTy t
 getTy t = t
 
+-- | Give an arbitrary instance for its argument.
+-- It doesn't check anything, just assume that it is ok to instance
+-- its argument. And define the function arbitrary depending what type its
+-- argument references to.
 deriveArbitrary :: Name -> Q [Dec]
 deriveArbitrary t = do
     inf <- reify t
@@ -206,20 +213,18 @@ deriveArbitrary t = do
                            [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''Arbitrary)) ns))
                                         => Arbitrary $(applyTo (conT t) ns) where
                                           arbitrary = $(genTupleArbs n) |]
-                        else -- Dont think we could ever enter here
-                            do
-                                runIO $ print "Tenemos una tupla nula??!!"
-                                runIO $ print inf
-                                fail "WAT?!"
-                                -- return [] 
-                (ConT n) -> return []--deriveArbitrary n
+                        else -- Don't think we could ever enter here
+                            fail "Tuple without arguments"
+                (ConT n) -> return [] -- This type should had been derived already,
+                                        -- It its a clearly dependency and it
+                                        -- should be put before in the topsort.
                 pepe -> do
-                     runIO $ print "======"
+                     runIO $ print "IGNORING"
                      runIO $ print ty
                      return []
         d -> do
           if (isPrim inf) then return [] else
-            (fail $ "Caso no definido: " ++ show d)
+            (fail $ "Case not defined: " ++ show d)
 
 isVarT (VarT _) = True
 isVarT _ = False
@@ -233,6 +238,7 @@ findLeafTypes (VarT _) = []
 findLeafTypes ty = [ty]
 
 
+-- | Automatic recursive arbitrary derivation, DEPRECATED?
 deriveArbitraryRec :: Name -> Q [Dec]
 deriveArbitraryRec t = do
   d <- reify t
@@ -256,7 +262,8 @@ deriveArbitraryRec t = do
             runIO $ print $ "+++++++++++" ++ show e
             return []
 
---prueba de concepto
+-- Be aware, down there is a world full of mysteries...
+-- Impure computation is the least of your worries.
 type StQ s a = StateT s Q a
 type Names = [Name]
 
@@ -300,7 +307,7 @@ getDeps t = do
                       mapM_ getDeps hof
                 TyConI (TySynD _ _ m) -> do
                     addDep t (headOfNoVar m)
-                    mapM_ getDeps (headOfNoVar m) -- Rethink this part...
+                    mapM_ getDeps (headOfNoVar m) 
                 d -> 
                     if (isPrim tip) then return () else return ()
 
@@ -334,9 +341,10 @@ isArbInsName n = do
                         else
                                 (isInstance ''Arbitrary [(ConT n)]) >>= (return . not)
             d -> do
-                runIO $ print $ "Caso raro :: " ++ show d
+                runIO $ print $ "Weird case:: " ++ show d
                 isInstance ''Arbitrary [(ConT n)] >>= (return . not)
 
+-- TODO: add debugging flag, or remove all those prints.
 showDeps :: Name -> Q [Dec]
 showDeps t = do
         mapp <- execStateT (getDeps t) M.empty 
@@ -344,9 +352,25 @@ showDeps t = do
         let (graph, v2ter, f) = G.graphFromEdges rs
         let topsorted = reverse $ G.topSort graph
         let ts' = map (\p -> (let (n,_,_) = v2ter p in n)) topsorted
-        runIO $ print $ "los que estamos" ++ show ts'
+        runIO $ print $ "Topologically sorted types" ++ show ts'
         ts'' <- filterM isArbInsName ts'
         --ts'' <- filterM isNotBasic ts''
-        runIO $ print $ "Deberiamos derivar en este orden? ---" ++ show ts''
-        ts <- mapM (\t -> (runIO $ print $ show t) >> deriveArbitrary t) ts''  -- Ya podemos ir haciendo esto, total esta ordenado
+        runIO $ print $ "We should derive in this order ---" ++ show ts''
+        ts <- mapM (\t -> (runIO $ print $ show t) >> deriveArbitrary t) ts'' -- Notice here, we call
+        -- deriveArbitrary directly, because we are fully confident we can
+        -- derive all the types in that order.
         return $ concat ts
+
+-- | Define an arbitrary instance based on some function.
+-- For example: Data A a = ....
+-- f :: ... -> A a
+-- g :: ... -> A a
+-- ... etc
+-- instance [Arbitrary a =>] Arbitrary (A a)  where
+--      arbitrary = do
+--              as <- repeatM arbitrary
+--              oneof $ map pure [f ..., g ..., ....] 
+arbFunBased :: Name -- ^ Data type name, 'A'
+            -> [Name] -- ^ Function names, 'f' 'g' etc
+            -> Q [Dec] -- ^ instance Arbitrary A...
+arbFunBased _ _ = return [] -- TODO :D
