@@ -7,6 +7,7 @@ import Language.Haskell.TH.Syntax
 
 import Test.QuickCheck
 import Control.Monad
+import Control.Arrow
 import Control.Applicative
 import Data.List
 
@@ -19,7 +20,7 @@ import qualified Control.Monad.Trans.Class as TC
 
 import Misc
 import ByteString
-import Images
+--import Images
 import Vector 
 
 --data Tree a = Leaf a
@@ -76,8 +77,7 @@ nm (SimpleCon n _ _) = n
 tt (SimpleCon _ _ n) = n
 
 -- | Count 'how many times' a type is recursive to himself.
--- Used to make an arbitrary instance that reduce more accurate
--- the size.
+-- Used to make an arbitrary instance that reduce the size more accurate
 countCons :: (Name -> Bool) -> Type -> Integer
 countCons p ty =
   case ty of
@@ -161,6 +161,8 @@ genTupleArbs n =
              map (\x -> bindS (varP x) (varE 'arbitrary)) xs
             ++ [ noBindS $ appE (varE 'return) (tupE (map varE xs))]
 
+
+
 -- | Get the first type in a type application.
 -- Maybe we should improve this one
 getTy :: Type -> Type
@@ -229,12 +231,17 @@ deriveArbitrary t = do
 isVarT (VarT _) = True
 isVarT _ = False
 
+-- | Find all simple Types that are part of another Type.
 findLeafTypes :: Type -> [Type]
 findLeafTypes (AppT ListT ty) = findLeafTypes ty
 findLeafTypes (AppT (TupleT n) ty) = findLeafTypes ty
 findLeafTypes (AppT p@(ConT _) ty) = p : findLeafTypes ty
 findLeafTypes (AppT ty1 ty2) = findLeafTypes ty1 ++ findLeafTypes ty2
 findLeafTypes (VarT _) = []
+findLeafTypes (ForallT _ _ ty) = findLeafTypes ty 
+findLeafTypes ArrowT = []
+findLeafTypes ListT = []
+findLeafTypes StarT = []
 findLeafTypes ty = [ty]
 
 
@@ -361,6 +368,9 @@ showDeps t = do
         -- derive all the types in that order.
         return $ concat ts
 
+getNeedFun :: Type -> (Int,[Type])
+getNeedFun (ForallT xs _ ty) = let ns = findLeafTypes ty in (length xs, ns)
+
 -- | Define an arbitrary instance based on some function.
 -- For example: Data A a = ....
 -- f :: ... -> A a
@@ -373,4 +383,15 @@ showDeps t = do
 arbFunBased :: Name -- ^ Data type name, 'A'
             -> [Name] -- ^ Function names, 'f' 'g' etc
             -> Q [Dec] -- ^ instance Arbitrary A...
-arbFunBased _ _ = return [] -- TODO :D
+arbFunBased n ns = do
+        runIO $ print n
+        nsty <- mapM (\x -> 
+            do
+                (VarI _ ty _  _) <- reify x
+                return ty
+            ) ns
+        --let lfs = (nub $ (foldl (\ r x -> findLeafTypes x ++ r ) [] nsty)) \\ [ConT n]
+        let (fv,lfs) = (foldl (\ (is,rs) x -> let (i,xs) =  getNeedFun x in (i+is,xs ++ rs)) (0,[]) nsty)
+        let lfs' = (nub $ lfs) \\ [ConT n]
+        runIO $ print (fv,lfs')
+        return []
