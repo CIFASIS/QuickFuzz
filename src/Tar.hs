@@ -18,27 +18,7 @@ import Data.Word(Word32)
 import Vector
 import ByteString
 
-
 $(showDeps ''Entry)
-
---derive makeArbitrary ''Entry
-derive makeShow ''Entry
-
---derive makeArbitrary ''EntryContent
---derive makeArbitrary ''TarPath
-derive makeShow ''EntryContent
-derive makeShow ''TarPath
---derive makeArbitrary ''LinkTarget
-derive makeShow ''LinkTarget
---derive makeArbitrary ''Format
---derive makeArbitrary ''Ownership
-derive makeShow ''Format
-derive makeShow ''Ownership
-
---instance Arbitrary Permissions where
---   arbitrary = do
---     w32 <- arbitrary :: Gen Word32
---     return $ CMode w32
 
 mencode ::  [Entry] -> L.ByteString
 mencode = write
