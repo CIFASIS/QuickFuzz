@@ -5,6 +5,7 @@ module Svg where
 import Test.QuickCheck
 
 --import Data.Binary( Binary(..), encode )
+import Graphics.Svg
 import Graphics.Svg.Types
 
 import qualified Data.ByteString.Lazy.Char8 as LC8
@@ -18,9 +19,6 @@ import Vector
 import Text.XML.Light.Input( parseXMLDoc )
 import Text.XML.Light.Output( ppcTopElement, prettyConfigPP )
 
-import Graphics.Svg.XmlParser
-import Graphics.Svg.CssTypes
-import Graphics.Svg.Types
 import Data.Map.Strict
 import qualified Data.Text.Internal as DT
 
@@ -41,13 +39,9 @@ type MSvgFile  = Document
 
 instance  Arbitrary DT.Text where
    arbitrary = do 
-     --a1 <- arbitrary 
      oneof $ Prelude.map (return . T.pack) ["a", "b", "c", "d", "e"]--genName
- -- $ a1
   
-
 instance Arbitrary String where
-  --arbitrary = genName
   arbitrary = oneof $ Prelude.map return ["a", "b", "c", "d", "e"]--genName
 
 instance Arbitrary RPoint where
@@ -56,17 +50,6 @@ instance Arbitrary RPoint where
      a2 <- arbitrary
      return $ V2 a1 a2
 
---instance Arbitrary Data.Text.Array.Array where
---      arbitrary
---        = undefined
-
---derive makeArbitrary ''Group
---derive makeArbitrary ''Symbol
---derive makeArbitrary ''Tree
---derive makeArbitrary ''Use
-
--- $(showDeps ''Use)
--- $(showDeps ''Symbol)
 $(showDeps ''MSvgFile)
 
 genName :: Gen String
