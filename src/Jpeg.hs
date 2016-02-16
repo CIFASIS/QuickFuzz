@@ -30,10 +30,6 @@ data MJpgImage  = Jpg0 JpgImage | Jpg1 (Word8,Metadatas, Image PixelYCbCr8) | Jp
 derive makeArbitrary ''MJpgImage
 $(devArbitrary ''JpgImage)
 
---type MJpgImage  = (Word8, Metadatas, Image PixelYCbCr8)
-
---encodeJpgImage (q, meta, img) = encodeJpegAtQualityWithMetadata q meta img
---encodeJpgImage (q, _, img) = encodeJpegAtQuality q img
 encodeJpgImage (Jpg0 x) = encode x
 encodeJpgImage (Jpg1 (q, meta, img)) = encodeJpegAtQualityWithMetadata q meta img
 encodeJpgImage (Jpg2 (q, img)) = encodeJpegAtQuality q img
