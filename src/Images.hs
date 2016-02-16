@@ -94,21 +94,19 @@ instance Show (Image PixelRGB16) where
    show x = ""
 
 -- $(deriveArbitraryRec ''PaletteOptions)
-{-
-   instance Arbitrary (Image PixelYA8) where
-      arbitrary = do
-          --l <- listOf (arbitrary :: Gen Word8)
-          xs <- infiniteListOf (arbitrary :: Gen Word8)
-          Positive w <- (arbitrary :: Gen (Positive Int))
-          Positive h <- (arbitrary :: Gen (Positive Int))
-          return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList (take (3*w*h) xs)}
-   
-   instance Show (Image PixelYA8) where
-      show x = ""
-   
-   
-   $(deriveArbitraryRec ''PaletteOptions)
--}
+instance Arbitrary (Image PixelYA8) where
+   arbitrary = do
+       --l <- listOf (arbitrary :: Gen Word8)
+       xs <- infiniteListOf (arbitrary :: Gen Word8)
+       Positive w <- (arbitrary :: Gen (Positive Int))
+       Positive h <- (arbitrary :: Gen (Positive Int))
+       return $ Image { imageWidth = w, imageHeight = h, imageData = VS.fromList (take (3*w*h) xs)}
+
+instance Show (Image PixelYA8) where
+   show x = ""
+
+
+-- $(deriveArbitraryRec ''PaletteOptions)
 
 -- derive makeShow ''PaletteOptions
 -- derive makeShow ''PaletteCreationMethod

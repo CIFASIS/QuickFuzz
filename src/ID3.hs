@@ -20,13 +20,15 @@ import ByteString
 import Vector
 
 
-instance Arbitrary (Map FrameID ID3Frame) where
-   arbitrary = do
-     x <- arbitrary
-     y <- arbitrary 
-     return $ singleton x y
+{-
+   instance Arbitrary (Map FrameID ID3Frame) where
+      arbitrary = do
+        x <- arbitrary
+        y <- arbitrary 
+        return $ singleton x y
+-}
 
-$(deriveArbitraryRec ''ID3Tag)
+$(devArbitrary ''ID3Tag)
 
 type MID3  = ID3Tag
 
