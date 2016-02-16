@@ -33,7 +33,7 @@ data Regex = Sym Char
 genchar = oneof $ map return ['a', 'b', 'c']
 
 
-$(showDeps ''Regex)
+$(devArbitrary ''Regex)
 
 {-
    instance Arbitrary Regex where

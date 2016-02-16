@@ -39,7 +39,7 @@ fromRight (Left x) = error x
 
 data MGifImage  = Gif0 GifFile | Gif1 (GifLooping, [(GifDelay, Image PixelRGB8)]) | Gif2 (Image Pixel8, Palette) deriving Show
 
-$(showDeps ''MGifImage)
+$(devArbitrary ''MGifImage)
 
 encodeMGifImage :: MGifImage -> L.ByteString
 encodeMGifImage (Gif0 x) = encode x

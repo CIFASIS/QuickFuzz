@@ -5,9 +5,10 @@ module Tar where
 import Test.QuickCheck
 import DeriveArbitrary
 
-import Codec.Archive.Tar.Entry
-import Codec.Archive.Tar.Types
-import Codec.Archive.Tar.Write
+import Codec.Archive.Tar
+--import Codec.Archive.Tar.Entry
+--import Codec.Archive.Tar.Types
+--import Codec.Archive.Tar.Write
 
 import System.Posix.Types
 
@@ -18,7 +19,7 @@ import Data.Word(Word32)
 import Vector
 import ByteString
 
-$(showDeps ''Entry)
+$(devArbitrary ''Entry)
 
 mencode ::  [Entry] -> L.ByteString
 mencode = write

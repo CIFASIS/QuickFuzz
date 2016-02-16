@@ -352,8 +352,8 @@ isArbInsName n = do
                 isInstance ''Arbitrary [(ConT n)] >>= (return . not)
 
 -- TODO: add debugging flag, or remove all those prints.
-showDeps :: Name -> Q [Dec]
-showDeps t = do
+devArbitrary :: Name -> Q [Dec]
+devArbitrary t = do
         mapp <- execStateT (getDeps t) M.empty 
         let rs = M.foldrWithKey (\ k d ds -> (k,k,d) : ds) [] mapp
         let (graph, v2ter, f) = G.graphFromEdges rs
@@ -368,8 +368,8 @@ showDeps t = do
         -- derive all the types in that order.
         return $ concat ts
 
-getNeedFun :: Type -> (Int,[Type])
-getNeedFun (ForallT xs _ ty) = let ns = findLeafTypes ty in (length xs, ns)
+--getNeedFun :: Type -> (Int,[Type])
+--getNeedFun (ForallT xs _ ty) = let ns = findLeafTypes ty in (length xs, ns)
 
 -- | Define an arbitrary instance based on some function.
 -- For example: Data A a = ....

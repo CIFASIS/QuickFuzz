@@ -19,7 +19,7 @@ import Vector
 --instance Arbitrary AudioFormat where
 --   arbitrary = oneof $ (map return [MicrosoftPCM])
 
-$(showDeps ''WaveFile)
+$(devArbitrary ''WaveFile)
 
 type MWaveFile  = WaveFile
 
