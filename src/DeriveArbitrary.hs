@@ -380,18 +380,20 @@ getNeedFun (ForallT xs _ ty) = let ns = findLeafTypes ty in (length xs, ns)
 --      arbitrary = do
 --              as <- repeatM arbitrary
 --              oneof $ map pure [f ..., g ..., ....] 
-arbFunBased :: Name -- ^ Data type name, 'A'
-            -> [Name] -- ^ Function names, 'f' 'g' etc
-            -> Q [Dec] -- ^ instance Arbitrary A...
-arbFunBased n ns = do
-        runIO $ print n
-        nsty <- mapM (\x -> 
-            do
-                (VarI _ ty _  _) <- reify x
-                return ty
-            ) ns
-        --let lfs = (nub $ (foldl (\ r x -> findLeafTypes x ++ r ) [] nsty)) \\ [ConT n]
-        let (fv,lfs) = (foldl (\ (is,rs) x -> let (i,xs) =  getNeedFun x in (i+is,xs ++ rs)) (0,[]) nsty)
-        let lfs' = (nub $ lfs) \\ [ConT n]
-        runIO $ print (fv,lfs')
-        return []
+{-
+   arbFunBased :: Name -- ^ Data type name, 'A'
+               -> [Name] -- ^ Function names, 'f' 'g' etc
+               -> Q [Dec] -- ^ instance Arbitrary A...
+   arbFunBased n ns = do
+           runIO $ print n
+           nsty <- mapM (\x -> 
+               do
+                   (VarI _ ty _  _) <- reify x
+                   return ty
+               ) ns
+           --let lfs = (nub $ (foldl (\ r x -> findLeafTypes x ++ r ) [] nsty)) \\ [ConT n]
+           let (fv,lfs) = (foldl (\ (is,rs) x -> let (i,xs) =  getNeedFun x in (i+is,xs ++ rs)) (0,[]) nsty)
+           let lfs' = (nub $ lfs) \\ [ConT n]
+           runIO $ print (fv,lfs')
+           return []
+-}
