@@ -28,7 +28,7 @@ import Images
 data MJpgImage  = Jpg0 JpgImage | Jpg1 (Word8,Metadatas, Image PixelYCbCr8) | Jpg2 (Word8, Image PixelYCbCr8) deriving Show
 
 derive makeArbitrary ''MJpgImage
-$(showDeps ''JpgImage)
+$(devArbitrary ''JpgImage)
 
 --type MJpgImage  = (Word8, Metadatas, Image PixelYCbCr8)
 

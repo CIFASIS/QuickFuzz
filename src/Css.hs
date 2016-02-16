@@ -38,7 +38,7 @@ genName = listOf1 validChars :: Gen String
 instance Arbitrary String where
    arbitrary = oneof $ Prelude.map return ["a", "b", "c", "d", "e"]
 
-$(showDeps ''MCssFile)
+$(devArbitrary ''MCssFile)
 
 encodeMCssFile x = LC8.pack $ (render (pretty x)) 
 

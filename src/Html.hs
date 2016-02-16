@@ -63,7 +63,7 @@ import Data.Char (chr)
 
 type MHtml =  [Content ()]
 
-$(showDeps ''MHtml)
+$(devArbitrary ''MHtml)
 
 genName :: Gen String
 genName = listOf1 validChars :: Gen String

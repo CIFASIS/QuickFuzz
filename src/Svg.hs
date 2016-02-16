@@ -50,7 +50,7 @@ instance Arbitrary RPoint where
      a2 <- arbitrary
      return $ V2 a1 a2
 
-$(showDeps ''MSvgFile)
+$(devArbitrary ''MSvgFile)
 
 genName :: Gen String
 genName = listOf1 validChars :: Gen String

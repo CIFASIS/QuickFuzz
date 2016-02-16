@@ -19,7 +19,7 @@ import Data.DeriveTH
 import Data.List.Split
 import Control.Monad.State
 
-$(showDeps ''Op)
+$(devArbitrary ''Op)
 
 tab = [
         Table "cmap" (cmapTable (cmapFormat0 0 (take 262 $ repeat 0))),

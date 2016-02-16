@@ -27,7 +27,7 @@ genName = listOf1 validChars :: Gen String
 instance {-# OVERLAPPING #-} Arbitrary String where
    arbitrary = genName
 
-$(showDeps ''Graph)
+$(devArbitrary ''Graph)
 
 mencode :: Graph -> L8.ByteString
 mencode = L8.pack . renderDot 

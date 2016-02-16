@@ -38,7 +38,7 @@ instance Arbitrary String where
 
 type MXml = Document ()
 
-$(showDeps ''MXml)
+$(devArbitrary ''MXml)
 
 mencode :: MXml -> LC8.ByteString
 mencode x = document x  --LC8.pack $ ppcTopElement prettyConfigPP x
