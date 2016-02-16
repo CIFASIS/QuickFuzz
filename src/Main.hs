@@ -24,6 +24,9 @@ import qualified Js
 --import qualified Sh
 --import qualified SimpleSvg
 import qualified Svg
+import qualified ID3
+import qualified Pandoc
+
 --import qualified MBox
 import qualified Css
 import qualified Dot
@@ -86,9 +89,14 @@ dispatch arg = do
             "Html" -> Process.main MarkUp.mencodeHtml args b
             "XHtml" -> Process.main MarkUp.mencodeXml args b
             "Js"   -> Process.main Js.mencode args b
+            "ID3"   -> Process.main ID3.mencode args b
             --"Sh"   -> Sh.main args b
 
             "Pnm"  -> Process.main Pnm.mencode args b
+            "Rtf"  -> Process.main Pandoc.mencode_rtf args b
+            "Docx"  -> Process.main Pandoc.mencode_docx args b
+            "Odt"  -> Process.main Pandoc.mencode_odt args b
+
             "Svg"  -> Process.main Svg.mencode args b
             "TTF"  -> Process.main TTF.mencode args b
             "CSS"  -> Process.main Css.mencode args b
