@@ -19,9 +19,9 @@ parser = MainArgs
     `parsedBy` reqPos            "type"        `Descr` "File Type to generate (e.g. Bmp, Ogg, Gif, ...)"
     `andBy`    reqPos            "command"     `Descr` "Full command line to execute"
     `andBy`    optFlag []        "name"        `Descr` "Output filename"
-    `andBy`    optFlag "zzuf"    "action"      `Descr` "Action to execute (zzuf | check | gen | exec)"
+    `andBy`    optFlag "exec"    "action"      `Descr` "Action to execute (zzuf | check | gen | exec)"
     `andBy`    optFlag 100000000 "tries"       `Descr` "Number of attempts"
-    `andBy`    optFlag 20        "size"        `Descr` "Maximum structural size of generated values"
+    `andBy`    optFlag 50        "size"        `Descr` "Maximum structural size of generated values"
     `andBy`    optFlag "outdir"  "outdir"      `Descr` "Directory to dump crashes"
     `andBy`    boolFlag          "paralllel"   `Descr` "Activate parallel execution"
 
