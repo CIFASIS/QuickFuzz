@@ -16,7 +16,7 @@ import qualified Tga
 import qualified Ogg
 import qualified Tar
 import qualified Xml
---import qualified Html
+import qualified Html
 import qualified Pnm
 import qualified Gzip
 import qualified Bzip
@@ -39,6 +39,8 @@ import qualified MarkUp
 import qualified Regex
 
 --import qualified MarkUpSvg
+
+import qualified URI
 
 --import qualified Http
 --import qualified Tftp
@@ -86,8 +88,10 @@ dispatch arg = do
             "Tar"  -> Process.main Tar.mencode args b
             "Tga"  -> Process.main Tga.mencode args b
             "Xml"  -> Process.main Xml.mencode args b
-            "Html" -> Process.main MarkUp.mencodeHtml args b
-            "XHtml" -> Process.main MarkUp.mencodeXml args b
+            "Html" -> Process.main Html.mencode args b
+
+            --"Html" -> Process.main MarkUp.mencodeHtml args b
+            --"XHtml" -> Process.main MarkUp.mencodeXml args b
             "Js"   -> Process.main Js.mencode args b
             "ID3"   -> Process.main ID3.mencode args b
             --"Sh"   -> Sh.main args b
@@ -110,6 +114,8 @@ dispatch arg = do
             --"Http" -> Http.main args b
             --"Tftp" -> Tftp.main args b
             --"Dns" -> Dns.main args b
+            "URI"   -> Process.main URI.mencode args b
+
             --"MBox"   -> MBox.main args b
             "Unicode" -> Process.main Unicode.mencode args b
             "BS"   -> Process.main ByteString.bencode args b

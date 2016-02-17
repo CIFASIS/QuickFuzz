@@ -22,6 +22,7 @@ import Data.DeriveTH
 import DeriveArbitrary
 import ByteString
 import Vector
+import URI 
 
 import Text.Blaze.Internal
 import Text.Blaze.Html
@@ -70,10 +71,11 @@ genNormalURI uri = do
       ('?':) <$> (intercalate "&" <$> vectorOf 2 genParam)
     genFragment = ('#':) <$> genWord
 
-instance Arbitrary URI where
-  arbitrary = do
-    uri <- genCanonicalURI
-    genNormalURI uri
+--instance Arbitrary URI where
+--  arbitrary = do
+    --uri <- genCanonicalURI
+    --genNormalURI uri
+--    return undefined
 
 --derive makeArbitrary ''URI
 --derive makeArbitrary ''URIAuth

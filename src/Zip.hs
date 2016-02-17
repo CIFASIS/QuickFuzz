@@ -7,9 +7,8 @@ import Data.Binary( Binary(..), encode )
 import Codec.Archive.Zip
 
 import qualified Data.ByteString.Lazy as L
-import Vector
-import ByteString
-import Data.DeriveTH
+--import Vector
+--import ByteString
 import Test.QuickCheck
 
 

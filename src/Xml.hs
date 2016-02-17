@@ -5,35 +5,24 @@ module Xml where
 import Test.QuickCheck
 import Text.XML.HaXml.Types
 import Text.XML.HaXml.ByteStringPP
---import Text.XML.Light.Output( ppcTopElement, prettyConfigPP )
--- import Text.XML.Light.Types
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as LC8
 
-import Data.DeriveTH
 import DeriveArbitrary
+import Strings 
 
-import Vector
-import ByteString
-
-import Data.Char (chr)
-
-genName :: Gen String
-genName = listOf1 validChars :: Gen String
-  where validChars = chr <$> choose (97, 122)
-
-sgenName :: Int -> Gen String
-sgenName 1 = do
-        c <- chr <$> choose (97,122)
-        return $ [c]
-sgenName n = do
-        c <- chr <$> choose (97,122)
-        n <- sgenName (n-1)
-        return $ c : n
+instance Arbitrary EncodingDecl where
+   arbitrary = oneof $ map (return . EncodingDecl) ["UTF-8"]
+ 
+instance Arbitrary XMLDecl where
+   arbitrary = do 
+                ver <- oneof $ map return ["1.0"]
+                (x,y) <- arbitrary
+                return $ XMLDecl ver x y
 
 instance Arbitrary String where
-   arbitrary = oneof $ map return ["a", "b", "c"]
+   arbitrary = mgenName
    --arbitrary = sized sgenName 
 
 type MXml = Document ()
@@ -41,5 +30,5 @@ type MXml = Document ()
 $(devArbitrary ''MXml)
 
 mencode :: MXml -> LC8.ByteString
-mencode x = document x  --LC8.pack $ ppcTopElement prettyConfigPP x
+mencode x = document x
 

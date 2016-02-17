@@ -34,15 +34,19 @@ import Data.Char (chr)
 import qualified Data.Text as T
 
 import Linear
+import Strings
 
 type MSvgFile  = Document
+
+instance Arbitrary (Maybe String) where
+   arbitrary = return Nothing
 
 instance  Arbitrary DT.Text where
    arbitrary = do 
      oneof $ Prelude.map (return . T.pack) ["a", "b", "c", "d", "e"]--genName
   
 instance Arbitrary String where
-  arbitrary = oneof $ Prelude.map return ["a", "b", "c", "d", "e"]--genName
+  arbitrary = mgenName
 
 instance Arbitrary RPoint where
    arbitrary = do 
@@ -51,11 +55,6 @@ instance Arbitrary RPoint where
      return $ V2 a1 a2
 
 $(devArbitrary ''MSvgFile)
-
-genName :: Gen String
-genName = listOf1 validChars :: Gen String
-  where validChars = chr <$> choose (97, 122)
-   
   
 encodeMSvgFile = LC8.pack . ppcTopElement prettyConfigPP . xmlOfDocument
    

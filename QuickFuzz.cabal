@@ -32,10 +32,10 @@ executable QuickFuzz
   else
     build-depends:      base, bytestring, containers, vector, primitive,
                         transformers, binary, QuickCheck, quickcheck-unicode, mtl, random, ghc-prim, process, 
-                        deepseq, derive, tar, zip-archive >=0.2.3.5 && <0.2.3.6, unix,
+                        deepseq, derive, tar, zip-archive, unix,
                         template-haskell, zlib, directory, HaXml, pretty, AC-PPM, hogg, argparser, 
                         split, bzlib, JuicyPixels, language-ecmascript, wl-pprint, text,
-                        linear, svg-tree, xml, yjsvg, language-dot, ttasm, parallel-io, 
+                        linear, svg-tree, xml, language-dot, ttasm, parallel-io, 
                         language-css, monad-par, abstract-par, wavy, network, HTTP, unbounded-delays, 
                         concurrent-extra,base16-bytestring,blaze-html,blaze-markup,network-uri,xmlhtml,
                         blaze-builder, blaze-svg, idiii, pandoc-types, pandoc, data-default

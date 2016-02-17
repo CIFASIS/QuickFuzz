@@ -19,15 +19,6 @@ import DeriveArbitrary
 import ByteString
 import Vector
 
-
-{-
-   instance Arbitrary (Map FrameID ID3Frame) where
-      arbitrary = do
-        x <- arbitrary
-        y <- arbitrary 
-        return $ singleton x y
--}
-
 $(devArbitrary ''ID3Tag)
 
 type MID3  = ID3Tag
