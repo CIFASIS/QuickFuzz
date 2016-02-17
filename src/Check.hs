@@ -19,8 +19,8 @@ import System.Directory
 
 import Data.ByteString.Char8 as L8
 import Network hiding (accept, sClose)
-import Network.Socket 
-import Network.Socket.ByteString (sendAll)
+import Network.Socket hiding (send, sendTo, recv, recvFrom) 
+import Network.Socket.ByteString (send, sendTo, recv, recvFrom, sendAll)
 import Control.Concurrent
 import Control.Concurrent.Thread.Delay
 
@@ -165,20 +165,49 @@ execprop filename prog args encode outdir x =
 serve :: PortNumber -> [L8.ByteString] -> IO ()
 serve port xs = withSocketsDo $ do
     sock <- listenOn $ PortNumber port
-    loop sock xs
+    serve_loop sock xs
 
-loop sock (x:xs) = do
+serve_loop sock (x:xs) = do
    Prelude.putStrLn "Accepting connection.."
    (conn, _) <- accept sock
    forkIO $ body conn
-   loop sock xs
+   serve_loop sock xs
   where
    body c = do sendAll c x
                sClose c
 
-loop _ [] = error "Empty list!"
+serve_loop _ [] = error "Empty list!"
 
-serveprop filename port _ encode x =  
+serveprop port _ encode x =  
         noShrinking $ monadicIO $ do
            run $ serve port (encode x)
+           Test.QuickCheck.Monadic.assert True
+
+cconnect :: PortNumber -> String -> [L8.ByteString] -> IO ()
+cconnect port host xs = withSocketsDo $ do
+    Prelude.putStrLn host
+    Prelude.putStrLn (show port)
+    addrInfo <- getAddrInfo Nothing (Just host) (Just $ show port)
+
+    let serverAddr = Prelude.head addrInfo
+    sock <- socket (addrFamily serverAddr) Stream defaultProtocol
+    --sock <- conn $ PortNumber port
+    connect sock (addrAddress serverAddr)
+    cconect_loop sock xs
+
+cconect_loop sock (x:xs) = do
+   Prelude.putStrLn "Sending data .."
+   send sock x
+   --(conn, _) <- accept sock
+   --forkIO $ body conn
+   cconnect_loop sock xs
+  --where
+  -- body c = do sendAll c x
+  --             sClose c
+
+cconnect_loop _ [] = error "Empty list!"
+
+cconnectprop port host encode x =  
+        noShrinking $ monadicIO $ do
+           run $ cconnect port host (encode x)
            Test.QuickCheck.Monadic.assert True

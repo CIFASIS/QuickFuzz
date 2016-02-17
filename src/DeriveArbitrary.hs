@@ -20,8 +20,9 @@ import qualified Control.Monad.Trans.Class as TC
 
 import Misc
 import ByteString
---import Images
+import Images
 import Vector 
+import Net
 
 --data Tree a = Leaf a
 --            | Node (Tree a) a (Tree a)

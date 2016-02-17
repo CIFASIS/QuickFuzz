@@ -8,7 +8,6 @@ import qualified Data.ByteString.Char8 as L8
 import qualified Data.ByteString.Lazy.Char8 as LC8
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Internal as IB (c2w, w2c)
-import qualified Network.TFTP.Types as TFTPB
 
 import Data.IP
 
@@ -35,25 +34,10 @@ import qualified Data.Text as T
 import Data.Word(Word8, Word16, Word32)
 import Data.Int( Int16, Int8 )
 
-instance Arbitrary Domain where
-   arbitrary = do 
-     l <- listOf (arbitrary :: Gen Word8)
-     return $ B.pack l
-
-instance Arbitrary IPv4 where
-   arbitrary = do
-     --vs <- vectorOf 4 (arbitrary :: Gen Int)
-     return $ toIPv4 [1,2,3,4]
-
-instance Arbitrary IPv6 where
-   arbitrary = do
-     --vs <- vectorOf 4 (arbitrary :: Gen Int)
-     return $ toIPv6 [0x2001,0xDB8,0,0,0,0,0,1]
-
-derive makeArbitrary ''TYPE
+--derive makeArbitrary ''TYPE
 --derive makeArbitrary ''IPv6
 
-$(deriveArbitraryRec ''DNSMessage)
+$(devArbitrary ''DNSMessage)
 
 convertL8 :: LC8.ByteString -> B.ByteString
 convertL8 =  B.pack . (map IB.c2w) .  LC8.unpack --L8.pack . (Prelude.map IB.w2c) . B.unpack
@@ -62,7 +46,7 @@ data MMessage = MM [DNSMessage] deriving ( Show )
 
 instance Arbitrary MMessage where
   arbitrary = do 
-      xs <- infiniteListOf (resize 3 (arbitrary))
+      xs <- infiniteListOf (resize 10 (arbitrary))
       return $ MM xs
 
 mencode (MM x) = Prelude.map (convertL8 . encode) x

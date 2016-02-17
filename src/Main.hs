@@ -41,10 +41,10 @@ import qualified Regex
 --import qualified MarkUpSvg
 
 import qualified URI
+import qualified JSON
 
---import qualified Http
---import qualified Tftp
---import qualified Dns
+import qualified Http
+import qualified Dns
 
 #endif
 
@@ -111,10 +111,13 @@ dispatch arg = do
             --"MarkUp" -> Process.main MarkUp.mencodeHtml args b
             --"MarkUpSvg" -> Process.main MarkUpSvg.mencode args b
 
-            --"Http" -> Http.main args b
+            "HttpReq" -> Process.netmain Http.mencode_req args b
+            "HttpRes" -> Process.netmain Http.mencode_res args b
+
             --"Tftp" -> Tftp.main args b
-            --"Dns" -> Dns.main args b
+            "Dns" -> Process.netmain Dns.mencode args b
             "URI"   -> Process.main URI.mencode args b
+            "JSON"   -> Process.main JSON.mencode args b
 
             --"MBox"   -> MBox.main args b
             "Unicode" -> Process.main Unicode.mencode args b
