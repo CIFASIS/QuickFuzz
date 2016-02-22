@@ -57,20 +57,22 @@ freqE b var =
                         if b
                             then (appE (varE 'mutt) (varE var))
                             else appE (varE 'return) (varE var)]
-                , tupE [litE $ integerL 1, varE 'arbitrary]])
+                --, tupE [litE $ integerL 1, varE 'arbitrary]
+                , tupE [litE $ integerL 1, varE 'mut] -- Here we could use a custom Gen
+                ])
 
 muttC :: Name -> [(Bool,Name)] -> ExpQ
 muttC c vars = doE $ map (\ (b,x) -> bindS (varP x) (freqE b x)) vars 
             ++ [ noBindS $ appE (varE 'return)
                 $ foldl (\r (_,x) -> appE r (varE x)) (conE c) vars]
 
-devMutation :: Name -> Q [Dec]
-devMutation name = do
+devMutation :: Name -> Maybe Name -> Q [Dec]
+devMutation name customGen = do
     def <- reify name
     case def of -- We need constructors...
         TyConI (DataD _ _ params constructors _) -> do
             let fnm = mkName $ "mutt" -- ++ (showName name) 
-            f <- funD fnm $ foldl (\ p c ->
+            let f = funD fnm $ foldl (\ p c ->
                      let 
                          SimpleCon n rec vs = simpleConView name c
                          tfs = map (\ ty -> (countCons (== name) ty > 0)) vs
@@ -79,6 +81,25 @@ devMutation name = do
                      in
                      (clause [conP n vp] (normalB $ muttC n (zip tfs vars)) []) 
                     : p) [] constructors
-            return [f]
+            let ns = map varT $ paramNames params
+            if length ns > 0 then
+                case customGen of
+                    Nothing -> do
+                        dec <- instanceD (cxt [])[t|$(applyTo (tupleT (length ns)) (map (appT (conT ''Mutation)) ns)) =>
+                            Mutation $(applyTo (conT name) ns)|] [f]
+                        return [dec]
+                    Just g -> do
+                        dec <- instanceD (cxt [])[t|$(applyTo (tupleT (length ns)) (map (appT (conT ''Mutation)) ns)) =>
+                            Mutation $(applyTo (conT name) ns)|] [f, funD 'mut $ [clause [] (normalB $ varE g) []]]
+                        return [dec]
+            
+            else do
+                case customGen of
+                    Nothing -> do
+                            dec <- instanceD (cxt []) [t| Mutation $(applyTo (conT name) ns) |] [f]
+                            return $ dec : []
+                    Just g -> do
+                            dec <- instanceD (cxt []) [t| Mutation $(applyTo (conT name) ns) |] [f, funD 'mut $ [clause [] (normalB $ varE g) []]]
+                            return $ dec : []
+            --return [f]
         -- TyConI (NewtypeD _ _ params con _) -> do
-        

@@ -18,11 +18,11 @@ import qualified Data.Map.Strict as M
 import Control.Monad.Trans.State.Lazy
 import qualified Control.Monad.Trans.Class as TC
 
-import Misc
+--import Misc
 import ByteString
-import Images
+--import Images
 import Vector 
-import Net
+--import Net
 
 --data Tree a = Leaf a
 --            | Node (Tree a) a (Tree a)
