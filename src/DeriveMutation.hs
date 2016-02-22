@@ -28,7 +28,7 @@ class  Mutation a where
     mutt :: a -> Gen a -- ^ Given a value, mutate it.
     mut :: Gen a
 
-instance Arbitrary a => Mutation a where
+instance  {-#OVERLAPS#-} Arbitrary a => Mutation a where
     mutt x = frequency [(10, return x), (1, arbitrary)]
     mut = arbitrary
 
@@ -49,14 +49,12 @@ as = map (\x -> mkName $ 'a':show x) ([1..] :: [Int])
 -- This is extremely expensive, isn't it?
 
 freqE :: Bool -> Name -> ExpQ
-freqE b var =
+freqE _ var =
         appE
             (varE 'frequency)
             (listE
                 [tupE [litE $ integerL 10,
-                        if b
-                            then (appE (varE 'mutt) (varE var))
-                            else appE (varE 'return) (varE var)]
+                            (appE (varE 'mutt) (varE var))]
                 --, tupE [litE $ integerL 1, varE 'arbitrary]
                 , tupE [litE $ integerL 1, varE 'mut] -- Here we could use a custom Gen
                 ])
@@ -86,7 +84,7 @@ devMutation name customGen = do
                 case customGen of
                     Nothing -> do
                         dec <- instanceD (cxt [])[t|$(applyTo (tupleT (length ns)) (map (appT (conT ''Mutation)) ns)) =>
-                            Mutation $(applyTo (conT name) ns)|] [f]
+                            Mutation $(applyTo (conT name) ns)|] [f,funD 'mut $ [clause [] (normalB $ varE 'arbitrary) []]]
                         return [dec]
                     Just g -> do
                         dec <- instanceD (cxt [])[t|$(applyTo (tupleT (length ns)) (map (appT (conT ''Mutation)) ns)) =>
@@ -96,7 +94,7 @@ devMutation name customGen = do
             else do
                 case customGen of
                     Nothing -> do
-                            dec <- instanceD (cxt []) [t| Mutation $(applyTo (conT name) ns) |] [f]
+                            dec <- instanceD (cxt []) [t| Mutation $(applyTo (conT name) ns) |] [f,funD 'mut $ [clause [] (normalB $ varE 'arbitrary) []]]
                             return $ dec : []
                     Just g -> do
                             dec <- instanceD (cxt []) [t| Mutation $(applyTo (conT name) ns) |] [f, funD 'mut $ [clause [] (normalB $ varE g) []]]
