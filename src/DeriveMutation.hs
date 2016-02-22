@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE ViewPatterns#-}
 {-# LANGUAGE FlexibleInstances,UndecidableInstances#-}
 module DeriveMutation where
 
@@ -8,6 +8,8 @@ import Language.Haskell.TH.Syntax
 
 import Test.QuickCheck
 import Control.Monad
+--import Control.Monad.Free
+--import Control.Monad.Trans.Free as FT
 import Control.Arrow
 import Control.Applicative
 import Data.List
@@ -27,9 +29,7 @@ class  Mutation a where
     mut :: Gen a
 
 instance Arbitrary a => Mutation a where
-    --mutt :: a -> Gen a 
     mutt x = frequency [(10, return x), (1, arbitrary)]
-    --mut :: Gen a
     mut = arbitrary
 
 howm :: Con -> (Name, Int)
@@ -48,13 +48,21 @@ as = map (\x -> mkName $ 'a':show x) ([1..] :: [Int])
 --          return $ C a1' a2' ...
 -- This is extremely expensive, isn't it?
 
-freqE :: Name -> ExpQ
-freqE var = appE (varE 'frequency) (listE [tupE [litE $ integerL 10, appE (varE 'return) (varE var)], tupE [litE $ integerL 1, varE 'arbitrary]])
+freqE :: Bool -> Name -> ExpQ
+freqE b var =
+        appE
+            (varE 'frequency)
+            (listE
+                [tupE [litE $ integerL 10,
+                        if b
+                            then (appE (varE 'mutt) (varE var))
+                            else appE (varE 'return) (varE var)]
+                , tupE [litE $ integerL 1, varE 'arbitrary]])
 
-muttC :: Name -> [Name] -> ExpQ
-muttC c vars = doE $ map (\ x -> bindS (varP x) (freqE x)) vars 
+muttC :: Name -> [(Bool,Name)] -> ExpQ
+muttC c vars = doE $ map (\ (b,x) -> bindS (varP x) (freqE b x)) vars 
             ++ [ noBindS $ appE (varE 'return)
-                $ foldl (\r x -> appE r (varE x)) (conE c) vars]
+                $ foldl (\r (_,x) -> appE r (varE x)) (conE c) vars]
 
 devMutation :: Name -> Q [Dec]
 devMutation name = do
@@ -62,13 +70,14 @@ devMutation name = do
     case def of -- We need constructors...
         TyConI (DataD _ _ params constructors _) -> do
             let fnm = mkName $ "mutt" -- ++ (showName name) 
-            f <- funD fnm $ foldl (\ p x ->
-                     let (n,cant) = howm x
-                         vars = take cant as
+            f <- funD fnm $ foldl (\ p c ->
+                     let 
+                         SimpleCon n rec vs = simpleConView name c
+                         tfs = map (\ ty -> (countCons (== name) ty > 0)) vs
+                         vars = take (length vs) as
                          vp = map varP vars
-                         -- vp = foldl (\vps v -> (varP v : vps, v : ves)) ([],[]) vars
                      in
-                     (clause [conP n vp] (normalB $ muttC n vars) []) 
+                     (clause [conP n vp] (normalB $ muttC n (zip tfs vars)) []) 
                     : p) [] constructors
             return [f]
         -- TyConI (NewtypeD _ _ params con _) -> do
