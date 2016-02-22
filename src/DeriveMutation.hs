@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE FlexibleInstances,UndecidableInstances#-}
 module DeriveMutation where
 
 import Language.Haskell.TH
@@ -21,11 +22,15 @@ import qualified Control.Monad.Trans.Class as TC
 import DeriveArbitrary
 
 -- | Mutation Class
-class Arbitrary a => Mutation a where
+class  Mutation a where
     mutt :: a -> Gen a -- ^ Given a value, mutate it.
     mut :: Gen a
-    -- mut = (arbitrary :: Gen a)
 
+instance Arbitrary a => Mutation a where
+    --mutt :: a -> Gen a 
+    mutt x = frequency [(10, return x), (1, arbitrary)]
+    --mut :: Gen a
+    mut = arbitrary
 
 howm :: Con -> (Name, Int)
 howm (NormalC n xs) = (n,length xs)
@@ -38,7 +43,7 @@ as = map (\x -> mkName $ 'a':show x) ([1..] :: [Int])
 
 -- TODO: ViewPattern, recursive?
 -- + mutt (C a1 a2 .. an) = do 
---          a1' <- frequency [(10,return a1), (1,arbitrary)]
+--          a1' <- frequency [(10,return a1), (1,arbitrary), (1, mutt a1)]
 --          ...
 --          return $ C a1' a2' ...
 -- This is extremely expensive, isn't it?
@@ -49,7 +54,7 @@ freqE var = appE (varE 'frequency) (listE [tupE [litE $ integerL 10, appE (varE 
 muttC :: Name -> [Name] -> ExpQ
 muttC c vars = doE $ map (\ x -> bindS (varP x) (freqE x)) vars 
             ++ [ noBindS $ appE (varE 'return)
-                $ foldr (\x r -> appE r (varE x)) (conE c) vars]
+                $ foldl (\r x -> appE r (varE x)) (conE c) vars]
 
 devMutation :: Name -> Q [Dec]
 devMutation name = do
