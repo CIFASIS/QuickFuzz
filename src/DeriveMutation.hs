@@ -75,10 +75,21 @@ muttC c vars = doE $ map (\ (b,x) -> bindS (varP x) (freqE b x)) vars
 
 isMutInsName = isinsName ''Mutation
 
+ifsymHeadOf :: Name -> Q Name
+ifsymHeadOf n = do
+    inf <- reify n
+    case inf of
+        TyConI (TySynD _ _ t) -> return $ headOf t
+        _ -> return n
+        
+
 devMutationRec :: Name -> Q [Dec]
 devMutationRec t = do
     deps <- prevDev t
-    let deps' = nub deps
+    --nosym <- mapM ifsymHeadOf deps
+    let deps' = nub deps -- $ filter (not . hasArbIns) nosym  -- Get rid of all type syn ?
+    -- Just ignore typesym later... We hope that prevDev get all dependencies
+    -- all right, if not, we always have Arb => Mutation
     --dps <- filterM isMutInsName deps' -- Arbitrary => Mutation :(
     ds <- mapM ((flip devMutation) Nothing) deps'
     return $ concat ds
