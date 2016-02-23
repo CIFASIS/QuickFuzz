@@ -18,7 +18,7 @@ import qualified Data.Map.Strict as M
 import Control.Monad.Trans.State.Lazy
 import qualified Control.Monad.Trans.Class as TC
 
---import Misc
+import Misc
 import ByteString
 --import Images
 import Vector 
@@ -328,7 +328,6 @@ tocheck bndrs nm =
 hasArbIns :: Name -> Bool
 hasArbIns n = isPrefixOf "GHC." (show n) || isPrefixOf "Data.Vector" (show n) || isPrefixOf "Data.Text" (show n) || isPrefixOf "Codec.Image" (show n) 
 
-
 isArbInsName :: Name -> Q Bool
 isArbInsName n = do
         inf <- reify n
@@ -352,17 +351,20 @@ isArbInsName n = do
                 runIO $ print $ "Weird case:: " ++ show d
                 isInstance ''Arbitrary [(ConT n)] >>= (return . not)
 
--- TODO: add debugging flag, or remove all those prints.
-devArbitrary :: Name -> Q [Dec]
-devArbitrary t = do
+prevDev :: Name -> Q [Name]
+prevDev t = do
         mapp <- execStateT (getDeps t) M.empty 
         let rs = M.foldrWithKey (\ k d ds -> (k,k,d) : ds) [] mapp
         let (graph, v2ter, f) = G.graphFromEdges rs
         let topsorted = reverse $ G.topSort graph
-        let ts' = map (\p -> (let (n,_,_) = v2ter p in n)) topsorted
+        return (map (\p -> (let (n,_,_) = v2ter p in n)) topsorted)
+
+-- TODO: add debugging flag, or remove all those prints.
+devArbitrary :: Name -> Q [Dec]
+devArbitrary t = do
+        ts' <- prevDev t
         runIO $ print $ "Topologically sorted types" ++ show ts'
         ts'' <- filterM isArbInsName ts'
-        --ts'' <- filterM isNotBasic ts''
         runIO $ print $ "We should derive in this order ---" ++ show ts''
         ts <- mapM (\t -> (runIO $ print $ show t) >> deriveArbitrary t) ts'' -- Notice here, we call
         -- deriveArbitrary directly, because we are fully confident we can
