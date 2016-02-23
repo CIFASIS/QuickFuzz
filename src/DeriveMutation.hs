@@ -60,15 +60,34 @@ freqE _ var =
                 ])
 
 muttC :: Name -> [(Bool,Name)] -> ExpQ
+muttC c [] = 
+        appE
+            (varE 'frequency)
+            (listE
+                [tupE [litE $ integerL 10,
+                            (appE (varE 'return) (conE c))]
+                --, tupE [litE $ integerL 1, varE 'arbitrary]
+                , tupE [litE $ integerL 1, varE 'mut] -- Here we could use a custom Gen
+                ])
 muttC c vars = doE $ map (\ (b,x) -> bindS (varP x) (freqE b x)) vars 
             ++ [ noBindS $ appE (varE 'return)
                 $ foldl (\r (_,x) -> appE r (varE x)) (conE c) vars]
+
+isMutInsName = isinsName ''Mutation
+
+devMutationRec :: Name -> Q [Dec]
+devMutationRec t = do
+    deps <- prevDev t
+    let deps' = nub deps
+    --dps <- filterM isMutInsName deps' -- Arbitrary => Mutation :(
+    ds <- mapM ((flip devMutation) Nothing) deps'
+    return $ concat ds
 
 devMutation :: Name -> Maybe Name -> Q [Dec]
 devMutation name customGen = do
     def <- reify name
     case def of -- We need constructors...
-        TyConI (TySynD _ _ ty) -> devMutation (headOf ty) Nothing
+        TyConI (TySynD _ _ ty) -> return [] -- devMutation (headOf ty) Nothing
         TyConI (DataD _ _ params constructors _) -> do
             let fnm = mkName $ "mutt" -- ++ (showName name) 
             let f = funD fnm $ foldl (\ p c ->
@@ -93,7 +112,6 @@ devMutation name customGen = do
                                 ( appT (conT ''Mutation) (applyTo (conT name) ns))
                                 [f, funD 'mut $ [clause [] (normalB $ varE g) []]]
                         return [dec]
-            
             else do
                 case customGen of
                     Nothing -> do
@@ -102,5 +120,5 @@ devMutation name customGen = do
                     Just g -> do
                             dec <- instanceD (cxt []) [t| Mutation $(applyTo (conT name) ns) |] [f, funD 'mut $ [clause [] (normalB $ varE g) []]]
                             return $ dec : []
-            --return [f]
+        a -> return []   --return [f]
         -- TyConI (NewtypeD _ _ params con _) -> do

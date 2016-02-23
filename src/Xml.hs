@@ -29,7 +29,7 @@ instance Arbitrary String where
 type MXml = Document ()
 
 $(devArbitrary ''MXml)
-$(devMutation ''MXml Nothing)
+$(devMutationRec ''MXml)
 
 mencode :: MXml -> LC8.ByteString
 mencode x = document x

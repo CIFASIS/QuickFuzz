@@ -328,29 +328,30 @@ tocheck bndrs nm =
 hasArbIns :: Name -> Bool
 hasArbIns n = isPrefixOf "GHC." (show n) || isPrefixOf "Data.Vector" (show n) || isPrefixOf "Data.Text" (show n) || isPrefixOf "Codec.Image" (show n) 
 
-isArbInsName :: Name -> Q Bool
-isArbInsName n = do
+isinsName :: Name -> Name -> Q Bool
+isinsName className n = do
         inf <- reify n
         case inf of
             TyConI (DataD _ _ preq _ _) -> 
                         if length preq > 0 then
-                                (isInstance ''Arbitrary [tocheck preq n]) >>= (return . not)
+                                (isInstance className [tocheck preq n]) >>= (return . not)
                         else
-                                (isInstance ''Arbitrary [(ConT n)]) >>= (return . not)
+                                (isInstance className [(ConT n)]) >>= (return . not)
             TyConI (NewtypeD _ _ preq _ _) -> 
                         if length preq > 0 then
-                                (isInstance ''Arbitrary [tocheck preq n]) >>= (return . not)
+                                (isInstance className [tocheck preq n]) >>= (return . not)
                         else
-                                (isInstance ''Arbitrary [(ConT n)]) >>= (return . not)
+                                (isInstance className [(ConT n)]) >>= (return . not)
             TyConI (TySynD _ preq _ ) -> 
                         if length preq > 0 then
-                                (isInstance ''Arbitrary [tocheck preq n]) >>= (return . not)
+                                (isInstance className [tocheck preq n]) >>= (return . not)
                         else
-                                (isInstance ''Arbitrary [(ConT n)]) >>= (return . not)
+                                (isInstance className [(ConT n)]) >>= (return . not)
             d -> do
                 runIO $ print $ "Weird case:: " ++ show d
-                isInstance ''Arbitrary [(ConT n)] >>= (return . not)
+                isInstance className [(ConT n)] >>= (return . not)
 
+isArbInsName = isinsName ''Arbitrary
 prevDev :: Name -> Q [Name]
 prevDev t = do
         mapp <- execStateT (getDeps t) M.empty 
