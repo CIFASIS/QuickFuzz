@@ -68,6 +68,7 @@ devMutation :: Name -> Maybe Name -> Q [Dec]
 devMutation name customGen = do
     def <- reify name
     case def of -- We need constructors...
+        TyConI (TySynD _ _ ty) -> devMutation (headOf ty) Nothing
         TyConI (DataD _ _ params constructors _) -> do
             let fnm = mkName $ "mutt" -- ++ (showName name) 
             let f = funD fnm $ foldl (\ p c ->
@@ -83,12 +84,14 @@ devMutation name customGen = do
             if length ns > 0 then
                 case customGen of
                     Nothing -> do
-                        dec <- instanceD (cxt [])[t|$(applyTo (tupleT (length ns)) (map (appT (conT ''Mutation)) ns)) =>
-                            Mutation $(applyTo (conT name) ns)|] [f,funD 'mut $ [clause [] (normalB $ varE 'arbitrary) []]]
+                        dec <- instanceD (cxt $ (map (appT (conT ''Arbitrary)) ns))
+                                ( appT (conT ''Mutation) (applyTo (conT name) ns))
+                                [f,funD 'mut $ [clause [] (normalB $ varE 'arbitrary) []]]
                         return [dec]
                     Just g -> do
-                        dec <- instanceD (cxt [])[t|$(applyTo (tupleT (length ns)) (map (appT (conT ''Mutation)) ns)) =>
-                            Mutation $(applyTo (conT name) ns)|] [f, funD 'mut $ [clause [] (normalB $ varE g) []]]
+                        dec <- instanceD (cxt $ (map (appT (conT ''Arbitrary)) ns))
+                                ( appT (conT ''Mutation) (applyTo (conT name) ns))
+                                [f, funD 'mut $ [clause [] (normalB $ varE g) []]]
                         return [dec]
             
             else do
