@@ -10,6 +10,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as LC8
 
 import DeriveArbitrary
+import DeriveMutation
 import Strings 
 
 instance Arbitrary EncodingDecl where
@@ -28,6 +29,7 @@ instance Arbitrary String where
 type MXml = Document ()
 
 $(devArbitrary ''MXml)
+$(devMutation ''MXml Nothing)
 
 mencode :: MXml -> LC8.ByteString
 mencode x = document x
