@@ -15,12 +15,12 @@ import Test.QuickCheck
 
 data MArchive = Archive0 Archive | Archive1 [(FilePath, Integer, L.ByteString)] deriving Show
 
-custm :: Gen Archive
-custm = arbitrary
-
 $(devArbitrary ''MArchive)
-$(devMutation ''Entry Nothing)
-$(devMutation ''Archive (Just 'custm))
+$(devMutationRec ''MArchive)
+-- $(devMutation ''Entry Nothing)
+-- $(devMutation ''L.ByteString Nothing)
+-- $(devMutation ''Data.ByteString.Internal.ByteString Nothing)
+-- $(devMutationRec ''MArchive)
 
 mencode :: MArchive -> L.ByteString
 mencode (Archive0 x) = encode x
