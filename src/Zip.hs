@@ -16,7 +16,7 @@ import Test.QuickCheck
 data MArchive = Archive0 Archive | Archive1 [(FilePath, Integer, L.ByteString)] deriving Show
 
 $(devArbitrary ''MArchive)
-$(devMutationRec ''MArchive)
+-- $(devMutationRec ''MArchive)
 -- $(devMutation ''Entry Nothing)
 -- $(devMutation ''L.ByteString Nothing)
 -- $(devMutation ''Data.ByteString.Internal.ByteString Nothing)

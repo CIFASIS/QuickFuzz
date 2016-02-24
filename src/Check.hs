@@ -24,6 +24,8 @@ import Network.Socket.ByteString (send, sendTo, recv, recvFrom, sendAll)
 import Control.Concurrent
 import Control.Concurrent.Thread.Delay
 
+import Mutation
+
 processPar = P.processPar
 parallelism = P.parallelism
 
@@ -133,6 +135,35 @@ radamprop filename prog args encode outdir x =
                 )
               _             -> Test.QuickCheck.Monadic.assert True
            )
+
+
+mutprop :: (Show a, Mutation a,Arbitrary a) => FilePath  -> String -> [String]  -> (a -> L.ByteString) -> (L.ByteString -> a) -> [Char] -> [a] ->  Property
+mutprop filename prog args encode decode outdir vals = 
+         noShrinking $ monadicIO $ do
+         idx <- run (randomIO :: IO Int)
+         x <- run $ generate $ resize 100 $ mutt $ vals !! (idx `mod` (Prelude.length vals))
+         run $  Control.Exception.catch (L.writeFile filename (encode x)) handler
+         size <- run $ getFileSize filename 
+         if size == 0 
+            then Test.QuickCheck.Monadic.assert True 
+         else (
+           do 
+           seed <- run (randomIO :: IO Int)
+           ret <- run $ rawSystem prog args
+           case ret of
+              ExitFailure x -> (
+                                
+                                if ((x < 0 || x > 128) && x /= 143) then
+                                 do 
+                                   run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
+                                   Test.QuickCheck.Monadic.assert True
+                                 else
+                                   Test.QuickCheck.Monadic.assert True
+                )
+              _             -> Test.QuickCheck.Monadic.assert True
+           )
+
+
 
 
 execprop filename prog args encode outdir x = 

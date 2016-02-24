@@ -22,11 +22,7 @@ import Control.Monad.Trans.State.Lazy
 import qualified Control.Monad.Trans.Class as TC
 
 import DeriveArbitrary
-
--- | Mutation Class
-class  Mutation a where
-    mutt :: a -> Gen a -- ^ Given a value, mutate it.
-    mut :: Gen a
+import Mutation
 
 instance  {-#OVERLAPS#-} Arbitrary a => Mutation a where
     mutt x = frequency [(10, return x), (1, arbitrary)]
@@ -64,7 +60,7 @@ muttC c [] =
         appE
             (varE 'frequency)
             (listE
-                [tupE [litE $ integerL 10,
+                [tupE [litE $ integerL 2,
                             (appE (varE 'return) (conE c))]
                 --, tupE [litE $ integerL 1, varE 'arbitrary]
                 , tupE [litE $ integerL 1, varE 'mut] -- Here we could use a custom Gen

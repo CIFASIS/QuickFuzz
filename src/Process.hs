@@ -1,14 +1,33 @@
 module Process where
 
 import Args
+import Mutation
 import Test.QuickCheck
 import Check
 import Data.List.Split
-import Data.ByteString.Lazy 
-import Network.Socket
+import qualified Data.ByteString.Lazy as BSL
+--import qualified Data.ByteString as BS
 
-process :: (Show a, Arbitrary a) => (a -> ByteString) -> Bool -> FilePath -> String -> String -> Int -> Int -> FilePath -> IO Result 
-process mencode par filename cmd prop maxSuccess maxSize outdir =
+import System.Directory
+import Network.Socket
+import Control.Exception ( bracket, bracketOnError )
+
+listDirectory :: FilePath -> IO [FilePath]
+listDirectory path =
+  (Prelude.filter f) <$> (getDirectoryContents path)
+  where f filename = filename /= "." && filename /= ".."
+
+
+withCurrentDirectory :: FilePath  -- ^ Directory to execute in
+                     -> IO a      -- ^ Action to be executed
+                     -> IO a
+withCurrentDirectory dir action =
+  bracket getCurrentDirectory setCurrentDirectory $ \ _ -> do
+    setCurrentDirectory dir
+    action
+
+process :: (Mutation a, Show a, Arbitrary a) => ((a -> BSL.ByteString),(BSL.ByteString -> a))  -> Bool -> FilePath -> String -> String -> Int -> Int -> FilePath -> FilePath -> IO Result 
+process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
     let (prog, args) = (Prelude.head spl, Prelude.tail spl)
     in (case prop of
         "zzuf" ->
@@ -23,6 +42,16 @@ process mencode par filename cmd prop maxSuccess maxSize outdir =
         "gen" ->
             quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
             (noShrinking $ genprop filename prog args mencode outdir)
+        "mut" ->
+            if seeds /= "" then (
+             do
+                 fs <- listDirectory seeds
+                 xs <- mapM makeRelativeToCurrentDirectory fs
+                 --mapM_ print fs
+                 xs <- withCurrentDirectory seeds (mapM BSL.readFile fs)
+                 --xs <- return $ map mdecode xs
+                 quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ mutprop filename prog args mencode mdecode outdir (Prelude.map mdecode xs)) )
+            else (error "You should specifiy a directory with seeds!")
         "exec" ->
             quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
             (noShrinking $ execprop filename prog args mencode outdir)
@@ -33,15 +62,13 @@ process mencode par filename cmd prop maxSuccess maxSize outdir =
         _     -> error "Invalid action selected"
     ) where spl = splitOn " " cmd
 
-_main mencode (MainArgs _ cmd filename prop maxSuccess maxSize outdir b) = process mencode b filename cmd prop maxSuccess maxSize outdir 
+_main fs (MainArgs _ cmd filename prop maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop maxSuccess maxSize outdir seeds
 
-main mencode fargs False = (\x -> (_main mencode x) >> return ()) $ fargs ""
-main mencode fargs True  = processPar fargs (\x -> (_main mencode x) >> return ())
-
-
+main fs fargs False = (\x -> (_main fs x) >> return ()) $ fargs ""
+main fs fargs True  = processPar fargs (\x -> (_main fs x) >> return ())
 
 --netprocess :: (Show a, Arbitrary a) => (a -> ByteString) -> Bool -> FilePath -> String -> String -> Int -> Int -> FilePath -> IO Result 
-netprocess mencode par _ host prop maxSuccess maxSize outdir =
+netprocess mencode par _ host prop maxSuccess maxSize outdir _ =
     --let (prog, args) = (Prelude.head spl, Prelude.tail spl)
     case prop of
         "serve" -> 
@@ -55,7 +82,7 @@ netprocess mencode par _ host prop maxSuccess maxSize outdir =
 
         _     -> error "Invalid action selected"
 
-_netmain mencode (MainArgs _ cmd filename prop maxSuccess maxSize outdir b) = netprocess mencode b filename cmd prop maxSuccess maxSize outdir 
+_netmain mencode (MainArgs _ cmd filename prop maxSuccess maxSize outdir seeds b) = netprocess mencode b filename cmd prop maxSuccess maxSize outdir seeds
 
 netmain mencode fargs False = (\x -> (_netmain mencode x) >> return ()) $ fargs ""
 netmain mencode fargs True  = processPar fargs (\x -> (_netmain mencode x) >> return ())

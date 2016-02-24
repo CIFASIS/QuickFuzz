@@ -73,40 +73,40 @@ dispatch arg = do
         safetyChecks arg 
         case findFileType arg of
 
-            "Bmp"  -> Process.main Bmp.mencode args b
+            "Bmp"  -> Process.main (Bmp.mencode,undefined) args b
             --"Gif"  -> Process.main Gif.mencode args b
-            "Jpeg" -> Process.main Jpeg.mencode args b
-            "Png"  -> Process.main Png.mencode args b
-            "Tiff" -> Process.main Tiff.mencode args b
+            "Jpeg" -> Process.main (Jpeg.mencode,undefined) args b
+            "Png"  -> Process.main (Png.mencode,undefined) args b
+            "Tiff" -> Process.main (Tiff.mencode,undefined)  args b
 
 #ifdef COMPLETE
-            "Dot"  -> Process.main Dot.mencode args b
-            "Ogg"  -> Process.main Ogg.mencode args b
-            "Zip"  -> Process.main Zip.mencode args b
-            "Bzip" -> Process.main Bzip.mencode args b
-            "Gzip" -> Process.main Gzip.mencode args b
-            "Tar"  -> Process.main Tar.mencode args b
-            "Tga"  -> Process.main Tga.mencode args b
-            "Xml"  -> Process.main Xml.mencode args b
-            "Html" -> Process.main Html.mencode args b
+            "Dot"  -> Process.main (Dot.mencode,undefined)  args b
+            "Ogg"  -> Process.main (Ogg.mencode,undefined)  args b
+            "Zip"  -> Process.main (Zip.mencode,undefined)  args b
+            "Bzip" -> Process.main (Bzip.mencode,undefined)  args b
+            "Gzip" -> Process.main (Gzip.mencode,undefined)  args b
+            "Tar"  -> Process.main (Tar.mencode,undefined)  args b
+            "Tga"  -> Process.main (Tga.mencode,undefined)  args b
+            "Xml"  -> Process.main (Xml.mencode,Xml.mdecode)  args b
+            "Html" -> Process.main (Html.mencode,undefined)  args b
 
             --"Html" -> Process.main MarkUp.mencodeHtml args b
             --"XHtml" -> Process.main MarkUp.mencodeXml args b
-            "Js"   -> Process.main Js.mencode args b
-            "ID3"   -> Process.main ID3.mencode args b
+            "Js"   -> Process.main (Js.mencode,undefined)  args b
+            "ID3"   -> Process.main (ID3.mencode,undefined)  args b
             --"Sh"   -> Sh.main args b
 
-            "Pnm"  -> Process.main Pnm.mencode args b
-            "Rtf"  -> Process.main Pandoc.mencode_rtf args b
-            "Docx"  -> Process.main Pandoc.mencode_docx args b
-            "Odt"  -> Process.main Pandoc.mencode_odt args b
+            "Pnm"  -> Process.main (Pnm.mencode,undefined)  args b
+            "Rtf"  -> Process.main (Pandoc.mencode_rtf,undefined)  args b
+            "Docx"  -> Process.main (Pandoc.mencode_docx,undefined)  args b
+            "Odt"  -> Process.main (Pandoc.mencode_odt,undefined)  args b
 
-            "Svg"  -> Process.main Svg.mencode args b
-            "TTF"  -> Process.main TTF.mencode args b
-            "CSS"  -> Process.main Css.mencode args b
-            "Wav"  -> Process.main Wav.mencode args b
-            "CPIO" -> Process.main CPIO.mencode args b
-            "Regex" -> Process.main Regex.mencode args b
+            "Svg"  -> Process.main (Svg.mencode,undefined)  args b
+            "TTF"  -> Process.main (TTF.mencode,undefined)  args b
+            "CSS"  -> Process.main (Css.mencode,undefined)  args b
+            "Wav"  -> Process.main (Wav.mencode,undefined)  args b
+            "CPIO" -> Process.main (CPIO.mencode,undefined)  args b
+            "Regex" -> Process.main (Regex.mencode,undefined)  args b
 
             --"MarkUp" -> Process.main MarkUp.mencodeHtml args b
             --"MarkUpSvg" -> Process.main MarkUpSvg.mencode args b
@@ -116,12 +116,12 @@ dispatch arg = do
 
             --"Tftp" -> Tftp.main args b
             "Dns" -> Process.netmain Dns.mencode args b
-            "URI"   -> Process.main URI.mencode args b
-            "JSON"   -> Process.main JSON.mencode args b
+            "URI"   -> Process.main (URI.mencode,undefined) args b
+            "JSON"   -> Process.main (JSON.mencode,undefined) args b
 
             --"MBox"   -> MBox.main args b
-            "Unicode" -> Process.main Unicode.mencode args b
-            "BS"   -> Process.main ByteString.bencode args b
+            "Unicode" -> Process.main (Unicode.mencode,undefined)  args b
+            "BS"   -> Process.main (ByteString.bencode,undefined)  args b
 
 #endif
             _      -> print "Unsupported Type"
