@@ -24,10 +24,6 @@ import qualified Control.Monad.Trans.Class as TC
 import DeriveArbitrary
 import Mutation
 
-instance  {-#OVERLAPS#-} Arbitrary a => Mutation a where
-    mutt x = frequency [(10, return x), (1, arbitrary)]
-    mut = arbitrary
-
 howm :: Con -> (Name, Int)
 howm (NormalC n xs) = (n,length xs)
 howm (RecC n xs) = (n,length xs)
@@ -52,7 +48,7 @@ freqE _ var =
                 [tupE [litE $ integerL 10,
                             (appE (varE 'mutt) (varE var))]
                 --, tupE [litE $ integerL 1, varE 'arbitrary]
-                , tupE [litE $ integerL 1, varE 'mut] -- Here we could use a custom Gen
+                , tupE [litE $ integerL 1, varE 'arbitrary] -- Here we could use a custom Gen
                 ])
 
 muttC :: Name -> [(Bool,Name)] -> ExpQ
@@ -60,10 +56,11 @@ muttC c [] =
         appE
             (varE 'frequency)
             (listE
-                [tupE [litE $ integerL 2,
-                            (appE (varE 'return) (conE c))]
-                --, tupE [litE $ integerL 1, varE 'arbitrary]
-                , tupE [litE $ integerL 1, varE 'mut] -- Here we could use a custom Gen
+                [
+                    tupE [litE $ integerL 20,
+                            (appE (varE 'return) (conE c)) ]
+                , tupE [litE $ integerL 1, varE 'arbitrary]
+                -- , tupE [litE $ integerL 1, varE 'mut] -- Here we could use a custom Gen
                 ])
 muttC c vars = doE $ map (\ (b,x) -> bindS (varP x) (freqE b x)) vars 
             ++ [ noBindS $ appE (varE 'return)
@@ -110,22 +107,22 @@ devMutation name customGen = do
             if length ns > 0 then
                 case customGen of
                     Nothing -> do
-                        dec <- instanceD (cxt $ (map (appT (conT ''Arbitrary)) ns))
+                        dec <- instanceD (cxt $ (map (appT (conT ''Arbitrary)) ns) ++ (map (appT (conT ''Mutation)) ns))
                                 ( appT (conT ''Mutation) (applyTo (conT name) ns))
-                                [f,funD 'mut $ [clause [] (normalB $ varE 'arbitrary) []]]
+                                [f]
                         return [dec]
                     Just g -> do
-                        dec <- instanceD (cxt $ (map (appT (conT ''Arbitrary)) ns))
+                        dec <- instanceD (cxt $ (map (appT (conT ''Arbitrary)) ns) ++ (map (appT (conT ''Mutation)) ns))
                                 ( appT (conT ''Mutation) (applyTo (conT name) ns))
-                                [f, funD 'mut $ [clause [] (normalB $ varE g) []]]
+                                [f]
                         return [dec]
             else do
                 case customGen of
                     Nothing -> do
-                            dec <- instanceD (cxt []) [t| Mutation $(applyTo (conT name) ns) |] [f,funD 'mut $ [clause [] (normalB $ varE 'arbitrary) []]]
+                            dec <- instanceD (cxt []) [t| Mutation $(applyTo (conT name) ns) |] [f]
                             return $ dec : []
                     Just g -> do
-                            dec <- instanceD (cxt []) [t| Mutation $(applyTo (conT name) ns) |] [f, funD 'mut $ [clause [] (normalB $ varE g) []]]
+                            dec <- instanceD (cxt []) [t| Mutation $(applyTo (conT name) ns) |] [f]
                             return $ dec : []
         a -> return []   --return [f]
         -- TyConI (NewtypeD _ _ params con _) -> do
