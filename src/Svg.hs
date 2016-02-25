@@ -70,9 +70,9 @@ encodeMSvgFile = LC8.pack . ppcTopElement prettyConfigPP . xmlOfDocument
 mencode :: MSvgFile -> LC8.ByteString
 mencode = encodeMSvgFile
 
-mdecode :: LC8.ByteString -> MSvgFile
+mdecode :: C8.ByteString -> MSvgFile
 mdecode x = 
-           case (parseSvgFile "." (C.pack x')) of --(B.pack  $ Prelude.map (ord . toEnum) (C.unpack x))) of
+           case (parseSvgFile "." x) of --(B.pack  $ Prelude.map (ord . toEnum) (C.unpack x))) of
              Just doc -> doc
              Nothing  -> error "SVG impossible to parse"
-           where x' = LC8.unpack x 
+           --where x' = C8.unpack x 

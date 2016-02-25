@@ -23,7 +23,6 @@ import qualified Control.Monad.Trans.Class as TC
 
 import DeriveArbitrary
 import Mutation
-import Images
 
 instance  {-#OVERLAPS#-} Arbitrary a => Mutation a where
     mutt x = frequency [(10, return x), (1, arbitrary)]
