@@ -16,6 +16,11 @@ import Data.DeriveTH
 
 -- $(deriveArbitraryRec ''SourceFormat)
 
+instance Arbitrary PixelRGBA8 where
+  arbitrary = do
+      (r,g,b,a) <- (arbitrary)
+      return $ PixelRGBA8 r g b a
+ 
 instance Arbitrary (Metadatas) where
   arbitrary = do
       w <- (arbitrary :: Gen Word)

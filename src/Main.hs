@@ -6,7 +6,7 @@ import qualified Process
 
 import qualified Tiff
 import qualified Png
-import qualified Jpeg
+--import qualified Jpeg
 import qualified Bmp
 --import qualified Gif
 
@@ -75,7 +75,7 @@ dispatch arg = do
 
             "Bmp"  -> Process.main (Bmp.mencode,undefined) args b
             --"Gif"  -> Process.main Gif.mencode args b
-            "Jpeg" -> Process.main (Jpeg.mencode,undefined) args b
+            --"Jpeg" -> Process.main (Jpeg.mencode,undefined) args b
             "Png"  -> Process.main (Png.mencode,undefined) args b
             "Tiff" -> Process.main (Tiff.mencode,undefined)  args b
 
@@ -101,7 +101,7 @@ dispatch arg = do
             "Docx"  -> Process.main (Pandoc.mencode_docx,undefined)  args b
             "Odt"  -> Process.main (Pandoc.mencode_odt,undefined)  args b
 
-            "Svg"  -> Process.main (Svg.mencode,undefined)  args b
+            "Svg"  -> Process.main (Svg.mencode,Svg.mdecode)  args b
             "TTF"  -> Process.main (TTF.mencode,undefined)  args b
             "CSS"  -> Process.main (Css.mencode,undefined)  args b
             "Wav"  -> Process.main (Wav.mencode,undefined)  args b

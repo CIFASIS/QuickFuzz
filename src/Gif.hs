@@ -39,12 +39,13 @@ fromRight (Left x) = error x
 
 data MGifImage  = Gif0 GifFile | Gif1 (GifLooping, [(GifDelay, Image PixelRGB8)]) | Gif2 (Image Pixel8, Palette) deriving Show
 
-$(devArbitrary ''MGifImage)
+-- $(devArbitrary ''MGifImage)
+$(devArbitrary ''GifLooping)
 
 encodeMGifImage :: MGifImage -> L.ByteString
 encodeMGifImage (Gif0 x) = encode x
 encodeMGifImage (Gif1 (a, xs)) = fromRight $ encodeGifImages a (paletizes xs)
-encodeMGifImage (Gif2 (a, p))  = fromRight $ encodeGifImageWithPalette a p
+--encodeMGifImage (Gif2 (a, p))  = fromRight $ encodeGifImageWithPalette a p
 
 paletizes [] = []
 paletizes ((delay,img):xs) = (pal, delay, img'):(paletizes xs)

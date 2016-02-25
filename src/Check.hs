@@ -40,7 +40,7 @@ handler x = return () --Prelude.putStrLn (show x)--return ()
 genprop filename prog args encode outdir x = 
          monadicIO $ do
          seed <- run (randomIO :: IO Int)
-         sfilename <- run $ return (outdir ++ "/" ++ filename ++ "." ++ show seed)
+         sfilename <- run $ return (outdir ++ "/" ++ show seed ++ "." ++ filename)
          --run $ print x
          run $ Control.Exception.catch (L.writeFile sfilename (encode x)) handler
          size <- run $ getFileSize sfilename
@@ -141,7 +141,7 @@ mutprop :: (Show a, Mutation a,Arbitrary a) => FilePath  -> String -> [String]  
 mutprop filename prog args encode decode outdir vals = 
          noShrinking $ monadicIO $ do
          idx <- run (randomIO :: IO Int)
-         x <- run $ generate $ resize 100 $ mutt $ vals !! (idx `mod` (Prelude.length vals))
+         x <- run $ generate $ resize 20 $ mutt $ vals !! (idx `mod` (Prelude.length vals))
          run $  Control.Exception.catch (L.writeFile filename (encode x)) handler
          size <- run $ getFileSize filename 
          if size == 0 
@@ -155,7 +155,7 @@ mutprop filename prog args encode decode outdir vals =
                                 
                                 if ((x < 0 || x > 128) && x /= 143) then
                                  do 
-                                   run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
+                                   run $ copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
                                    Test.QuickCheck.Monadic.assert True
                                  else
                                    Test.QuickCheck.Monadic.assert True
@@ -183,8 +183,8 @@ execprop filename prog args encode outdir x =
               ExitFailure x -> (
                                 
                                 if ((x < 0 || x > 128) && x /= 143) then
-                                 do 
-                                   run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
+                                 do
+                                   run $ copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
                                    Test.QuickCheck.Monadic.assert True
                                  else
                                    Test.QuickCheck.Monadic.assert True

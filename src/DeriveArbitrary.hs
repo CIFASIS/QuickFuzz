@@ -122,7 +122,7 @@ isPrim _ = False
 
 -- | Build the arbitrary function.
 chooseExpQ :: Name -> Integer -> Type -> ExpQ
-chooseExpQ t bf (AppT ListT ty) = appE ( varE (mkName "listOf")) (appE (appE (varE (mkName "resize")) ([| ($(varE (mkName "n")) `div` 10) |])) (varE 'arbitrary))
+chooseExpQ t bf (AppT ListT ty) = appE ( varE (mkName "listOf")) (appE (appE (varE (mkName "resize")) ([| ($(varE (mkName "n")) `div` 3) |])) (varE 'arbitrary))
 chooseExpQ t bf ty | headOf ty /= t = appE (appE (varE (mkName "resize")) ([|$(varE (mkName "n"))|])) (varE 'arbitrary)
 chooseExpQ t bf ty =
   case bf of
@@ -326,7 +326,7 @@ tocheck bndrs nm =
     
 
 hasArbIns :: Name -> Bool
-hasArbIns n = isPrefixOf "GHC." (show n) || isPrefixOf "Data.Vector" (show n) || isPrefixOf "Data.Text" (show n) || isPrefixOf "Codec.Image" (show n) 
+hasArbIns n = isPrefixOf "GHC." (show n) || isPrefixOf "Data.Vector" (show n) || isPrefixOf "Data.Text" (show n) || isPrefixOf "Codec.Picture" (show n)  || isPrefixOf "Data.Map" (show n) 
 
 isinsName :: Name -> Name -> Q Bool
 isinsName className n = do
