@@ -6,11 +6,11 @@ import Test.QuickCheck
 import Check
 import Data.List.Split
 import qualified Data.ByteString.Lazy as BSL
---import qualified Data.ByteString as BS
+import qualified Data.ByteString as BS
 
 import System.Directory
 import Network.Socket
-import Control.Exception ( bracket, bracketOnError )
+import Control.Exception ( bracket, bracketOnError, evaluate )
 
 listDirectory :: FilePath -> IO [FilePath]
 listDirectory path =
@@ -26,7 +26,15 @@ withCurrentDirectory dir action =
     setCurrentDirectory dir
     action
 
-process :: (Mutation a, Show a, Arbitrary a) => ((a -> BSL.ByteString),(BSL.ByteString -> a))  -> Bool -> FilePath -> String -> String -> Int -> Int -> FilePath -> FilePath -> IO Result 
+
+decodeFile mdecode filename =
+  do
+    x <- BS.readFile filename
+    --print (BS.length x)
+    --print 
+    return $ mdecode x
+
+process :: (Mutation a, Show a, Arbitrary a) => ((a -> BSL.ByteString),(BS.ByteString -> a))  -> Bool -> FilePath -> String -> String -> Int -> Int -> FilePath -> FilePath -> IO Result 
 process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
     let (prog, args) = (Prelude.head spl, Prelude.tail spl)
     in (case prop of
@@ -48,9 +56,9 @@ process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds 
                  fs <- listDirectory seeds
                  xs <- mapM makeRelativeToCurrentDirectory fs
                  --mapM_ print fs
-                 xs <- withCurrentDirectory seeds (mapM BSL.readFile fs)
+                 xs <- withCurrentDirectory seeds (mapM (decodeFile mdecode) xs)
                  --xs <- return $ map mdecode xs
-                 quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ mutprop filename prog args mencode mdecode outdir (Prelude.map mdecode xs)) )
+                 quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ mutprop filename prog args mencode outdir xs))
             else (error "You should specifiy a directory with seeds!")
         "exec" ->
             quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }

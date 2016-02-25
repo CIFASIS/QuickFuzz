@@ -137,8 +137,8 @@ radamprop filename prog args encode outdir x =
            )
 
 
-mutprop :: (Show a, Mutation a,Arbitrary a) => FilePath  -> String -> [String]  -> (a -> L.ByteString) -> (L.ByteString -> a) -> [Char] -> [a] ->  Property
-mutprop filename prog args encode decode outdir vals = 
+--mutprop :: (Show a, Mutation a,Arbitrary a) => FilePath  -> String -> [String]  -> (a -> L.ByteString) -> (L.ByteString -> a) -> [Char] -> [a] ->  Property
+mutprop filename prog args encode outdir vals = 
          noShrinking $ monadicIO $ do
          idx <- run (randomIO :: IO Int)
          x <- run $ generate $ resize 100 $ mutt $ vals !! (idx `mod` (Prelude.length vals))
