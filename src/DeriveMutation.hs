@@ -45,7 +45,7 @@ freqE _ var =
         appE
             (varE 'frequency)
             (listE
-                [tupE [litE $ integerL 10,
+                [tupE [litE $ integerL 20,
                             (appE (varE 'mutt) (varE var))]
                 --, tupE [litE $ integerL 1, varE 'arbitrary]
                 , tupE [litE $ integerL 1, varE 'arbitrary] -- Here we could use a custom Gen

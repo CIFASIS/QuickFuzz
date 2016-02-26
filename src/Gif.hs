@@ -4,7 +4,7 @@ module Gif where
 
 import DeriveArbitrary
 import Test.QuickCheck
-import Data.Binary( Binary(..), encode )
+import Data.Binary( Binary(..), encode, decode )
 
 import Codec.Picture.Gif
 import Codec.Picture.Types
@@ -17,6 +17,7 @@ import Vector
 import Images
 
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as B
 import Data.DeriveTH
 
 
@@ -37,15 +38,19 @@ derive makeShow ''GifFile
 fromRight (Right x)  = x
 fromRight (Left x) = error x
 
-data MGifImage  = Gif0 GifFile | Gif1 (GifLooping, [(GifDelay, Image PixelRGB8)]) | Gif2 (Image Pixel8, Palette) deriving Show
+--data MGifImage  = Gif0 GifFile | Gif1 (GifLooping, [(GifDelay, Image PixelRGB8)]) | Gif2 (Image Pixel8, Palette) deriving Show
 
--- $(devArbitrary ''MGifImage)
-$(devArbitrary ''GifLooping)
+type MGifImage = GifFile
+
+$(devArbitrary ''MGifImage)
+-- $(devArbitrary ''GifLooping)
 
 encodeMGifImage :: MGifImage -> L.ByteString
-encodeMGifImage (Gif0 x) = encode x
-encodeMGifImage (Gif1 (a, xs)) = fromRight $ encodeGifImages a (paletizes xs)
---encodeMGifImage (Gif2 (a, p))  = fromRight $ encodeGifImageWithPalette a p
+encodeMGifImage x = encode x
+
+--encodeMGifImage (Gif0 x) = encode x
+--encodeMGifImage (Gif1 (a, xs)) = fromRight $ encodeGifImages a (paletizes xs)
+----encodeMGifImage (Gif2 (a, p))  = fromRight $ encodeGifImageWithPalette a p
 
 paletizes [] = []
 paletizes ((delay,img):xs) = (pal, delay, img'):(paletizes xs)
@@ -53,3 +58,6 @@ paletizes ((delay,img):xs) = (pal, delay, img'):(paletizes xs)
                              
 mencode :: MGifImage -> L.ByteString
 mencode = encodeMGifImage
+
+mdecode :: B.ByteString -> MGifImage
+mdecode x = decode (L.pack (B.unpack x))

@@ -17,7 +17,7 @@ class  Mutation a where
     --mut :: Gen a
 
 instance {-#OVERLAPS#-} Mutation a => Mutation [a] where
-    mutt x = frequency $ [(5,mapM mutt x), (30, return x)]
+    mutt x = frequency $ [(20,mapM mutt x), (1, return x)]
 
 instance {-#OVERLAPS#-} Arbitrary a => Mutation a where
-    mutt a = frequency $ [ (10, return a), (1,arbitrary)]
+    mutt a = frequency $ [ (20, return a), (1,arbitrary)]

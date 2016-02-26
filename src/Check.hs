@@ -141,7 +141,7 @@ radamprop filename prog args encode outdir x =
 mutprop filename prog args encode outdir vals = 
          noShrinking $ monadicIO $ do
          idx <- run (randomIO :: IO Int)
-         x <- run $ generate $ resize 20 $ mutt $ vals !! (idx `mod` (Prelude.length vals))
+         x <- run $ generate $ resize 2 $ mutt $ vals !! (idx `mod` (Prelude.length vals))
          run $  Control.Exception.catch (L.writeFile filename (encode x)) handler
          size <- run $ getFileSize filename 
          if size == 0 

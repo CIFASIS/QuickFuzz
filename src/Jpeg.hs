@@ -28,7 +28,9 @@ import Images
 data MJpgImage  = Jpg0 JpgImage | Jpg1 (Word8,Metadatas, Image PixelYCbCr8) | Jpg2 (Word8, Image PixelYCbCr8) deriving Show
 
 derive makeArbitrary ''MJpgImage
-$(devArbitrary ''JpgImage)
+derive makeArbitrary ''ExifData
+
+$(devArbitrary ''MJpgImage)
 
 encodeJpgImage (Jpg0 x) = encode x
 encodeJpgImage (Jpg1 (q, meta, img)) = encodeJpegAtQualityWithMetadata q meta img

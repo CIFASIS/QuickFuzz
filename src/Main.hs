@@ -8,7 +8,7 @@ import qualified Tiff
 import qualified Png
 --import qualified Jpeg
 import qualified Bmp
---import qualified Gif
+import qualified Gif
 
 #ifdef COMPLETE
 import qualified Zip
@@ -74,7 +74,7 @@ dispatch arg = do
         case findFileType arg of
 
             "Bmp"  -> Process.main (Bmp.mencode,undefined) args b
-            --"Gif"  -> Process.main Gif.mencode args b
+            "Gif"  -> Process.main (Gif.mencode,Gif.mdecode) args b
             --"Jpeg" -> Process.main (Jpeg.mencode,undefined) args b
             "Png"  -> Process.main (Png.mencode,undefined) args b
             "Tiff" -> Process.main (Tiff.mencode,undefined)  args b
