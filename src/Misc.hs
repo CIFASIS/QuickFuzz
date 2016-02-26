@@ -3,12 +3,11 @@ module Misc where
 import Test.QuickCheck
 import Data.Map
 import Data.Monoid
-{-
-   instance Arbitrary a => Arbitrary (Last a) where
+
+instance Arbitrary a => Arbitrary (Last a) where
        arbitrary = do
            ga <- arbitrary
            oneof $ Prelude.map (return . Last) [Nothing, Just ga]
--}
 
 {-
    instance (Arbitrary a, Arbitrary b) => Arbitrary (Map a b) where

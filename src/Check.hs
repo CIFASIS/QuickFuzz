@@ -138,11 +138,16 @@ radamprop filename prog args encode outdir x =
 
 
 --mutprop :: (Show a, Mutation a,Arbitrary a) => FilePath  -> String -> [String]  -> (a -> L.ByteString) -> (L.ByteString -> a) -> [Char] -> [a] ->  Property
-mutprop filename prog args encode outdir vals = 
+mutprop filename prog args encode outdir maxsize vals = 
          noShrinking $ monadicIO $ do
-         idx <- run (randomIO :: IO Int)
-         x <- run $ generate $ resize 2 $ mutt $ vals !! (idx `mod` (Prelude.length vals))
-         run $  Control.Exception.catch (L.writeFile filename (encode x)) handler
+         r <- run (randomIO :: IO Int)
+         idx <- run $ return (r `mod` (Prelude.length vals))
+         size <- run $ return (r `mod` maxsize)
+         x <- run $ return $ vals !! idx
+         y <- run $ generate $ resize size $ mutt $ x
+         --run $ print x
+         --run $ print y
+         run $  Control.Exception.catch (L.writeFile filename (encode y)) handler
          size <- run $ getFileSize filename 
          if size == 0 
             then Test.QuickCheck.Monadic.assert True 

@@ -11,6 +11,9 @@ import Codec.Picture.Types
 import Codec.Picture.ColorQuant
 
 
+import Mutation
+import DeriveMutation
+
 import DeriveArbitrary
 import ByteString
 import Vector
@@ -25,7 +28,11 @@ import Data.DeriveTH
 -- $(deriveArbitraryRec ''GifLooping)
 -- $(deriveArbitraryRec ''GifFile)
 
-derive makeShow ''GifImage
+--derive makeShow ''GifImage
+
+instance Show (GifImage) where
+   show x = "(GifImage)"
+
 derive makeShow ''GraphicControlExtension
 derive makeShow ''GifHeader
 derive makeShow ''DisposalMethod
@@ -43,6 +50,8 @@ fromRight (Left x) = error x
 type MGifImage = GifFile
 
 $(devArbitrary ''MGifImage)
+$(devMutationRec ''MGifImage)
+
 -- $(devArbitrary ''GifLooping)
 
 encodeMGifImage :: MGifImage -> L.ByteString

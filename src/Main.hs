@@ -44,7 +44,7 @@ import qualified URI
 import qualified JSON
 
 import qualified Http
-import qualified Dns
+--import qualified Dns
 
 #endif
 
@@ -76,7 +76,7 @@ dispatch arg = do
             "Bmp"  -> Process.main (Bmp.mencode,undefined) args b
             "Gif"  -> Process.main (Gif.mencode,Gif.mdecode) args b
             --"Jpeg" -> Process.main (Jpeg.mencode,undefined) args b
-            "Png"  -> Process.main (Png.mencode,undefined) args b
+            "Png"  -> Process.main (Png.mencode,Png.mdecode) args b
             "Tiff" -> Process.main (Tiff.mencode,undefined)  args b
 
 #ifdef COMPLETE
@@ -115,7 +115,7 @@ dispatch arg = do
             "HttpRes" -> Process.netmain Http.mencode_res args b
 
             --"Tftp" -> Tftp.main args b
-            "Dns" -> Process.netmain Dns.mencode args b
+            --"Dns" -> Process.netmain Dns.mencode args b
             "URI"   -> Process.main (URI.mencode,undefined) args b
             "JSON"   -> Process.main (JSON.mencode,undefined) args b
 

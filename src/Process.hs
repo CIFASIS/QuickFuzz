@@ -57,8 +57,9 @@ process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds 
                  xs <- mapM makeRelativeToCurrentDirectory fs
                  --mapM_ print fs
                  xs <- withCurrentDirectory seeds (mapM (decodeFile mdecode) xs)
+                 mapM_ print xs
                  --xs <- return $ map mdecode xs
-                 quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ mutprop filename prog args mencode outdir xs))
+                 quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ mutprop filename prog args mencode outdir maxSize xs))
             else (error "You should specifiy a directory with seeds!")
         "exec" ->
             quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }

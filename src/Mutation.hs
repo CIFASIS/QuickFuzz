@@ -20,4 +20,4 @@ instance {-#OVERLAPS#-} Mutation a => Mutation [a] where
     mutt x = frequency $ [(20,mapM mutt x), (1, return x)]
 
 instance {-#OVERLAPS#-} Arbitrary a => Mutation a where
-    mutt a = frequency $ [ (20, return a), (1,arbitrary)]
+    mutt a = frequency $ [ (5, return a), (1,arbitrary)]
