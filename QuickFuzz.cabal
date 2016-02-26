@@ -34,7 +34,7 @@ executable QuickFuzz
                         transformers, binary, QuickCheck, quickcheck-unicode, mtl, random, ghc-prim, process, 
                         deepseq, derive, tar, zip-archive, unix,
                         template-haskell, zlib, directory, HaXml, pretty, AC-PPM, hogg, argparser, 
-                        split, bzlib, JuicyPixels, language-ecmascript, language-python, language-glsl, wl-pprint, text,
+                        split, bzlib, JuicyPixels, language-ecmascript, wl-pprint, text,
                         linear, svg-tree, xml, language-dot, ttasm, parallel-io, 
                         language-css, monad-par, abstract-par, wavy, network, HTTP, dns, iproute, unbounded-delays, 
                         concurrent-extra,base16-bytestring,blaze-html,blaze-markup,network-uri,xmlhtml,
