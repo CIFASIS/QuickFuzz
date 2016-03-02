@@ -9,6 +9,7 @@ import Control.Exception
 import Control.Monad
 
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy.Char8 as LC8
 import Data.Maybe
 
 import System.Random
@@ -16,6 +17,8 @@ import System.Process
 import System.Posix
 import System.Exit
 import System.Directory
+import System.IO.Unsafe
+import System.Timeout
 
 import Data.ByteString.Char8 as L8
 import Network hiding (accept, sClose)
@@ -24,6 +27,7 @@ import Network.Socket.ByteString (send, sendTo, recv, recvFrom, sendAll)
 import Control.Concurrent
 import Control.Concurrent.Thread.Delay
 
+import Exceptions
 import Mutation
 
 processPar = P.processPar
@@ -34,8 +38,11 @@ getFileSize path = do
     stat <- getFileStatus path
     return (fileSize stat)
 
-handler :: SomeException -> IO ()
-handler x = return () --Prelude.putStrLn (show x)--return ()
+--bhandler :: SomeException -> IO L.ByteString
+--bhandler x = return (LC8.pack "") --Prelude.putStrLn (show x)--return ()
+
+
+--quickhandler x = Nothing
 
 genprop filename prog args encode outdir x = 
          monadicIO $ do
@@ -137,6 +144,15 @@ radamprop filename prog args encode outdir x =
            )
 
 
+
+timed_encode f x = unsafePerformIO ( 
+             do r <- timeout 10000 $ evaluate $ f x
+                case r of
+                  Just x -> return x --unsafePerformIO $ return x
+                  Nothing -> return $ LC8.pack "" --unsafePerformIO $ return $ LC8.pack ""
+             )
+
+
 --mutprop :: (Show a, Mutation a,Arbitrary a) => FilePath  -> String -> [String]  -> (a -> L.ByteString) -> (L.ByteString -> a) -> [Char] -> [a] ->  Property
 mutprop filename prog args encode outdir maxsize vals = 
          noShrinking $ monadicIO $ do
@@ -145,9 +161,20 @@ mutprop filename prog args encode outdir maxsize vals =
          size <- run $ return (r `mod` maxsize)
          x <- run $ return $ vals !! idx
          y <- run $ generate $ resize size $ mutt $ x
-         --run $ print x
-         --run $ print y
-         run $  Control.Exception.catch (L.writeFile filename (encode y)) handler
+         --run $ print "Original:"
+         --run $ print ("Idx: "++show(idx))
+
+         --run $ print x --Control.Exception.catch (print x) handler
+         --run $ print "Mutating.."
+
+         --run $ print y --Control.Exception.catch (print y) handler
+         --run $ print "Encoding.."
+
+         z <- run $ Control.Exception.catch (evaluate $ timed_encode encode y) enc_handler
+         run $ (L.writeFile filename z)
+
+         --run $ print "Executing.."
+
          size <- run $ getFileSize filename 
          if size == 0 
             then Test.QuickCheck.Monadic.assert True 
@@ -155,6 +182,8 @@ mutprop filename prog args encode outdir maxsize vals =
            do 
            seed <- run (randomIO :: IO Int)
            ret <- run $ rawSystem prog args
+           --ret <- run $ call_honggfuzz filename prog args undefined outdir
+
            case ret of
               ExitFailure x -> (
                                 
@@ -167,6 +196,8 @@ mutprop filename prog args encode outdir maxsize vals =
                 )
               _             -> Test.QuickCheck.Monadic.assert True
            )
+         --)
+
 
 
 

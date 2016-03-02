@@ -22,7 +22,6 @@ import qualified Gzip
 import qualified Bzip
 import qualified Js
 --import qualified Sh
---import qualified SimpleSvg
 import qualified Svg
 import qualified ID3
 import qualified Pandoc

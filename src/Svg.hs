@@ -45,6 +45,15 @@ import Images
 
 type MSvgFile  = Document
 
+instance Mutation Char where
+    mutt x = return x
+
+instance  Mutation String where
+    mutt = return
+
+instance  Mutation DT.Text where
+    mutt = return
+ 
 instance Arbitrary (Maybe String) where
    arbitrary = return Nothing
 

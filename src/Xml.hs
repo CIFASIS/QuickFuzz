@@ -11,6 +11,7 @@ import Text.XML.HaXml.ByteStringPP
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as LC8
 import qualified Data.ByteString.Char8 as C8
+import Data.Maybe
 
 import Mutation
 import DeriveArbitrary
@@ -39,8 +40,20 @@ readFiles :: [FilePath] -> [IO LC8.ByteString]
 readFiles = map LC8.readFile
 
 mencode :: MXml -> LC8.ByteString
-mencode x = Text.XML.HaXml.ByteStringPP.document x
+mencode x =  Text.XML.HaXml.ByteStringPP.document x
 
-mdecode :: C8.ByteString -> Document Posn
-mdecode xml = xmlParse "xml" (C8.unpack xml)
 
+{-
+mencode x = unsafePerformIO ( 
+             do r <- timeout 10000 $ evaluate $ Text.XML.HaXml.ByteStringPP.document x
+                case r of
+                  Just x -> return x --unsafePerformIO $ return x
+                  Nothing -> return $ LC8.pack "" --unsafePerformIO $ return $ LC8.pack ""
+             )
+-}
+--mhandler1 :: SomeException -> IO (Maybe (Document Posn))
+--mhandler1 x = return $ Nothing
+ 
+mdecode :: C8.ByteString -> (Document Posn)
+mdecode xml =  xmlParse "" (C8.unpack xml) 
+              -- unsafePerformIO $ catch ( evaluate $ Just $ xmlParse "" (C8.unpack xml)) mhandler1

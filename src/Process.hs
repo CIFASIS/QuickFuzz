@@ -5,12 +5,15 @@ import Mutation
 import Test.QuickCheck
 import Check
 import Data.List.Split
+import Data.Maybe
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString as BS
 
+--import System.FilePath
 import System.Directory
 import Network.Socket
-import Control.Exception ( bracket, bracketOnError, evaluate )
+import Control.Exception --( bracket, bracketOnError, evaluate, catch )
+import Exceptions
 
 listDirectory :: FilePath -> IO [FilePath]
 listDirectory path =
@@ -27,12 +30,18 @@ withCurrentDirectory dir action =
     action
 
 
+--mhandler :: SomeException -> Maybe a
+--mhandler x = return Nothing
+
+--decodeFile :: (
 decodeFile mdecode filename =
   do
     x <- BS.readFile filename
     --print (BS.length x)
-    --print 
-    return $ mdecode x
+    --print filename
+    x <- catch (evaluate $ Just $ mdecode x) dec_handler
+    return x
+
 
 process :: (Mutation a, Show a, Arbitrary a) => ((a -> BSL.ByteString),(BS.ByteString -> a))  -> Bool -> FilePath -> String -> String -> Int -> Int -> FilePath -> FilePath -> IO Result 
 process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
@@ -57,7 +66,10 @@ process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds 
                  xs <- mapM makeRelativeToCurrentDirectory fs
                  --mapM_ print fs
                  xs <- withCurrentDirectory seeds (mapM (decodeFile mdecode) xs)
-                 mapM_ print xs
+                 xs <- return $ Prelude.filter isJust xs
+                 xs <- return $ Prelude.map fromJust xs
+
+                 --mapM_ print xs
                  --xs <- return $ map mdecode xs
                  quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ mutprop filename prog args mencode outdir maxSize xs))
             else (error "You should specifiy a directory with seeds!")
