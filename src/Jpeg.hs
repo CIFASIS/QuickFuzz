@@ -4,7 +4,7 @@ module Jpeg where
 
 import Test.QuickCheck
 
-import Data.Binary( Binary(..), encode )
+import Data.Binary( Binary(..), encode, decode )
 
 import Codec.Picture.Types
 import Codec.Picture.Jpg
@@ -25,7 +25,7 @@ import ByteString
 import Vector
 import Images
 
-data MJpgImage  = Jpg0 JpgImage | Jpg1 (Word8,Metadatas, Image PixelYCbCr8) | Jpg2 (Word8, Image PixelYCbCr8) deriving Show
+data MJpgImage  = Jpg0 JpgImage deriving Show -- | Jpg1 (Word8,Metadatas, Image PixelYCbCr8) | Jpg2 (Word8, Image PixelYCbCr8) deriving Show
 
 derive makeArbitrary ''MJpgImage
 derive makeArbitrary ''ExifData
@@ -33,9 +33,12 @@ derive makeArbitrary ''ExifData
 $(devArbitrary ''MJpgImage)
 
 encodeJpgImage (Jpg0 x) = encode x
-encodeJpgImage (Jpg1 (q, meta, img)) = encodeJpegAtQualityWithMetadata q meta img
-encodeJpgImage (Jpg2 (q, img)) = encodeJpegAtQuality q img
+--encodeJpgImage (Jpg1 (q, meta, img)) = encodeJpegAtQualityWithMetadata q meta img
+--encodeJpgImage (Jpg2 (q, img)) = encodeJpegAtQuality q img
 
 
 mencode :: MJpgImage -> L.ByteString
 mencode = encodeJpgImage
+
+mdecode :: B.ByteString -> MJpgImage
+mdecode x = Jpg0 $ decode (L.pack (B.unpack x))
