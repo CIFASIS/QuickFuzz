@@ -1,34 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <meta charset="UTF-8">
+    <title>QuickFuzz by CIFASIS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-
-    <title>QuickFuzz by CIFASIS</title>
   </head>
-
   <body>
-    <header>
-      <div class="inner">
-        <h1>QuickFuzz</h1>
-        <h2>An experimental grammar fuzzer in Haskell using QuickCheck</h2>
-        <a href="https://github.com/CIFASIS/QuickFuzz" class="button"><small>View project on</small> GitHub</a>
-      </div>
-    </header>
+    <section class="page-header">
+      <h1 class="project-name">QuickFuzz</h1>
+      <h2 class="project-tagline">An experimental grammar fuzzer in Haskell using QuickCheck</h2>
+      <a href="https://github.com/CIFASIS/QuickFuzz" class="btn">View on GitHub</a>
+      <a href="https://github.com/CIFASIS/QuickFuzz/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/CIFASIS/QuickFuzz/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <p>QuickFuzz is a grammar fuzzer powered by <a href="http://www.cse.chalmers.se/%7Erjmh/QuickCheck/">QuickCheck</a>, <a href="https://wiki.haskell.org/Template_Haskell">Template Haskell</a> and specific libraries from Hackage to generate many complex file-formats like Jpeg, Png, Svg, Xml, Zip, Tar and more!. QuickFuzz is open-source (GPL3) and it can use other bug detection tools like <a href="http://caca.zoy.org/wiki/zzuf">zzuf</a>, <a href="https://github.com/aoh/radamsa">radamsa</a>, <a href="http://google.github.io/honggfuzz/">honggfuzz</a> and <a href="http://valgrind.org">valgrind</a>.</p>
+    <section class="main-content">
+      <p>QuickFuzz is a grammar fuzzer powered by <a href="http://www.cse.chalmers.se/%7Erjmh/QuickCheck/">QuickCheck</a>, <a href="https://wiki.haskell.org/Template_Haskell">Template Haskell</a> and specific libraries from Hackage to generate many complex file-formats like Jpeg, Png, Svg, Xml, Zip, Tar and more!. QuickFuzz is open-source (GPL3) and it can use other bug detection tools like <a href="http://caca.zoy.org/wiki/zzuf">zzuf</a>, <a href="https://github.com/aoh/radamsa">radamsa</a>, <a href="http://google.github.io/honggfuzz/">honggfuzz</a> and <a href="http://valgrind.org">valgrind</a>.</p>
 
 <h2>
 <a id="bugs-lost-and-found" class="anchor" href="#bugs-lost-and-found" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><strong>Bugs <del>lost and</del> found</strong>
@@ -38,7 +29,7 @@
 <li>Firefox (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1210745">failed assert in gif loader</a>, <a href="https://www.mozilla.org/en-US/security/advisories/mfsa2016-02/">CVE-2016-1933</a>, <a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-128/">CVE-2015-7194</a>, <a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-143/">CVE-2015-7216, CVE-2015-7217</a>)</li>
 <li>Libxml2 (<a href="http://seclists.org/oss-sec/2016/q1/682">CVE-2016-3627</a>)</li>
 <li>Cairo (<a href="http://seclists.org/oss-sec/2016/q1/676">CVE-2016-3190</a>)</li>
-<li>GraphMagick ( <a href="http://seclists.org/oss-sec/2016/q1/297">CVE-2015-8808, CVE-2016-2317, CVE-2016-2318</a> )</li>
+<li>GraphicsMagick ( <a href="http://seclists.org/oss-sec/2016/q1/288">CVE-2015-8808</a> , <a href="http://seclists.org/oss-sec/2016/q1/297">CVE-2016-2317, CVE-2016-2318</a> )</li>
 <li>Librsvg (undisclosed, <a href="http://www.openwall.com/lists/oss-security/2015/12/21/5">CVE-2015-7557, CVE-2015-7558</a>)</li>
 <li>Gdk-Pixbuf (<a href="https://bugzilla.suse.com/show_bug.cgi?id=958963">CVE-2015-7552</a>, <a href="https://bugzilla.suse.com/show_bug.cgi?id=958963">CVE-2015-7552</a>,  <a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-88/">CVE-2015-4491</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/10">CVE-2015-7674</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/9">CVE-2015-7673</a>)</li>
 <li>Mplayer (<a href="https://lists.mplayerhq.hu/pipermail/mplayer-dev-eng/2015-December/073241.html">lots of crashes</a> <a href="http://www.openwall.com/lists/oss-security/2015/11/10/8">and more</a>)</li>
@@ -145,24 +136,14 @@
 <a href="https://github.com/ayberkt">ayberkt</a> for the bug reports and pull requests.</li>
 <li>A special thanks goes to all the developers from the packages who made possible QuickFuzz to generate several complex file-formats.</li>
 </ul>
-        </section>
 
-        <aside id="sidebar">
-          <a href="https://github.com/CIFASIS/QuickFuzz/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/CIFASIS/QuickFuzz/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/CIFASIS/QuickFuzz">QuickFuzz</a> is maintained by <a href="https://github.com/CIFASIS">CIFASIS</a>.</span>
 
-          <p class="repo-owner"><a href="https://github.com/CIFASIS/QuickFuzz"></a> is maintained by <a href="https://github.com/CIFASIS">CIFASIS</a>.</p>
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
 
-          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
-    </div>
+    </section>
 
   
   </body>
