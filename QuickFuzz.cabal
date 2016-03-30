@@ -73,7 +73,7 @@ executable QuickFuzz
       build-depends:   HaXml, language-ecmascript, language-dot, language-css, json
 
   if flag(imgs)
-      build-depends:  zlib, JuicyPixels, svg-tree, AC-PPM
+      build-depends:  zlib, JuicyPixels, svg-tree, xml, AC-PPM
 
   if flag(archs)
       build-depends:  zlib, tar, zip-archive, bzlib, base16-bytestring 

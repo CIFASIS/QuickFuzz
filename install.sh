@@ -33,7 +33,7 @@ _PKG_DIR="packages"
 export PATH=$HOME/.cabal/bin:$PATH
 ######################################
 
-#cabal update --verbose=3
+cabal update
 # If the installation is complete then alex and happy should be added.
 if ! [ $_OPT_MIN ]; then
 # These are just in case
@@ -66,15 +66,15 @@ done
 
 cd ..
 
-# Install QuickFuzz
+#Install QuickFuzz
 
 #if [ $_OPT_MIN ]; then
 #    cabal configure -f minimal # Set minimal flag
 #fi
 
-#if [ $_OPT_SANDBOX ]; then
-#    cabal --sandbox-config-file=cabal.sandbox.config install $GHC_OPT
-#    cp --remove-destination .cabal-sandbox/bin/QuickFuzz .
-#else
-#    cabal install $GHC_OPT
-#fi
+if [ $_OPT_SANDBOX ]; then
+    cabal --sandbox-config-file=cabal.sandbox.config install $GHC_OPT
+    cp --remove-destination .cabal-sandbox/bin/QuickFuzz .
+else
+    cabal install $GHC_OPT
+fi
