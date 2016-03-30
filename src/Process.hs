@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP                #-}
+
 module Process where
 
 import Args
@@ -11,7 +13,13 @@ import qualified Data.ByteString as BS
 
 --import System.FilePath
 import System.Directory
+
+#ifdef NET
+
 import Network.Socket
+
+#endif
+
 import Control.Exception --( bracket, bracketOnError, evaluate, catch )
 import Exceptions
 
@@ -88,6 +96,9 @@ _main fs (MainArgs _ cmd filename prop maxSuccess maxSize outdir seeds b) = proc
 main fs fargs False = (\x -> (_main fs x) >> return ()) $ fargs ""
 main fs fargs True  = processPar fargs (\x -> (_main fs x) >> return ())
 
+
+#ifdef NET
+
 --netprocess :: (Show a, Arbitrary a) => (a -> ByteString) -> Bool -> FilePath -> String -> String -> Int -> Int -> FilePath -> IO Result 
 netprocess mencode par _ host prop maxSuccess maxSize outdir _ =
     --let (prog, args) = (Prelude.head spl, Prelude.tail spl)
@@ -108,4 +119,4 @@ _netmain mencode (MainArgs _ cmd filename prop maxSuccess maxSize outdir seeds b
 netmain mencode fargs False = (\x -> (_netmain mencode x) >> return ()) $ fargs ""
 netmain mencode fargs True  = processPar fargs (\x -> (_netmain mencode x) >> return ())
 
-
+#endif

@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP                #-}
+
 module Check where
 
 import Test.QuickCheck
@@ -21,11 +23,16 @@ import System.IO.Unsafe
 import System.Timeout
 
 import Data.ByteString.Char8 as L8
+
+#ifdef NET
+
 import Network hiding (accept, sClose)
 import Network.Socket hiding (send, sendTo, recv, recvFrom) 
 import Network.Socket.ByteString (send, sendTo, recv, recvFrom, sendAll)
 import Control.Concurrent
 import Control.Concurrent.Thread.Delay
+
+#endif
 
 import Exceptions
 import Mutation
@@ -159,21 +166,24 @@ mutprop filename prog args encode outdir maxsize vals =
          r <- run (randomIO :: IO Int)
          idx <- run $ return (r `mod` (Prelude.length vals))
          size <- run $ return (r `mod` maxsize)
+         run $ print "Mutating.."
+
          x <- run $ return $ vals !! idx
          y <- run $ generate $ resize size $ mutt $ x
          --run $ print "Original:"
          --run $ print ("Idx: "++show(idx))
 
          --run $ print x --Control.Exception.catch (print x) handler
-         --run $ print "Mutating.."
 
          --run $ print y --Control.Exception.catch (print y) handler
-         --run $ print "Encoding.."
+         run $ print "Encoding.."
 
          z <- run $ Control.Exception.catch (evaluate $ timed_encode encode y) enc_handler
-         run $ (L.writeFile filename z)
+         let tmp_filename = ".qf." ++ filename
+         run $ (L.writeFile tmp_filename z)
+         run $ system $ "radamsa" ++ "<" ++ tmp_filename ++ " > " ++ filename
 
-         --run $ print "Executing.."
+         run $ print "Executing.."
 
          size <- run $ getFileSize filename 
          if size == 0 
@@ -229,6 +239,8 @@ execprop filename prog args encode outdir x =
            )
 
 
+#ifdef NET
+
 serve :: PortNumber -> [L8.ByteString] -> IO ()
 serve port xs = withSocketsDo $ do
     sock <- listenOn $ PortNumber port
@@ -278,3 +290,5 @@ cconnectprop port host encode x =
         noShrinking $ monadicIO $ do
            run $ cconnect port host (encode x)
            Test.QuickCheck.Monadic.assert True
+
+#endif

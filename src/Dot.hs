@@ -9,7 +9,6 @@ import Data.DeriveTH
 import DeriveArbitrary
 import ByteString
 import Vector
-import Images
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8

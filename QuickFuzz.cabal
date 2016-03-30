@@ -8,37 +8,85 @@ Build-type:          Simple
 Extra-source-files:  README.md
 Cabal-version:       >=1.10
 
-Flag Minimal
-  Description: Minimal installation for QuickFuzz. Supports only Png, Bmp, Jpeg, Tiff and Gif formats.
+
+Flag Imgs
+  Description: Supports Tga, Png, Bmp, Jpeg, Tiff and Gif formats.
   Default:     False
   Manual:      True
+
+
+Flag Archs
+  Description: Supports ... formats.
+  Default:     False
+  Manual:      True
+
+Flag Codes
+  Description: Supports ... formats.
+  Default:     False
+  Manual:      True
+
+Flag Docs
+  Description: Supports ... formats.
+  Default:     False
+  Manual:      True
+
+Flag Net
+  Description: Supports ... formats.
+  Default:     False
+  Manual:      True
+
+Flag Media
+  Description: Supports ... formats.
+  Default:     False
+  Manual:      True
+
 
 executable QuickFuzz
 
     Main-is:           Main.hs
 
-    if flag(minimal)
-        cpp-options:
-    else
-        cpp-options: -DCOMPLETE
+    if flag(codes)
+        cpp-options: -DCODES
+
+    if flag(imgs)
+        cpp-options: -DIMGS
+
+    if flag(archs)
+        cpp-options: -DARCHS
+
+    if flag(docs)
+        cpp-options: -DDOCS
+
+    if flag(net)
+        cpp-options: -DNET
+
+    if flag(media)
+        cpp-options: -DMEDIA
+
 
   other-extensions:    CPP, FlexibleContexts, TypeFamilies, TupleSections, ExistentialQuantification, BangPatterns, ScopedTypeVariables, TypeSynonymInstances, Rank2Types, FlexibleInstances, RankNTypes, MultiParamTypeClasses, GADTs, StandaloneDeriving, TypeOperators, GeneralizedNewtypeDeriving, FunctionalDependencies, OverloadedStrings
 
-  if flag(minimal)
-    build-depends:      base, bytestring, containers, vector, primitive,
-                        transformers, binary, QuickCheck, mtl, random, ghc-prim, process, deepseq,
-                        derive, unix, template-haskell, zlib, pretty, argparser, split, bzlib,
-                        directory, JuicyPixels, parallel-io, monad-par, abstract-par
-  else
-    build-depends:      base, bytestring, containers, vector, primitive,
-                        transformers, binary, QuickCheck, quickcheck-unicode, mtl, random, ghc-prim, process, 
-                        deepseq, derive, tar, zip-archive, unix,
-                        template-haskell, zlib, directory, HaXml, pretty, AC-PPM, hogg, argparser, 
-                        split, bzlib, JuicyPixels, language-ecmascript, wl-pprint, text,
-                        linear, svg-tree, xml, language-dot, ttasm, parallel-io, 
-                        language-css, monad-par, abstract-par, wavy, network, HTTP, dns, iproute, unbounded-delays, 
-                        concurrent-extra,base16-bytestring,blaze-html,blaze-markup,network-uri,xmlhtml,
-                        blaze-builder, blaze-svg, idiii, pandoc-types, pandoc, data-default, json
+  build-depends:      base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, quickcheck-unicode, mtl, random, ghc-prim, 
+                      process, deepseq, derive, unix, linear, template-haskell, directory, pretty, argparser, 
+                      split, wl-pprint, text, parallel-io, monad-par, abstract-par
+  if flag(codes)
+      build-depends:   HaXml, language-ecmascript, language-dot, language-css, json
+
+  if flag(imgs)
+      build-depends:  zlib, JuicyPixels, svg-tree, AC-PPM
+
+  if flag(archs)
+      build-depends:  zlib, tar, zip-archive, bzlib, base16-bytestring 
+
+  if flag(docs)
+      build-depends: pandoc-types, pandoc, data-default
+
+  if flag(net)
+      build-depends: network, HTTP, dns, iproute, unbounded-delays, concurrent-extra,base16-bytestring, network-uri
+
+  if flag(media)
+      build-depends: hogg, wavy, idiii, ttasm
+
 
   hs-source-dirs:      src
   default-language:    Haskell2010

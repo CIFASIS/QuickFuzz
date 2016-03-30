@@ -19,7 +19,6 @@ import Data.Binary( Binary(..), encode )
 import Data.Word (Word32)
 
 import Vector
-import Images
 import DeriveArbitrary
 import ByteString
 import Data.DeriveTH
