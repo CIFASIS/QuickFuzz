@@ -78,3 +78,13 @@ if [ $_OPT_SANDBOX ]; then
 else
     cabal install $GHC_OPT
 fi
+
+echo "A minimal version of QuickFuzz was compiled. It only support ByteString/Unicode generation."
+echo "In order to compile a more useful version, use the following flags in the installation:"
+echo "* imgs: bmp, tiff, jpeg, png, tga, svg"
+echo "* codes: js, xml, html, .."
+echo "* archs: zip, tar, .."
+echo "* docs: odt, rtf, .."
+echo "* media: ogg, id3, .."
+echo "* net: http, dns (broken), uri"
+echo "for instance: cabal install -f imgs -f archs"
