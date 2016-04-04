@@ -19,7 +19,7 @@ import Data.Binary( Binary(..), encode )
 import Data.Word (Word32)
 
 import Vector
-import DeriveArbitrary
+import DeriveArbitrary 
 import ByteString
 import Data.DeriveTH
 
@@ -42,8 +42,9 @@ data Entry = Entry
 
 data MCPIO = CPIO [Entry] deriving Show
 
-derive makeArbitrary ''MCPIO
-derive makeArbitrary ''Entry
+--derive makeArbitrary ''MCPIO
+--derive makeArbitrary ''Entry
+$(devArbitrary ''MCPIO)
 
 encodeR32 x = B16.encode $ BS.concat $ BL.toChunks $ runPut (putWord32be x)
 

@@ -25,7 +25,7 @@ if [ $_OPT_SANDBOX ]; then
 fi
 
 # Define needed packages
-[ $_OPT_MIN ] && _PKG="Juicy.Pixels" || _PKG="wavy Juicy.Pixels hogg ttasm linear"
+[ $_OPT_MIN ] && _PKG="megadeth Juicy.Pixels" || _PKG="megadeth wavy Juicy.Pixels hogg ttasm linear"
 _PKG_DIR="packages"
 
 # RECOMMENDED ########################

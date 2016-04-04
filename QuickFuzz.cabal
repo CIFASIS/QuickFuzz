@@ -68,7 +68,8 @@ executable QuickFuzz
 
   build-depends:      base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, quickcheck-unicode, mtl, random, ghc-prim, 
                       process, deepseq, derive, unix, linear, template-haskell, directory, pretty, argparser, 
-                      split, wl-pprint, text, parallel-io, monad-par, abstract-par
+                      split, wl-pprint, text, parallel-io, monad-par,
+                      abstract-par, megadeth
   if flag(codes)
       build-depends:   HaXml, language-ecmascript, language-dot, language-css, json
 
