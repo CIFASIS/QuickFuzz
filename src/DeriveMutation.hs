@@ -78,7 +78,7 @@ ifsymHeadOf n = do
 
 devMutationRec :: Name -> Q [Dec]
 devMutationRec t = do
-    deps <- prevDev t
+    deps <- prevDev t (\_ -> return False)
     nosym <- mapM ifsymHeadOf deps
     let deps' = nub $ filter (not . hasArbIns) nosym  -- Get rid of all type syn ?
     -- Just ignore typesym later... We hope that prevDev get all dependencies
