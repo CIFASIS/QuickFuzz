@@ -20,17 +20,20 @@ import qualified Data.ByteString as B
 import Data.DeriveTH
 import Data.Word(Word8, Word16, Word32)
 
-import DeriveArbitrary
+import DeriveArbitrary hiding (derive)
 import ByteString
 import Vector
 import Images
 
 data MJpgImage  = Jpg0 JpgImage deriving Show -- | Jpg1 (Word8,Metadatas, Image PixelYCbCr8) | Jpg2 (Word8, Image PixelYCbCr8) deriving Show
 
-derive makeArbitrary ''MJpgImage
-derive makeArbitrary ''ExifData
+--derive makeArbitrary ''MJpgImage
+--derive makeArbitrary ''ExifData
+
+-- $(devArbitrary ''MJpgImage)
 
 $(devArbitrary ''MJpgImage)
+
 
 encodeJpgImage (Jpg0 x) = encode x
 --encodeJpgImage (Jpg1 (q, meta, img)) = encodeJpegAtQualityWithMetadata q meta img

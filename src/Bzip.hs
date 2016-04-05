@@ -9,7 +9,7 @@ import Codec.Compression.BZip.Internal
 import qualified Data.ByteString.Lazy as L
 
 import Data.DeriveTH
-import DeriveArbitrary
+import DeriveArbitrary hiding (derive)
 
 import ByteString
 

@@ -2,7 +2,6 @@
 
 module Gif where
 
-import DeriveArbitrary
 import Test.QuickCheck
 import Data.Binary( Binary(..), encode, decode )
 
@@ -14,7 +13,7 @@ import Codec.Picture.ColorQuant
 import Mutation
 import DeriveMutation
 
-import DeriveArbitrary
+import DeriveArbitrary hiding (derive)
 import ByteString
 import Vector
 import Images
@@ -50,7 +49,7 @@ fromRight (Left x) = error x
 type MGifImage = GifFile
 
 $(devArbitrary ''MGifImage)
-$(devMutationRec ''MGifImage)
+-- $(devMutationRec ''MGifImage)
 
 -- $(devArbitrary ''GifLooping)
 

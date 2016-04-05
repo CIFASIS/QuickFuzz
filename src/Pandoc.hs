@@ -22,13 +22,6 @@ import ByteString
 import System.IO.Unsafe
 import Data.Char (chr)
 
--- $(deriveArbitraryRec ''Element)
-
-derive makeArbitrary ''Meta
-derive makeArbitrary ''Format
-derive makeArbitrary ''Block
-derive makeArbitrary ''Inline
-derive makeArbitrary ''MetaValue
 
 instance Arbitrary (Map String MetaValue) where
    arbitrary = do
@@ -36,13 +29,7 @@ instance Arbitrary (Map String MetaValue) where
      y <- arbitrary 
      return $ singleton x y
 
-$(deriveArbitraryRec ''Pandoc)
-$(deriveArbitraryRec ''ListNumberStyle)
-$(deriveArbitraryRec ''ListNumberDelim)
-$(deriveArbitraryRec ''Alignment)
-$(deriveArbitraryRec ''QuoteType)
-$(deriveArbitraryRec ''MathType)
-$(deriveArbitraryRec ''Citation)
+$(devArbitrary ''Pandoc)
 
 mencode_rtf :: Pandoc -> LC8.ByteString
 mencode_rtf x = LC8.pack $ writeRTF def x

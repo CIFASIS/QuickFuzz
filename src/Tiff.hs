@@ -18,7 +18,7 @@ import qualified Data.ByteString.Lazy as L
 import Data.DeriveTH
 import Data.Binary.Put( runPut )
 
-import DeriveArbitrary
+import DeriveArbitrary hiding (derive)
 import Vector
 import Images
 
@@ -30,6 +30,8 @@ derive makeShow ''TiffInfo
 data MTiffFile  = Tiff0 (TiffInfo, Image Pixel8) | Tiff1 (Image PixelCMYK16) | Tiff2 (Image PixelYA8) | Tiff3 (Image PixelRGBA8) | Tiff4 (Image PixelYCbCr8) deriving Show
 
 derive makeArbitrary ''MTiffFile
+-- $(devArbitrary ''MTiffFile)
+
 
 encodeTiffFile :: MTiffFile -> L.ByteString
 encodeTiffFile (Tiff0 (hdr, img)) = runPut $ putP rawPixelData hdr

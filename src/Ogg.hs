@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
 module Ogg where
 
-import DeriveArbitrary
+import DeriveArbitrary hiding (derive)
 import Test.QuickCheck
 
 import Codec.Container.Ogg.Page
@@ -21,6 +21,8 @@ derive makeArbitrary ''OggPage
 derive makeArbitrary ''Granulepos
 derive makeArbitrary ''OggTrack
 derive makeArbitrary ''Granulerate
+
+-- $(devArbitrary ''OggPage)
 
 instance Arbitrary ContentType where
     arbitrary = oneof $ (map return [flac])
