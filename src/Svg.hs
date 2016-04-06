@@ -15,7 +15,6 @@ import qualified Data.ByteString.Char8 as C
 
 import Data.DeriveTH
 
-import Mutation
 import DeriveMutation
 import DeriveArbitrary
 
