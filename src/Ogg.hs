@@ -13,16 +13,10 @@ import Codec.Container.Ogg.ContentType
 
 import qualified Data.ByteString.Lazy as L
 
-import Data.DeriveTH
+--import Data.DeriveTH
 
 import ByteString
 
-derive makeArbitrary ''OggPage
-derive makeArbitrary ''Granulepos
-derive makeArbitrary ''OggTrack
-derive makeArbitrary ''Granulerate
-
--- $(devArbitrary ''OggPage)
 
 instance Arbitrary ContentType where
     arbitrary = oneof $ (map return [flac])
@@ -34,6 +28,8 @@ instance Arbitrary MessageHeaders where
      y <- listOf (arbitrary :: Gen String)
      x <- (arbitrary :: (Gen String))
      return $ mhAppends x y mhEmpty
+
+$(devArbitrary ''OggPage)
 
 appendvorbis d = L.append flacIdent d
 appendh (OggPage x track cont incplt bos eos gp seqno s) = OggPage x track cont incplt bos eos gp seqno (map appendvorbis s)
