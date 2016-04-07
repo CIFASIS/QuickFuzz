@@ -18,33 +18,12 @@ import Megadeth.DeriveShow
 import DeriveArbitrary hiding (derive)
 import ByteString
 import Vector
---import Images
+import Images
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as B
 import Data.DeriveTH
 
-
--- $(deriveArbitraryRec ''GifImage)
--- $(deriveArbitraryRec ''GifLooping)
--- $(deriveArbitraryRec ''GifFile)
-
---derive makeShow ''GifImage
-
-instance Show (GifImage) where
-   show x = "(GifImage)"
-
-{-
-   derive makeShow ''GraphicControlExtension
-   derive makeShow ''GifHeader
-   derive makeShow ''DisposalMethod
-   derive makeShow ''LogicalScreenDescriptor
-   derive makeShow ''GifVersion
-   derive makeShow ''ImageDescriptor
-   derive makeShow ''GifLooping
-   derive makeShow ''GifFile
--}
-$(devShow ''GifFile)
 
 fromRight (Right x)  = x
 fromRight (Left x) = error x
@@ -53,10 +32,8 @@ fromRight (Left x) = error x
 
 type MGifImage = GifFile
 
+$(devShow ''GifFile)
 $(devArbitrary ''MGifImage)
--- $(devMutationRec ''MGifImage)
-
--- $(devArbitrary ''GifLooping)
 
 encodeMGifImage :: MGifImage -> L.ByteString
 encodeMGifImage x = encode x

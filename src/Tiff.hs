@@ -19,18 +19,19 @@ import Data.DeriveTH
 import Data.Binary.Put( runPut )
 
 import DeriveArbitrary hiding (derive)
+import Megadeth.DeriveShow
+
 import Vector
 import Images
 
 import Codec.Picture.VectorByteConversion( toByteString )
 
 derive makeArbitrary ''TiffInfo
-derive makeShow ''TiffInfo
 
-data MTiffFile  = Tiff0 (TiffInfo, Image Pixel8) | Tiff1 (Image PixelCMYK16) | Tiff2 (Image PixelYA8) | Tiff3 (Image PixelRGBA8) | Tiff4 (Image PixelYCbCr8) deriving Show
+data MTiffFile  = Tiff0 (TiffInfo, Image Pixel8) | Tiff1 (Image PixelCMYK16) | Tiff2 (Image PixelYA8) | Tiff3 (Image PixelRGBA8) | Tiff4 (Image PixelYCbCr8)
 
 derive makeArbitrary ''MTiffFile
--- $(devArbitrary ''MTiffFile)
+$(devShow ''MTiffFile)
 
 
 encodeTiffFile :: MTiffFile -> L.ByteString
@@ -42,26 +43,14 @@ encodeTiffFile (Tiff2 img) = encodeTiff img
 encodeTiffFile (Tiff3 img) = encodeTiff img
 encodeTiffFile (Tiff4 img) = encodeTiff img
 
-
 derive makeArbitrary ''Predictor
-derive makeShow ''Predictor
-
 derive makeArbitrary ''ExtraSample
-derive makeShow ''ExtraSample
-
 derive makeArbitrary ''TiffCompression
-derive makeShow ''TiffCompression
-
 derive makeArbitrary ''TiffSampleFormat
-derive makeShow ''TiffSampleFormat
-
 derive makeArbitrary ''TiffPlanarConfiguration
 derive makeArbitrary ''TiffColorspace
 derive makeArbitrary ''TiffHeader
 derive makeArbitrary ''Endianness
-
-derive makeShow ''TiffPlanarConfiguration
-derive makeShow ''TiffColorspace
 
 mencode :: MTiffFile -> L.ByteString
 mencode = encodeTiffFile
