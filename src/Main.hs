@@ -60,6 +60,7 @@ import qualified Http
 
 import qualified Ogg
 --import qualified Sh
+import qualified Midi
 import qualified ID3
 import qualified TTF
 import qualified Wav
@@ -161,7 +162,7 @@ dispatch arg = do
             --"Html" -> Process.main MarkUp.mencodeHtml args b
             --"XHtml" -> Process.main MarkUp.mencodeXml args b
             "ID3"   -> Process.main (ID3.mencode,undefined)  args b
-
+            "MIDI"   -> Process.main (Midi.mencode,undefined)  args b
             "TTF"  -> Process.main (TTF.mencode,undefined)  args b
             "Wav"  -> Process.main (Wav.mencode,undefined)  args b
 

@@ -86,7 +86,7 @@ executable QuickFuzz
       build-depends: network, HTTP, dns, iproute, unbounded-delays, concurrent-extra,base16-bytestring, network-uri
 
   if flag(media)
-      build-depends: hogg, wavy, idiii, ttasm
+      build-depends: hogg, wavy, idiii, ttasm, HCodecs
 
 
   hs-source-dirs:      src
