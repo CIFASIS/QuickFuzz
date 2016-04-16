@@ -36,6 +36,7 @@ import qualified Js
 import qualified Python
 import qualified Dot
 import qualified JSON
+import qualified GLSL
 import qualified Regex
 
 #endif
@@ -130,6 +131,7 @@ dispatch arg = do
             "Py"   -> Process.main (Python.mencode,undefined)  args b
             "CSS"  -> Process.main (Css.mencode,undefined)  args b
             "JSON"   -> Process.main (JSON.mencode,undefined) args b
+            "GLSL"   -> Process.main (GLSL.mencode,undefined) args b
             "Regex" -> Process.main (Regex.mencode,undefined)  args b
             --"Sh"   -> Sh.main args b
 
