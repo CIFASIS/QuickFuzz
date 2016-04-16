@@ -71,7 +71,7 @@ executable QuickFuzz
                       split, wl-pprint, text, parallel-io, monad-par,
                       abstract-par, megadeth
   if flag(codes)
-      build-depends:   HaXml, language-ecmascript, language-dot, language-css, json
+      build-depends:   HaXml, language-ecmascript, language-dot, language-css, language-python, json
 
   if flag(imgs)
       build-depends:  zlib, JuicyPixels, svg-tree, xml, AC-PPM
@@ -80,7 +80,7 @@ executable QuickFuzz
       build-depends:  zlib, tar, zip-archive, bzlib, base16-bytestring 
 
   if flag(docs)
-      build-depends: pandoc-types, pandoc, data-default
+      build-depends: pandoc-types, pandoc, data-default, hps, hcg-minus
 
   if flag(net)
       build-depends: network, HTTP, dns, iproute, unbounded-delays, concurrent-extra,base16-bytestring, network-uri

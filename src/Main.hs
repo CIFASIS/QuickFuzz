@@ -33,7 +33,7 @@ import qualified Xml
 import qualified Html
 import qualified Css
 import qualified Js
---import qualified MarkUp
+import qualified Python
 import qualified Dot
 import qualified JSON
 import qualified Regex
@@ -43,6 +43,7 @@ import qualified Regex
 #ifdef DOCS
 
 import qualified Pandoc
+import qualified PS
 
 #endif
 
@@ -126,6 +127,7 @@ dispatch arg = do
             "Xml"  -> Process.main (Xml.mencode,Xml.mdecode)  args b
             "Html" -> Process.main (Html.mencode,undefined)  args b
             "Js"   -> Process.main (Js.mencode,undefined)  args b
+            "Py"   -> Process.main (Python.mencode,undefined)  args b
             "CSS"  -> Process.main (Css.mencode,undefined)  args b
             "JSON"   -> Process.main (JSON.mencode,undefined) args b
             "Regex" -> Process.main (Regex.mencode,undefined)  args b
@@ -137,6 +139,8 @@ dispatch arg = do
             "Rtf"  -> Process.main (Pandoc.mencode_rtf,undefined)  args b
             "Docx"  -> Process.main (Pandoc.mencode_docx,undefined)  args b
             "Odt"  -> Process.main (Pandoc.mencode_odt,undefined)  args b
+            "PS"  -> Process.main (PS.mencode,undefined)  args b
+
 #endif
 
 #ifdef NET
