@@ -50,23 +50,35 @@ decodeFile mdecode filename =
     x <- catch (evaluate $ Just $ mdecode x) dec_handler
     return x
 
-
-process :: (Mutation a, Show a, Arbitrary a) => ((a -> BSL.ByteString),(BS.ByteString -> a))  -> Bool -> FilePath -> String -> String -> Int -> Int -> FilePath -> FilePath -> IO Result 
-process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
+process_custom :: Show a
+    => Gen a -> ((a -> BSL.ByteString),(BS.ByteString -> a)) 
+    -> Bool -> FilePath -> String -> String -> Int
+    -> Int -> FilePath -> FilePath -> IO Result 
+process_custom gen (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
     let (prog, args) = (Prelude.head spl, Prelude.tail spl)
     in (case prop of
         "zzuf" ->
             quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ zzufprop filename prog args mencode outdir)
+            (noShrinking $ forAll gen $ zzufprop filename prog args mencode outdir)
         "radamsa" ->
             quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ radamprop filename prog args mencode outdir)
+            (noShrinking $ forAll gen $ radamprop filename prog args mencode outdir)
         "check" ->
             quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ checkprop filename prog args mencode outdir)
+            (noShrinking $ forAll gen $ checkprop filename prog args mencode outdir)
         "gen" ->
             quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ genprop filename prog args mencode outdir)
+            (noShrinking $ forAll gen $ genprop filename prog args mencode outdir)
+    ) where spl = splitOn " " cmd
+
+
+process :: (Mutation a, Show a, Arbitrary a)
+    => ((a -> BSL.ByteString),(BS.ByteString -> a))
+    -> Bool -> FilePath -> String -> String ->
+    Int -> Int -> FilePath -> FilePath -> IO Result 
+process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =  
+    let (prog, args) = (Prelude.head spl, Prelude.tail spl)
+    in (case prop of
         "mut" ->
             if seeds /= "" then (
              do
@@ -88,7 +100,8 @@ process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds 
             quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
             (noShrinking $ honggprop filename prog args mencode outdir)
 
-        _     -> error "Invalid action selected"
+        _     -> process_custom arbitrary (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds
+    
     ) where spl = splitOn " " cmd
 
 _main fs (MainArgs _ cmd filename prop maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop maxSuccess maxSize outdir seeds
