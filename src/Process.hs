@@ -12,7 +12,7 @@ import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString as BS
 
 --import System.FilePath
-import System.Directory
+import System.Directory hiding (listDirectory, withCurrentDirectory)
 
 #ifdef NET
 
