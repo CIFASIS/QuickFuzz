@@ -30,7 +30,6 @@ as = map (\x -> mkName $ 'a':show x) ([1..] :: [Int])
 customFun :: Name -> [(Name,[Bool])] -> Q Dec -- Can I give the type too?
 customFun fname cons = do
     let lis = mkName "xs" 
-    runIO $ print cons
     funD fname $
         [ clause [listP []] (normalB $ varE 'arbitrary) []
         , clause [varP lis]
@@ -54,7 +53,7 @@ customG name = do
         TyConI (TySynD _ _ _) ->  return [] -- later
         TyConI (DataD _ _ _ constructors _) -> do
             let fnm = mkName $ "customGen" -- link this name with the typename
-            f <- (customFun fnm (foldl (\p c -> 
+            f <- (customFun fnm $ reverse (foldl (\p c ->  -- because foldl
                 let
                     SimpleCon n rec vs = simpleConView n c
                     tfs = map (\ty -> case ty of
