@@ -52,7 +52,8 @@ customG name = do
     case def of
         TyConI (TySynD _ _ _) ->  return [] -- later
         TyConI (DataD _ _ _ constructors _) -> do
-            let fnm = mkName $ "customGen" -- link this name with the typename
+            let fnm = mkName $ "customGen_" ++ (map (\x -> if x == '.' then '_' else
+                                                                x) $ showName name)
             f <- (customFun fnm $ reverse (foldl (\p c ->  -- because foldl
                 let
                     SimpleCon n rec vs = simpleConView n c
@@ -67,4 +68,6 @@ createIntGen :: Name -> Q [Dec]
 createIntGen n = do
     arb <- devArbitrary n -- n should have and arbitrary instance, and doing so we get all the dependencies as well
     cstm <- customG n
+    let [FunD nm _] = cstm -- this is kinda horrible
+    runIO $ print $ "**New Defined function: " ++ showName nm ++ "**"
     return (arb ++ cstm)
