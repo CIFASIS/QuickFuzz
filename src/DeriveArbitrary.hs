@@ -26,20 +26,34 @@ import GHC.Types
 as :: [Name]
 as = map (\x -> mkName $ 'a':show x) ([1..] :: [Int])
 
--- TODO: sized custom fun
 customFun :: Name -> [(Name,[Bool])] -> Q Dec -- Can I give the type too?
 customFun fname cons = do
     let lis = mkName "xs" 
-    let listaFreq' = listE $ reverse $ (foldl (\res (c,bs) ->
+    let n = mkName "n"
+    let nmu = (appE (appE (varE '(-)) (varE n)) ([|1|]))
+    let sizedarb = appE (appE (varE 'resize) (varE n)) $ varE 'arbitrary
+    let listaFreq' = listE $ reverse $ foldl
+                     (\res (c,bs) ->
                         (foldl
                             (\r b -> appE (appE (varE '(<*>)) r)
                                 (if b 
-                                     then appE (varE fname) (varE lis)
-                                     else varE 'arbitrary)) (appE (varE 'pure) (conE c)) bs) : res) [] cons)
+                                     then appE (appE (varE fname) (varE lis)) nmu
+                                     else sizedarb)) (appE (varE 'pure) (conE c)) bs) : res)
+                     [] cons
+    let listaFreq'' = listE $ reverse $ foldl
+                     (\res (c,bs) ->
+                        if and bs
+                            then res else
+                            (foldl (\r x -> [|$(r) <*> arbitrary |]) (appE (varE 'pure) (conE c)) bs) : res)
+                     [] cons
     let listaFreq = appE (appE (varE 'zip) (varE lis)) listaFreq'
     funD fname $
-        [ clause [listP []] (normalB $ varE 'arbitrary) []
-        , clause [varP lis]
+        [ clause [listP [],[p|1|]] (normalB $ varE 'arbitrary) []
+        , clause [varP lis,[p|1|]] (
+         normalB $
+          appE (varE 'oneof) listaFreq''
+          ) []
+        , clause [varP lis,varP n]
             (normalB $
              appE   (varE 'frequency)
                     listaFreq
@@ -53,7 +67,7 @@ customG name = do
     case def of
         TyConI (TySynD _ _ _) ->  return $ Nothing -- later
         TyConI (DataD _ _ _ constructors _) ->
-            let fnm = mkName $ "customGen_" ++ (map (\x -> if x == '.' then '_' else
+            let fnm = mkName $ "customGen_sized_" ++ (map (\x -> if x == '.' then '_' else
                                                                 x) $ showName name) in
             (customFun fnm $ reverse (foldl (\p c ->  -- because foldl
                 let
