@@ -46,28 +46,29 @@ customFun fname cons = do
              []
         ]
 
-customG :: Name -> Q [Dec] -- Just one function
+customG :: Name -> Q (Maybe Dec) -- Just one function
 customG name = do
     def <- reify name
     case def of
-        TyConI (TySynD _ _ _) ->  return [] -- later
-        TyConI (DataD _ _ _ constructors _) -> do
+        TyConI (TySynD _ _ _) ->  return $ Nothing -- later
+        TyConI (DataD _ _ _ constructors _) ->
             let fnm = mkName $ "customGen_" ++ (map (\x -> if x == '.' then '_' else
-                                                                x) $ showName name)
-            f <- (customFun fnm $ reverse (foldl (\p c ->  -- because foldl
+                                                                x) $ showName name) in
+            (customFun fnm $ reverse (foldl (\p c ->  -- because foldl
                 let
                     SimpleCon n rec vs = simpleConView n c
                     tfs = map (\ty -> case ty of
                                         ConT n' -> (name == n')
                                         _ -> False) vs
-                in (n,tfs) : p) [] constructors))
-            return [f]
-            
+                in (n,tfs) : p) [] constructors)) >>= return . Just
 
 createIntGen :: Name -> Q [Dec]
 createIntGen n = do
     arb <- devArbitrary n -- n should have and arbitrary instance, and doing so we get all the dependencies as well
     cstm <- customG n
-    let [FunD nm _] = cstm -- this is kinda horrible
-    runIO $ print $ "**New Defined function: " ++ showName nm ++ "**"
-    return (arb ++ cstm)
+    --let [FunD nm _] = cstm -- this is kinda horrible
+    case cstm of
+        Nothing -> (runIO $ print "Pattern not implemented") >> return []
+        Just f@(FunD nm _) -> do
+                runIO $ print $ "**New Defined function: " ++ showName nm ++ "**"
+                return (arb ++ [f])
