@@ -30,19 +30,20 @@ as = map (\x -> mkName $ 'a':show x) ([1..] :: [Int])
 customFun :: Name -> [(Name,[Bool])] -> Q Dec -- Can I give the type too?
 customFun fname cons = do
     let lis = mkName "xs" 
+    let listaFreq' = listE $ reverse $ (foldl (\res (c,bs) ->
+                        (foldl
+                            (\r b -> appE (appE (varE '(<*>)) r)
+                                (if b 
+                                     then appE (varE fname) (varE lis)
+                                     else varE 'arbitrary)) (appE (varE 'pure) (conE c)) bs) : res) [] cons)
+    let listaFreq = appE (appE (varE 'zip) (varE lis)) listaFreq'
     funD fname $
         [ clause [listP []] (normalB $ varE 'arbitrary) []
         , clause [varP lis]
             (normalB $
              appE   (varE 'frequency)
-                    (listE
-                        (snd $ (foldl (\(p,res) (c,bs) ->
-                             ((p :: Int)+1, (tupE
-                    [appE (appE (varE '(!!)) (varE lis)) ([|p|])
-                    ,foldl (\r b -> appE (appE (varE '(<*>)) r) (if b 
-                                            then appE (varE fname) (varE lis)
-                                            else varE 'arbitrary)) (appE (varE 'pure) (conE c)) bs
-                    ]) : res)) (0,[]) cons))))
+                    listaFreq
+                    )
              []
         ]
 
