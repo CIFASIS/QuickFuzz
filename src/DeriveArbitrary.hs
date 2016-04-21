@@ -61,13 +61,20 @@ customFun fname cons = do
              []
         ]
 
+compCust :: Dec -> Q Dec
+compCust (FunD n _) = 
+    let nm = mkName $ "sized_" ++ (showName n) 
+        s = mkName "s"
+    in
+    funD nm [clause [varP s] (normalB $ appE (varE ('sized)) (appE (varE n) (varE s))) []]
+
 customG :: Name -> Q (Maybe Dec) -- Just one function
 customG name = do
     def <- reify name
     case def of
         TyConI (TySynD _ _ _) ->  return $ Nothing -- later
         TyConI (DataD _ _ _ constructors _) ->
-            let fnm = mkName $ "customGen_sized_" ++ (map (\x -> if x == '.' then '_' else
+            let fnm = mkName $ "customGen_" ++ (map (\x -> if x == '.' then '_' else
                                                                 x) $ showName name) in
             (customFun fnm $ reverse (foldl (\p c ->  -- because foldl
                 let
@@ -85,5 +92,5 @@ createIntGen n = do
     case cstm of
         Nothing -> (runIO $ print "Pattern not implemented") >> return []
         Just f@(FunD nm _) -> do
-                runIO $ print $ "**New Defined function: " ++ showName nm ++ "**"
-                return (arb ++ [f])
+                fsized <- compCust f
+                return (arb ++ [f,fsized])
