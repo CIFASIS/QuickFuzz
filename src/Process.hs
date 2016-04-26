@@ -38,10 +38,6 @@ withCurrentDirectory dir action =
     action
 
 
---mhandler :: SomeException -> Maybe a
---mhandler x = return Nothing
-
---decodeFile :: (
 decodeFile mdecode filename =
   do
     x <- BS.readFile filename
@@ -49,30 +45,30 @@ decodeFile mdecode filename =
     --print filename
     x <- catch (evaluate $ Just $ mdecode x) dec_handler
     return x
+str2prop
+  :: [Char]
+    -> FilePath
+    -> FilePath
+    -> [String]
+    -> (t -> BSL.ByteString)
+    -> FilePath
+    -> t
+    -> Property
+str2prop "zzuf" = zzufprop
+str2prop "radamsa" = radamprop
+str2prop "check" = checkprop
+str2prop "gen" = genprop
 
 process_custom :: Show a
     => Gen a -> ((a -> BSL.ByteString),(BS.ByteString -> a)) 
     -> Bool -> FilePath -> String -> String -> Int
     -> Int -> FilePath -> FilePath -> IO Result 
 process_custom gen (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
-    do  createDirectoryIfMissing True outdir
         let spl = splitOn " " cmd
             (prog, args) = (Prelude.head spl, Prelude.tail spl)
-            in (case prop of
-                "zzuf" ->
-                    do  createDirectoryIfMissing True outdir
-                        quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ forAll gen $ zzufprop filename prog args mencode outdir)
-                "radamsa" ->
-                    do  createDirectoryIfMissing True outdir
-                        quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ forAll gen $ radamprop filename prog args mencode outdir)
-                "check" ->
-                    do  createDirectoryIfMissing True outdir
-                        quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ forAll gen $ checkprop filename prog args mencode outdir)
-                "gen" ->
-                    do  createDirectoryIfMissing True outdir
-                        quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ forAll gen $ genprop filename prog args mencode outdir)
-            )
-
+            qcconf = stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } in
+        createDirectoryIfMissing True outdir >>
+        quickCheckWithResult qcconf (noShrinking $ forAll gen $ (str2prop prop) filename prog args mencode outdir)
 
 process :: (Mutation a, Show a, Arbitrary a)
     => ((a -> BSL.ByteString),(BS.ByteString -> a))
