@@ -55,54 +55,56 @@ process_custom :: Show a
     -> Bool -> FilePath -> String -> String -> Int
     -> Int -> FilePath -> FilePath -> IO Result 
 process_custom gen (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
-    let (prog, args) = (Prelude.head spl, Prelude.tail spl)
-    in (case prop of
-        "zzuf" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ forAll gen $ zzufprop filename prog args mencode outdir)
-        "radamsa" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ forAll gen $ radamprop filename prog args mencode outdir)
-        "check" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ forAll gen $ checkprop filename prog args mencode outdir)
-        "gen" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ forAll gen $ genprop filename prog args mencode outdir)
-    ) where spl = splitOn " " cmd
+    do  createDirectoryIfMissing True outdir
+        let spl = splitOn " " cmd
+            (prog, args) = (Prelude.head spl, Prelude.tail spl)
+            in (case prop of
+                "zzuf" ->
+                    do  createDirectoryIfMissing True outdir
+                        quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ forAll gen $ zzufprop filename prog args mencode outdir)
+                "radamsa" ->
+                    do  createDirectoryIfMissing True outdir
+                        quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ forAll gen $ radamprop filename prog args mencode outdir)
+                "check" ->
+                    do  createDirectoryIfMissing True outdir
+                        quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ forAll gen $ checkprop filename prog args mencode outdir)
+                "gen" ->
+                    do  createDirectoryIfMissing True outdir
+                        quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ forAll gen $ genprop filename prog args mencode outdir)
+            )
 
 
 process :: (Mutation a, Show a, Arbitrary a)
     => ((a -> BSL.ByteString),(BS.ByteString -> a))
     -> Bool -> FilePath -> String -> String ->
     Int -> Int -> FilePath -> FilePath -> IO Result 
-process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =  
-    let (prog, args) = (Prelude.head spl, Prelude.tail spl)
-    in (case prop of
-        "mut" ->
-            if seeds /= "" then (
-             do
-                 fs <- listDirectory seeds
-                 xs <- mapM makeRelativeToCurrentDirectory fs
-                 --mapM_ print fs
-                 xs <- withCurrentDirectory seeds (mapM (decodeFile mdecode) xs)
-                 xs <- return $ Prelude.filter isJust xs
-                 xs <- return $ Prelude.map fromJust xs
+process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
+    do  createDirectoryIfMissing True outdir
+        let spl = splitOn " " cmd
+            (prog, args) = (Prelude.head spl, Prelude.tail spl)            
+            in (case prop of
+              "mut" ->
+                  if seeds /= "" then (
+                   do
+                       fs <- listDirectory seeds
+                       xs <- mapM makeRelativeToCurrentDirectory fs
+                       --mapM_ print fs
+                       xs <- withCurrentDirectory seeds (mapM (decodeFile mdecode) xs)
+                       xs <- return $ Prelude.filter isJust xs
+                       xs <- return $ Prelude.map fromJust xs                    
 
-                 --mapM_ print xs
-                 --xs <- return $ map mdecode xs
-                 quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ mutprop filename prog args mencode outdir maxSize xs))
-            else (error "You should specifiy a directory with seeds!")
-        "exec" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ execprop filename prog args mencode outdir)
-        "honggfuzz" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ honggprop filename prog args mencode outdir)
+                       --mapM_ print xs
+                       --xs <- return $ map mdecode xs
+                       quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ mutprop filename prog args mencode outdir maxSize xs))
+                  else (error "You should specifiy a directory with seeds!")
+              "exec" ->
+                  quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ execprop filename prog args mencode outdir)
+              "honggfuzz" ->
+                  quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ honggprop filename prog args mencode outdir)
 
-        _     -> process_custom arbitrary (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds
-    
-    ) where spl = splitOn " " cmd
+              _     -> process_custom arbitrary (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds
+          
+          )
 
 _main fs (MainArgs _ cmd filename prop maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop maxSuccess maxSize outdir seeds
 
@@ -116,13 +118,9 @@ main fs fargs True  = processPar fargs (\x -> (_main fs x) >> return ())
 netprocess mencode par _ host prop maxSuccess maxSize outdir _ =
     --let (prog, args) = (Prelude.head spl, Prelude.tail spl)
     case prop of
-        "serve" -> 
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ serveprop 6055 [] mencode)
+        "serve" -> quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ serveprop 6055 [] mencode)
 
-        "connect" -> 
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ cconnectprop 6055 host mencode)
+        "connect" -> quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ cconnectprop 6055 host mencode)
 
 
         _     -> error "Invalid action selected"
