@@ -23,6 +23,11 @@ import Network.Socket
 import Control.Exception --( bracket, bracketOnError, evaluate, catch )
 import Exceptions
 
+readCoefFileName :: FilePath -> IO ([Int])
+readCoefFileName f  = do 
+                       contents <- readFile f
+                       return $ (map read) . words $ contents
+
 listDirectory :: FilePath -> IO [FilePath]
 listDirectory path =
   (Prelude.filter f) <$> (getDirectoryContents path)
@@ -57,6 +62,13 @@ process_custom :: Show a
 process_custom gen (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
     let (prog, args) = (Prelude.head spl, Prelude.tail spl)
     in (case prop of
+        "exec" ->
+            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
+            (noShrinking $ forAll gen $ execprop filename prog args mencode outdir)
+        "honggfuzz" ->
+            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
+            (noShrinking $ forAll gen $ honggprop filename prog args mencode outdir)
+
         "zzuf" ->
             quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
             (noShrinking $ forAll gen $ zzufprop filename prog args mencode outdir)
@@ -73,10 +85,12 @@ process_custom gen (mencode,mdecode) par filename cmd prop maxSuccess maxSize ou
 
 
 process :: (Mutation a, Show a, Arbitrary a)
-    => ((a -> BSL.ByteString),(BS.ByteString -> a))
-    -> Bool -> FilePath -> String -> String ->
+    => ((a -> BSL.ByteString),(BS.ByteString -> a),([Int] -> Gen a))
+    -> Bool -> FilePath -> String -> FilePath -> String ->
     Int -> Int -> FilePath -> FilePath -> IO Result 
-process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =  
+
+process (mencode,mdecode,mgen) par filename cmd prop coefs_filename maxSuccess maxSize outdir seeds =
+
     let (prog, args) = (Prelude.head spl, Prelude.tail spl)
     in (case prop of
         "mut" ->
@@ -93,18 +107,14 @@ process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds 
                  --xs <- return $ map mdecode xs
                  quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ mutprop filename prog args mencode outdir maxSize xs))
             else (error "You should specifiy a directory with seeds!")
-        "exec" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ execprop filename prog args mencode outdir)
-        "honggfuzz" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ honggprop filename prog args mencode outdir)
-
-        _     -> process_custom arbitrary (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds
+        _     -> if coefs_filename == "" then process_custom arbitrary (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds
+                 else ( do coefs <- readCoefFileName coefs_filename
+                           process_custom (mgen coefs) (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds )
     
     ) where spl = splitOn " " cmd
 
-_main fs (MainArgs _ cmd filename prop maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop maxSuccess maxSize outdir seeds
+--_main fs (MainArgs _ cmd filename prop maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop maxSuccess maxSize outdir seeds
+_main fs (MainArgs _ cmd filename prop coefs_filename maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop coefs_filename maxSuccess maxSize outdir seeds
 
 main fs fargs False = (\x -> (_main fs x) >> return ()) $ fargs ""
 main fs fargs True  = processPar fargs (\x -> (_main fs x) >> return ())
