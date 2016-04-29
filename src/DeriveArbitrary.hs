@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE LambdaCase #-}
 module DeriveArbitrary (
     module Megadeth.Prim,
     module Megadeth.DeriveArbitrary,
@@ -72,6 +73,32 @@ customFun fname cons = do
              []
         ]
 
+customFunNewT :: Name -> (Name,[Maybe Bool]) -> Q Dec
+customFunNewT fname (cnm, mbs) = do
+    let lis = mkName "xs" 
+    let n = mkName "n"
+    funD fname $ [
+         clause [varP lis, [p|0|]] (normalB $ varE 'arbitrary) []
+        ,clause [varP lis, varP n] (normalB $
+                foldl (\res mb ->
+                        infixE
+                            (Just res)
+                            (varE '(<*>))
+                            $ Just $ case mb of
+                                    Nothing -> varE 'arbitrary                        
+                                    Just _ -> appE (appE (varE fname) (varE lis)) (varE n) 
+                      ) (appE (varE 'pure) (conE cnm)) mbs
+             ) []
+        ]
+
+customTup :: Name -> Name -> Int -> Q Exp
+customTup xs n mbs = 
+    let reccall = appE (appE (varE 'prob_gen) (varE xs)) (varE n) 
+    in
+        foldl (\r _ -> 
+            infixE (Just r) (varE '(<*>)) $
+            Just $ reccall) (appE (varE 'pure) (conE (tupleDataName mbs))) $ replicate mbs 1
+
 compCust :: Dec -> Q Dec
 compCust (FunD n _) = 
     let nm = mkName $ "sized_" ++ (showName n) 
@@ -83,12 +110,43 @@ prefixT :: Name -> String
 prefixT n = let spt = splitOn "." $ show n
             in concat $ init spt
 
-customG :: Name -> Q (Maybe Dec) -- Just one function
+prepareArgCons (prefname,name) = map (\ty -> case ty of
+                    ConT n' -> 
+                             let pren' = prefixT n'
+                                in
+                                if (n' == name) then
+                                    Just True
+                                else if (prefname == pren') then
+                                    Just False else Nothing
+                    _ -> Nothing)
+
+customG :: Name -> Q (Either String Dec) -- Just one function
 customG name = do
     def <- reify name
     let prefname = prefixT name
     case def of
-        TyConI (TySynD _ _ _) ->  return Nothing
+        TyConI (TySynD _ params ty) ->  --return $ Left "Syn" 
+            case (getTy ty) of
+                (TupleT nu) -> 
+                    let ns = map varT $ paramNames params 
+                        lns = length ns
+                        in
+                    if lns > 0 then
+                        do
+                            [t] <- [d| instance $(applyTo (tupleT (length ns)) (map (appT (conT ''ProbGen)) ns))
+                                         => ProbGen $(applyTo (conT name) ns) where
+                                        prob_gen xs 0 = $(genTupleArbs nu)
+                                        prob_gen xs n = $(customTup 'xs 'n nu)|]
+                            return $ Right t 
+                    else
+                        do
+                            [t] <- [d| instance ProbGen $(applyTo (conT name) ns) where
+                                        prob_gen xs 0 = $(genTupleArbs nu)
+                                        prob_gen xs n = $(customTup 'xs 'n nu) |]
+                            return $ Right t 
+                        
+                ConT n -> return $ Left $ "Already derived?" ++ show n
+                
         TyConI (DataD _ _ params constructors _) ->
             let fnm = mkName "prob_gen" -- "customGen_" ++ (map (\x -> if x == '.' then '_' else
                                                                 --x) $ showName name)
@@ -96,7 +154,18 @@ customG name = do
                 f = (customFun fnm $ reverse (foldl (\p c ->  -- because foldl
                     let
                         SimpleCon n rec vs = simpleConView n c
-                        tfs = map (\ty -> case ty of
+                        tfs = prepareArgCons (prefname,name) vs
+                    in (n,tfs) : p) [] constructors))
+            in
+            (instanceD (cxt $ (map (appT (conT ''Arbitrary)) ns) ++ (map (appT (conT ''ProbGen)) ns))
+                                ( appT (conT ''ProbGen) (applyTo (conT name) ns))
+                                [f])
+            >>= (return . Right)
+        TyConI (NewtypeD _ _ params con _) ->
+            let fnm = mkName "prob_gen" 
+                ns = map varT $ paramNames params
+                SimpleCon n rec vs = simpleConView n con
+                tfs = map (\ty -> case ty of
                                             ConT n' -> 
                                                      let pren' = prefixT n'
                                                         in
@@ -105,12 +174,13 @@ customG name = do
                                                         else if (prefname == pren') then
                                                             Just False else Nothing
                                             _ -> Nothing) vs
-                    in (n,tfs) : p) [] constructors))
+                f = customFunNewT fnm (n,tfs)
             in
             (instanceD (cxt $ (map (appT (conT ''Arbitrary)) ns) ++ (map (appT (conT ''ProbGen)) ns))
                                 ( appT (conT ''ProbGen) (applyTo (conT name) ns))
                                 [f])
-            >>= (return . Just)
+            >>= (return . Right)
+        _ -> return $ Left "No TyConI"
 
 createIntGen :: Name -> Q [Dec]
 createIntGen n = do
@@ -118,8 +188,8 @@ createIntGen n = do
     cstm <- customG n
     --let [FunD nm _] = cstm -- this is kinda horrible
     case cstm of
-        Nothing -> (runIO $ print "Pattern not implemented") >> return []
-        Just d -> return [d]
+        Left s -> (runIO $ print $ "Pattern not implemented:" ++ s) >> return []
+        Right d -> return [d]
 
 isGenName = isinsName ''ProbGen
 
