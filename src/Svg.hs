@@ -42,7 +42,7 @@ import Linear
 import Strings
 import Images 
 
-type MSvgFile  = Document
+data MSvgFile  = MSvgFile Document deriving Show
 
 instance Mutation Char where
     mutt x = return x
@@ -53,16 +53,16 @@ instance  Mutation String where
 instance  Mutation DT.Text where
     mutt = return
  
-instance Arbitrary (Maybe String) where
-   arbitrary = return Nothing
+--instance Arbitrary (Maybe String) where
+--   arbitrary = return Nothing
 
 instance  Arbitrary DT.Text where
    arbitrary = do 
-     xs <- genName
+     xs <- mgenName
      oneof $ Prelude.map (return . T.pack) [xs]--["a", "b", "c", "d", "e"]--genName
   
 instance Arbitrary String where
-  arbitrary = genName
+  arbitrary = mgenName
 
 instance Arbitrary RPoint where
    arbitrary = do 
@@ -71,16 +71,22 @@ instance Arbitrary RPoint where
      return $ V2 a1 a2
 
 $(devArbitrary ''MSvgFile)
-$(devMutationRec ''MSvgFile)
+-- $(devMutationRec ''MSvgFile)
+
+-- $(devIntGen ''Document)
+-- $(devMutationRec ''MXml)
+
+mgen :: [Int] -> Gen MSvgFile
+mgen = undefined --customGen_Svg_MSvgFile
  
 encodeMSvgFile = LC8.pack . ppcTopElement prettyConfigPP . xmlOfDocument
    
 mencode :: MSvgFile -> LC8.ByteString
-mencode = encodeMSvgFile
+mencode (MSvgFile d) = encodeMSvgFile d
 
 mdecode :: C8.ByteString -> MSvgFile
 mdecode x = 
            case (parseSvgFile "." x) of --(B.pack  $ Prelude.map (ord . toEnum) (C.unpack x))) of
-             Just doc -> doc
+             Just doc -> MSvgFile doc
              Nothing  -> error "SVG impossible to parse"
            --where x' = C8.unpack x 

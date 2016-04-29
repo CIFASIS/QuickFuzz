@@ -17,12 +17,17 @@ import Vector
 import ByteString
 import Strings
 
-type MHtml =  [Content ()]
+data MHtml = MHtml [Content ()] deriving Show
 
 $(devArbitrary ''MHtml)
+$(devIntGen ''MHtml)
+
 
 instance Arbitrary String where
    arbitrary = mgenName
 
+mgen :: [Int] -> Gen MHtml 
+mgen = customGen_Html_MHtml
+
 mencode :: MHtml -> L8.ByteString
-mencode x = L8.pack $ render $ htmlprint x
+mencode (MHtml x) = L8.pack $ render $ htmlprint x

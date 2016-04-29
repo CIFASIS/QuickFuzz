@@ -8,6 +8,7 @@ data MainArgs = MainArgs
                         ,findCmds     :: String
                         ,findFileName ::  String
                         ,findAct      :: String
+                        ,findCoefFile :: String
                         ,findNumTries :: Int
                         ,findSize     :: Int
                         ,findOutDir   :: String
@@ -21,6 +22,7 @@ parser = MainArgs
     `andBy`    reqPos            "command"     `Descr` "Full command line to execute"
     `andBy`    optFlag []        "name"        `Descr` "Output filename"
     `andBy`    optFlag "exec"    "action"      `Descr` "Action to execute (zzuf | check | gen | exec | mut | serve)"
+    `andBy`    optFlag ""        "coefs"       `Descr` "File containing probability coefficients"
     `andBy`    optFlag 100000000 "tries"       `Descr` "Number of attempts"
     `andBy`    optFlag 50        "size"        `Descr` "Maximum structural size of generated values"
     `andBy`    optFlag "outdir"  "outdir"      `Descr` "Directory to dump crashes"

@@ -43,10 +43,6 @@ withCurrentDirectory dir action =
     action
 
 
---mhandler :: SomeException -> Maybe a
---mhandler x = return Nothing
-
---decodeFile :: (
 decodeFile mdecode filename =
   do
     x <- BS.readFile filename
@@ -54,34 +50,33 @@ decodeFile mdecode filename =
     --print filename
     x <- catch (evaluate $ Just $ mdecode x) dec_handler
     return x
+str2prop
+  :: [Char]
+    -> FilePath
+    -> FilePath
+    -> [String]
+    -> (t -> BSL.ByteString)
+    -> FilePath
+    -> t
+    -> Property
+str2prop "zzuf" = zzufprop
+str2prop "radamsa" = radamprop
+str2prop "check" = checkprop
+str2prop "gen" = genprop
+str2prop "exec" = execprop
+str2prop "honggfuzz" = honggprop
 
 process_custom :: Show a
     => Gen a -> ((a -> BSL.ByteString),(BS.ByteString -> a)) 
     -> Bool -> FilePath -> String -> String -> Int
     -> Int -> FilePath -> FilePath -> IO Result 
 process_custom gen (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
-    let (prog, args) = (Prelude.head spl, Prelude.tail spl)
-    in (case prop of
-        "exec" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ forAll gen $ execprop filename prog args mencode outdir)
-        "honggfuzz" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ forAll gen $ honggprop filename prog args mencode outdir)
 
-        "zzuf" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ forAll gen $ zzufprop filename prog args mencode outdir)
-        "radamsa" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ forAll gen $ radamprop filename prog args mencode outdir)
-        "check" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ forAll gen $ checkprop filename prog args mencode outdir)
-        "gen" ->
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ forAll gen $ genprop filename prog args mencode outdir)
-    ) where spl = splitOn " " cmd
+        let spl = splitOn " " cmd
+            (prog, args) = (Prelude.head spl, Prelude.tail spl)
+            qcconf = stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } in
+        createDirectoryIfMissing True outdir >>
+        quickCheckWithResult qcconf (noShrinking $ forAll gen $ (str2prop prop) filename prog args mencode outdir)
 
 
 process :: (Mutation a, Show a, Arbitrary a)
@@ -112,7 +107,6 @@ process (mencode,mdecode,mgen) par filename cmd prop coefs_filename maxSuccess m
                            process_custom (mgen coefs) (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds )
     
     ) where spl = splitOn " " cmd
-
 --_main fs (MainArgs _ cmd filename prop maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop maxSuccess maxSize outdir seeds
 _main fs (MainArgs _ cmd filename prop coefs_filename maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop coefs_filename maxSuccess maxSize outdir seeds
 
@@ -126,13 +120,9 @@ main fs fargs True  = processPar fargs (\x -> (_main fs x) >> return ())
 netprocess mencode par _ host prop maxSuccess maxSize outdir _ =
     --let (prog, args) = (Prelude.head spl, Prelude.tail spl)
     case prop of
-        "serve" -> 
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ serveprop 6055 [] mencode)
+        "serve" -> quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ serveprop 6055 [] mencode)
 
-        "connect" -> 
-            quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par }
-            (noShrinking $ cconnectprop 6055 host mencode)
+        "connect" -> quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ cconnectprop 6055 host mencode)
 
 
         _     -> error "Invalid action selected"

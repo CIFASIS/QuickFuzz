@@ -26,7 +26,15 @@ genName = listOf1 validChars :: Gen String
 instance {-# OVERLAPPING #-} Arbitrary String where
    arbitrary = genName
 
-$(devArbitrary ''Graph)
+-- $(devArbitrary ''Graph)
+
+$(createIntGen ''Graph)
+-- $(devMutationRec ''MXml)
+
+mgen :: [Int] -> Gen Graph
+mgen = customGen_Language_Dot_Syntax_Graph
+
+
 
 mencode :: Graph -> L8.ByteString
 mencode = L8.pack . renderDot 

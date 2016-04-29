@@ -27,20 +27,40 @@ instance Arbitrary XMLDecl where
                 (x,y) <- arbitrary
                 return $ XMLDecl ver x y
 
+
+instance Arbitrary [Misc] where
+   --arbitrary = genName
+   arbitrary = do
+                 (a1, a2, a3) <- arbitrary
+                 oneof $ map return [[], [a1], [a2], [a3]]
+
+
+instance (Arbitrary i) => Arbitrary [Content i] where
+   --arbitrary = genName
+   arbitrary = do
+                 (a1, a2, a3) <- arbitrary
+                 oneof $ map return [[], [a1], [a2], [a3]]
+
+
 instance Arbitrary String where
    --arbitrary = genName
-   arbitrary = sized sgenName 
+   arbitrary = mgenName 
 
-type MXml = Document Posn
+data MXml = MXml (Document Posn) deriving Show
 
 $(devArbitrary ''MXml)
-$(devMutationRec ''MXml)
+-- $(createIntGen ''MXml)
+$(devIntGen ''MXml)
+-- $(devMutationRec ''MXml)
+
+mgen :: [Int] -> Gen MXml
+mgen = customGen_Xml_MXml
 
 readFiles :: [FilePath] -> [IO LC8.ByteString]
 readFiles = map LC8.readFile
 
 mencode :: MXml -> LC8.ByteString
-mencode x =  Text.XML.HaXml.ByteStringPP.document x
+mencode (MXml x)= Text.XML.HaXml.ByteStringPP.document x
 
 
 {-
@@ -54,6 +74,6 @@ mencode x = unsafePerformIO (
 --mhandler1 :: SomeException -> IO (Maybe (Document Posn))
 --mhandler1 x = return $ Nothing
  
-mdecode :: C8.ByteString -> (Document Posn)
-mdecode xml =  xmlParse "" (C8.unpack xml) 
+--mdecode :: C8.ByteString -> (Document Posn)
+--mdecode xml =  xmlParse "" (C8.unpack xml) 
               -- unsafePerformIO $ catch ( evaluate $ Just $ xmlParse "" (C8.unpack xml)) mhandler1
