@@ -146,6 +146,7 @@ customG name = do
                             return $ Right t 
                         
                 ConT n -> return $ Left $ "Already derived?" ++ show n
+                d -> return $ Left $ "Not ready for " ++ show d
                 
         TyConI (DataD _ _ params constructors _) ->
             let fnm = mkName "prob_gen" -- "customGen_" ++ (map (\x -> if x == '.' then '_' else
