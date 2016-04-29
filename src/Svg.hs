@@ -70,10 +70,16 @@ instance Arbitrary RPoint where
      a2 <- arbitrary
      return $ V2 a1 a2
 
+instance ProbGen RPoint where
+    prob_gen xs n = V2 <$> prob_gen xs n <*> prob_gen xs n
+
+instance ProbGen Coord where
+    prob_gen _ _ = arbitrary
+
 $(devArbitrary ''MSvgFile)
 -- $(devMutationRec ''MSvgFile)
 
--- $(devIntGen ''Document)
+$(devIntGen ''MSvgFile)
 -- $(devMutationRec ''MXml)
 
 mgen :: [Int] -> Gen MSvgFile

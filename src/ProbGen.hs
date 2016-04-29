@@ -12,3 +12,7 @@ class ProbGen a where
 sized_gen :: (ProbGen a) => [Int] -> Gen a
 sized_gen xs = sized $ prob_gen xs
 
+instance ProbGen a => ProbGen [a] where
+    prob_gen xs n = 
+        do  k <- choose (0,n)
+            sequence [prob_gen xs n | _ <- [1..k]]
