@@ -7,6 +7,7 @@ module DeriveArbitrary (
     module Misc,
     module ByteString,
     module Vector,
+    module ProbGen,
     createIntGen,
     devIntGen
     ) where
