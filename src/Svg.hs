@@ -79,6 +79,7 @@ instance ProbGen Coord where
 $(devArbitrary ''MSvgFile)
 -- $(devMutationRec ''MSvgFile)
 
+$(instaGen ''T.Text)
 $(devIntGen ''MSvgFile)
 -- $(devMutationRec ''MXml)
 

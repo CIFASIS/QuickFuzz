@@ -9,6 +9,7 @@ module DeriveArbitrary (
     module Vector,
     module ProbGen,
     createIntGen,
+    instaGen,
     devIntGen
     ) where
 
@@ -91,7 +92,7 @@ customFunNewT fname (cnm, mbs) = do
                             (Just res)
                             (varE '(<*>))
                             $ Just $ case mb of
-                                    Nothing -> varE 'arbitrary                        
+                                    Nothing -> [|resize $(varE n) arbitrary|]
                                     Just _ -> appE (appE (varE fname) (varE lis)) (varE n) 
                       ) (appE (varE 'pure) (conE cnm)) mbs
              ) []
@@ -200,6 +201,10 @@ createIntGen n = do
         Right d -> return [d]
 
 isGenName = isinsName ''ProbGen
+
+instaGen :: Name -> Q [Dec]
+instaGen mm = [d|instance ProbGen $(conT mm) where
+                    prob_gen _ n = resize n arbitrary |]
 
 devIntGen :: Name -> Q [Dec]
 devIntGen = megaderive createIntGen (const $ return False) isGenName
