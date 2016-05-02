@@ -69,15 +69,8 @@ customFun fname cons = do
                         [] cons
     -}
     let listaFreq = appE (appE (varE 'zip) (varE lis)) (listaFreq' nmu)
-    let listaFreq'' = appE (appE (varE 'zip) (varE lis)) (listaFreq' [|0|])
     funD fname $
         [ clause [varP lis, [p|0|]] (normalB $ [|resize 0 arbitrary|]) []
-        --, clause [listP [],[p|1|]] (normalB $ varE 'arbitrary) []
-        , clause [varP lis,[p|1|]] (
-         normalB $ [| let n = 1 in
-          $(appE (varE 'frequency) listaFreq'')
-            |]
-          ) []
         , clause [varP lis,varP n]
             (normalB $
              appE   (varE 'frequency)
