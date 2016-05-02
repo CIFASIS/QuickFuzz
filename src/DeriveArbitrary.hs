@@ -43,21 +43,23 @@ customFun fname cons = do
     let dropold = appE (appE (varE 'drop) (lift $ length cons)) (varE lis)
     let nmu = (appE (appE (varE '(-)) (varE n)) ([|1|]))
     let sizedarb = appE (appE (varE 'resize) (varE n)) $ varE 'arbitrary
-    let listaFreq' = listE $ reverse $ foldl
+    let listaFreq' nmuu = listE $ reverse $ foldl
                      (\res (c,bs) ->
                         (foldl
                             (\r b -> appE (appE (varE '(<*>)) r)
                                 (case b of
                                     Nothing -> sizedarb
-                                    Just True -> appE (appE (varE fname) (varE lis)) nmu
-                                    _ -> appE (appE (varE fname) dropold) nmu
+                                    Just True -> appE (appE (varE fname) (varE lis)) nmuu
+                                    _ -> appE (appE (varE fname) dropold) nmuu
                                      )) (appE (varE 'pure) (conE c)) bs) : res)
                      [] cons
-    let listaFreq'' = appE (appE (varE 'zip) (varE lis)) $ listE $ reverse $ foldl
-                            (\res (c,bs) ->
-                            if null bs then
-                                [|return $(conE c)|] : res
-                            else res) [] cons
+    {-
+       let listaFreq'' = appE (appE (varE 'zip) (varE lis)) $ listE $ reverse $ foldl
+                               (\res (c,bs) ->
+                               if null bs then
+                                   [|return $(conE c)|] : res
+                               else res) [] cons
+    -}
     {-
        let listaFreq'' = listE $ reverse $ foldl
                         (\res (c,bs) ->
@@ -66,13 +68,15 @@ customFun fname cons = do
                                (foldl (\r x -> [|$(r) <*> arbitrary |]) (appE (varE 'pure) (conE c)) bs) : res)
                         [] cons
     -}
-    let listaFreq = appE (appE (varE 'zip) (varE lis)) listaFreq'
+    let listaFreq = appE (appE (varE 'zip) (varE lis)) (listaFreq' nmu)
+    let listaFreq'' = appE (appE (varE 'zip) (varE lis)) (listaFreq' [|0|])
     funD fname $
         [ clause [varP lis, [p|0|]] (normalB $ [|resize 0 arbitrary|]) []
         --, clause [listP [],[p|1|]] (normalB $ varE 'arbitrary) []
         , clause [varP lis,[p|1|]] (
-         normalB $
-          appE (varE 'frequency) listaFreq''
+         normalB $ [| let n = 1 in
+          $(appE (varE 'frequency) listaFreq'')
+            |]
           ) []
         , clause [varP lis,varP n]
             (normalB $
