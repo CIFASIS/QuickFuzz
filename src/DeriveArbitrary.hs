@@ -68,7 +68,8 @@ customFun fname cons = do
     -}
     let listaFreq = appE (appE (varE 'zip) (varE lis)) listaFreq'
     funD fname $
-        [ clause [listP [],[p|1|]] (normalB $ varE 'arbitrary) []
+        [ clause [varP lis, [p|0|]] (normalB $ [|resize 0 arbitrary|]) []
+        --, clause [listP [],[p|1|]] (normalB $ varE 'arbitrary) []
         , clause [varP lis,[p|1|]] (
          normalB $
           appE (varE 'frequency) listaFreq''
@@ -86,7 +87,7 @@ customFunNewT fname (cnm, mbs) = do
     let lis = mkName "xs" 
     let n = mkName "n"
     funD fname $ [
-         clause [varP lis, [p|0|]] (normalB $ varE 'arbitrary) []
+         clause [varP lis, [p|0|]] (normalB $ [|resize 0 arbitrary|]) []
         ,clause [varP lis, varP n] (normalB $
                 foldl (\res mb ->
                         infixE
