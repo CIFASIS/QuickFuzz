@@ -53,18 +53,25 @@ customFun fname cons = do
                                     _ -> appE (appE (varE fname) dropold) nmu
                                      )) (appE (varE 'pure) (conE c)) bs) : res)
                      [] cons
-    let listaFreq'' = listE $ reverse $ foldl
-                     (\res (c,bs) ->
-                        if (and $ map isJust bs)
-                            then res else
-                            (foldl (\r x -> [|$(r) <*> arbitrary |]) (appE (varE 'pure) (conE c)) bs) : res)
-                     [] cons
+    let listaFreq'' = appE (appE (varE 'zip) (varE lis)) $ listE $ reverse $ foldl
+                            (\res (c,bs) ->
+                            if null bs then
+                                [|return $(conE c)|] : res
+                            else res) [] cons
+    {-
+       let listaFreq'' = listE $ reverse $ foldl
+                        (\res (c,bs) ->
+                           if (and $ map isJust bs)
+                               then res else
+                               (foldl (\r x -> [|$(r) <*> arbitrary |]) (appE (varE 'pure) (conE c)) bs) : res)
+                        [] cons
+    -}
     let listaFreq = appE (appE (varE 'zip) (varE lis)) listaFreq'
     funD fname $
         [ clause [listP [],[p|1|]] (normalB $ varE 'arbitrary) []
         , clause [varP lis,[p|1|]] (
          normalB $
-          appE (varE 'oneof) listaFreq''
+          appE (varE 'frequency) listaFreq''
           ) []
         , clause [varP lis,varP n]
             (normalB $
@@ -119,6 +126,7 @@ prepareArgCons (prefname,name) = map (\ty -> case ty of
                                     Just True
                                 else if (prefname == pren') then
                                     Just False else Nothing
+                    AppT ListT  _ -> Just False
                     _ -> Nothing)
 
 customG :: Name -> Q (Either String Dec) -- Just one function

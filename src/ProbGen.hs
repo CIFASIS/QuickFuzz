@@ -16,3 +16,7 @@ instance ProbGen a => ProbGen [a] where
     prob_gen xs n = 
         do  k <- choose (0,n)
             sequence [prob_gen xs n | _ <- [1..k]]
+
+instance ProbGen Int where
+    prob_gen [] n = choose (0,n)
+    prob_gen (x:xs) n = choose (0, min x n)
