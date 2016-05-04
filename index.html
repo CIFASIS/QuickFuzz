@@ -36,8 +36,8 @@
 
 <ul>
 <li>Firefox (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1210745">failed assert in gif loader</a>, <a href="https://www.mozilla.org/en-US/security/advisories/mfsa2016-02/">CVE-2016-1933</a>, <a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-128/">CVE-2015-7194</a>, <a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-143/">CVE-2015-7216, CVE-2015-7217</a>)</li>
-<li>VLC (<a href="https://bugzilla.redhat.com/show_bug.cgi?id=1290785">CVE-2016-3941</a>)</li>
-<li>Libxml2 (<a href="http://seclists.org/oss-sec/2016/q1/682">CVE-2016-3627</a>)</li>
+<li>VLC (<a href="https://bugs.launchpad.net/ubuntu/+source/vlc/+bug/1533633">CVE-2016-3941</a>)</li>
+<li>Libxml2 (<a href="http://seclists.org/oss-sec/2016/q1/682">CVE-2016-3627</a>, <a href="http://seclists.org/oss-sec/2016/q2/214">CVE-2016-4483</a>)</li>
 <li>Cairo (<a href="http://seclists.org/oss-sec/2016/q1/676">CVE-2016-3190</a>)</li>
 <li>GraphicsMagick ( <a href="http://seclists.org/oss-sec/2016/q1/288">CVE-2015-8808</a>, <a href="http://seclists.org/oss-sec/2016/q1/297">CVE-2016-2317, CVE-2016-2318</a> )</li>
 <li>Librsvg (undisclosed, <a href="http://www.openwall.com/lists/oss-security/2015/12/21/5">CVE-2015-7557, CVE-2015-7558</a>)</li>
@@ -58,7 +58,7 @@
 
 <p>A statically linked binary for x86_64 is available <a href="https://github.com/CIFASIS/QuickFuzz/releases/download/v0.1-beta/QuickFuzz.x86_64">here</a>, otherwise QuickFuzz can be <a href="https://github.com/CIFASIS/QuickFuzz#instalation">easy compiled</a>. To generate corrupted gifs to test giffix using QuickFuzz and zzuf:</p>
 
-<pre><code>$ /QuickFuzz Gif "/usr/bin/giffix @@" -a zzuf -t 25 -s 10
+<pre><code>$ QuickFuzz Gif "/usr/bin/giffix @@" -a zzuf -t 25 -s 10
 *** Error in `/usr/bin/giffix': double free or corruption (out): 0x0000000000b44f80 ***
 zzuf[s=-1193471787,r=0.004:1e-06]: signal 6 (SIGABRT)
 *** Error in `/usr/bin/giffix': free(): invalid pointer: 0x0000000002565f80 ***
