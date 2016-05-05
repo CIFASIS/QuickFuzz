@@ -17,9 +17,12 @@ import qualified Data.ByteString.Lazy as BL
 
 import Data.Word (Word8, Word16, Word32)
 
+
+data IcoType = Icon | Cursor deriving (Show, Read, Eq)
+
 data IcoHeader = IcoHeader
-  { icoReserved :: !Word16
-  , icoType     :: !Word16
+  { -- icoReserved :: !Word16
+    icoType     :: IcoType
   , icoCount    :: !Word16
   } deriving (Show, Read, Eq)
 
@@ -36,6 +39,7 @@ data IcoEntry = IcoEntry
 
 data IcoFile = IcoFile IcoHeader [IcoEntry] [(Image PixelRGBA8, Image PixelRGBA8)] deriving Show--(xor, and); and is 1bit (different type?)
 
+{-
 instance Arbitrary IcoFile where
   arbitrary = sameLength
 
@@ -46,14 +50,20 @@ sameLength = do
                 es <- vector (fromIntegral $ toInteger ic)
                 bs <- vector (fromIntegral $ toInteger ic)
                 return $ IcoFile h es bs
+-}
 
 $(devArbitrary ''IcoFile)
 --restrictions on arbitrary?
 
+instance Binary IcoType where
+  put Icon = putWord16le 1
+  put Cursor = putWord16le 2
+  get = undefined
+
 instance Binary IcoHeader where
   put header = do
-                  putWord16le $ icoReserved header
-                  putWord16le $ icoType header
+                  putWord16le $ 0 --icoReserved header
+                  put $ icoType header
                   putWord16le $ icoCount header
   get = undefined
 
