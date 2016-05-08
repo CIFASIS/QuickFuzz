@@ -73,7 +73,6 @@ import qualified Unicode
 
 --import qualified MarkUpSvg
 
-
 import System.Console.ArgParser
 import System.Random
 import Args
@@ -104,48 +103,48 @@ dispatch arg = do
 
 #ifdef IMGS
 
-            "Bmp"  -> Process.main (Bmp.mencode,undefined, undefined) args b
-            "Gif"  -> Process.main (Gif.mencode,Gif.mdecode, undefined) args b
-            "Jpeg" -> Process.main (Jpeg.mencode,Jpeg.mdecode, undefined) args b
-            "Png"  -> Process.main (Png.mencode,Png.mdecode, undefined) args b
-            "Tiff" -> Process.main (Tiff.mencode,undefined, undefined)  args b
-            "Tga"  -> Process.main (Tga.mencode,undefined, undefined)  args b
-            "Pnm"  -> Process.main (Pnm.mencode,undefined, undefined)  args b
-            "Svg"  -> Process.main (Svg.mencode,Svg.mdecode, undefined)  args b
+            "Bmp"  -> Process.main (Bmp.mencode,undefined) args b
+            "Gif"  -> Process.main (Gif.mencode,Gif.mdecode) args b
+            "Jpeg" -> Process.main (Jpeg.mencode,Jpeg.mdecode) args b
+            "Png"  -> Process.main (Png.mencode,Png.mdecode) args b
+            "Tiff" -> Process.main (Tiff.mencode,undefined)  args b
+            "Tga"  -> Process.main (Tga.mencode,undefined)  args b
+            "Pnm"  -> Process.main (Pnm.mencode,undefined)  args b
+            "Svg"  -> Process.main (Svg.mencode,Svg.mdecode)  args b
 
 #endif
 
 #ifdef ARCHS
 
-            "Zip"  -> Process.main (Zip.mencode,undefined,undefiend)  args b
-            "Bzip" -> Process.main (Bzip.mencode,undefined,undefined)  args b
-            "Gzip" -> Process.main (Gzip.mencode,undefined,undefined)  args b
-            "Tar"  -> Process.main (Tar.mencode,undefined,undefined)  args b
-            "CPIO" -> Process.main (CPIO.mencode,undefined,undefined)  args b
+            "Zip"  -> Process.main (Zip.mencode,undefined)  args b
+            "Bzip" -> Process.main (Bzip.mencode,undefined)  args b
+            "Gzip" -> Process.main (Gzip.mencode,undefined)  args b
+            "Tar"  -> Process.main (Tar.mencode,undefined)  args b
+            "CPIO" -> Process.main (CPIO.mencode,undefined)  args b
 
 #endif
 
 
 #ifdef CODES
 
-            "Dot"  -> Process.main (Dot.mencode,undefined,undefined)  args b
-            "Xml"  -> Process.main (Xml.mencode,Xml.mdecode,undefined)  args b
-            "Html" -> Process.main (Html.mencode,undefined,undefined)  args b
-            "Js"   -> Process.main (Js.mencode,undefined,undefined)  args b
-            "Py"   -> Process.main (Python.mencode,undefined,undefined)  args b
-            "CSS"  -> Process.main (Css.mencode,undefined,undefined)  args b
-            "JSON"   -> Process.main (JSON.mencode,undefined,undefined) args b
-            "GLSL"   -> Process.main (GLSL.mencode,undefined,undefined) args b
-            "Regex" -> Process.main (Regex.mencode,undefined,undefined)  args b
+            "Dot"  -> Process.main (Dot.mencode,undefined)  args b
+            "Xml"  -> Process.main (Xml.mencode,undefined)  args b
+            "Html" -> Process.main (Html.mencode,undefined)  args b
+            "Js"   -> Process.main (Js.mencode,undefined)  args b
+            "Py"   -> Process.main (Python.mencode,undefined)  args b
+            "CSS"  -> Process.main (Css.mencode,undefined)  args b
+            "JSON"   -> Process.main (JSON.mencode,undefined) args b
+            "GLSL"   -> Process.main (GLSL.mencode,undefined) args b
+            "Regex" -> Process.main (Regex.mencode,undefined)  args b
             --"Sh"   -> Sh.main args b
 
 #endif
 
 #ifdef DOCS
-            "Rtf"  -> Process.main (Pandoc.mencode_rtf,undefined,undefined)  args b
-            "Docx"  -> Process.main (Pandoc.mencode_docx,undefined,undefined)  args b
-            "Odt"  -> Process.main (Pandoc.mencode_odt,undefined,undefined)  args b
-            "PS"  -> Process.main (PS.mencode,undefined,undefined)  args b
+            "Rtf"  -> Process.main (Pandoc.mencode_rtf,undefined)  args b
+            "Docx"  -> Process.main (Pandoc.mencode_docx,undefined)  args b
+            "Odt"  -> Process.main (Pandoc.mencode_odt,undefined)  args b
+            "PS"  -> Process.main (PS.mencode,undefined)  args b
 
 #endif
 
@@ -161,20 +160,16 @@ dispatch arg = do
 
 #ifdef MEDIA
 
-            "Ogg"  -> Process.main (Ogg.mencode,undefined,undefined)  args b
-            "ID3"   -> Process.main (ID3.mencode,undefined,undefined)  args b
-            "MIDI"   -> Process.main (Midi.mencode,undefined,undefined)  args b
-            "TTF"  -> Process.main (TTF.mencode,undefined,undefined)  args b
-            "Wav"  -> Process.main (Wav.mencode,undefined,undefined)  args b
+            "Ogg"  -> Process.main (Ogg.mencode,undefined)  args b
+            "ID3"   -> Process.main (ID3.mencode,undefined)  args b
+            "MIDI"   -> Process.main (Midi.mencode,undefined)  args b
+            "TTF"  -> Process.main (TTF.mencode,undefined)  args b
+            "Wav"  -> Process.main (Wav.mencode,undefined)  args b
 
 #endif
 
-            --"MarkUp" -> Process.main MarkUp.mencodeHtml args b
-            --"MarkUpSvg" -> Process.main MarkUpSvg.mencode args b
-
-            --"MBox"   -> MBox.main args b
-            "Unicode" -> Process.main (Unicode.mencode,undefined, undefined)  args b
-            "BS"   -> Process.main (ByteString.bencode,undefined, undefined)  args b
+            "Unicode" -> Process.main (Unicode.mencode,undefined)  args b
+            "BS"   -> Process.main (ByteString.bencode,undefined)  args b
 
             _      -> print "Unsupported Type"
 

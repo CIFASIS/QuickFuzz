@@ -59,6 +59,7 @@ str2prop
     -> FilePath
     -> t
     -> Property
+
 str2prop "zzuf" = zzufprop
 str2prop "radamsa" = radamprop
 str2prop "check" = checkprop
@@ -80,11 +81,11 @@ process_custom gen (mencode,mdecode) par filename cmd prop maxSuccess maxSize ou
 
 
 process :: (Mutation a, Show a, Arbitrary a)
-    => ((a -> BSL.ByteString),(BS.ByteString -> a),([Int] -> Gen a))
-    -> Bool -> FilePath -> String -> FilePath -> String ->
+    => ((a -> BSL.ByteString),(BS.ByteString -> a))
+    -> Bool -> String -> FilePath -> String ->
     Int -> Int -> FilePath -> FilePath -> IO Result 
 
-process (mencode,mdecode,mgen) par filename cmd prop coefs_filename maxSuccess maxSize outdir seeds =
+process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
 
     let (prog, args) = (Prelude.head spl, Prelude.tail spl)
     in (case prop of
@@ -102,13 +103,14 @@ process (mencode,mdecode,mgen) par filename cmd prop coefs_filename maxSuccess m
                  --xs <- return $ map mdecode xs
                  quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ mutprop filename prog args mencode outdir maxSize xs))
             else (error "You should specifiy a directory with seeds!")
-        _     -> if coefs_filename == "" then process_custom arbitrary (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds
-                 else ( do coefs <- readCoefFileName coefs_filename
-                           process_custom (mgen coefs) (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds )
+        _     -> --if coefs_filename == "" then 
+                 process_custom arbitrary (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds
+                 --else ( do coefs <- readCoefFileName coefs_filename
+                 --          process_custom (mgen coefs) (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds )
     
     ) where spl = splitOn " " cmd
---_main fs (MainArgs _ cmd filename prop maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop maxSuccess maxSize outdir seeds
-_main fs (MainArgs _ cmd filename prop coefs_filename maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop coefs_filename maxSuccess maxSize outdir seeds
+_main fs (MainArgs _ cmd filename prop maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop maxSuccess maxSize outdir seeds
+--_main fs (MainArgs _ cmd filename prop coefs_filename maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop coefs_filename maxSuccess maxSize outdir seeds
 
 main fs fargs False = (\x -> (_main fs x) >> return ()) $ fargs ""
 main fs fargs True  = processPar fargs (\x -> (_main fs x) >> return ())

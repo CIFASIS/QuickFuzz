@@ -44,22 +44,10 @@ import Images
 
 data MSvgFile  = MSvgFile Document deriving Show
 
-instance Mutation Char where
-    mutt x = return x
-
-instance  Mutation String where
-    mutt = return
-
-instance  Mutation DT.Text where
-    mutt = return
- 
---instance Arbitrary (Maybe String) where
---   arbitrary = return Nothing
-
 instance  Arbitrary DT.Text where
    arbitrary = do 
      xs <- mgenName
-     oneof $ Prelude.map (return . T.pack) [xs]--["a", "b", "c", "d", "e"]--genName
+     oneof $ Prelude.map (return . T.pack) [xs]
   
 instance Arbitrary String where
   arbitrary = mgenName
@@ -70,22 +58,8 @@ instance Arbitrary RPoint where
      a2 <- arbitrary
      return $ V2 a1 a2
 
-instance ProbGen RPoint where
-    prob_gen xs n = V2 <$> prob_gen xs n <*> prob_gen xs n
-
-instance ProbGen Coord where
-    prob_gen _ _ = arbitrary
-
 $(devArbitrary ''MSvgFile)
--- $(devMutationRec ''MSvgFile)
 
-$(instaGen ''T.Text)
-$(devIntGen ''MSvgFile)
--- $(devMutationRec ''MXml)
-
-mgen :: [Int] -> Gen MSvgFile
-mgen = undefined --customGen_Svg_MSvgFile
- 
 encodeMSvgFile = LC8.pack . ppcTopElement prettyConfigPP . xmlOfDocument
    
 mencode :: MSvgFile -> LC8.ByteString
