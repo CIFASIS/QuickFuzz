@@ -85,13 +85,13 @@ import Data.List.Split
 fillArgs :: MainArgs -> IO (String -> MainArgs)
 fillArgs args =
     case findFileName args of
-        [] -> do
+        [] -> ( do
             sG <- getStdGen
             --let fname = take 10 ((randomRs ('a','z') sG) :: String )
             let fname = case findAct args of
                             "honggfuzz" -> "___FILE___"
                             _ -> take 10 ((randomRs ('a','z') sG) :: String )
-            return $ formatArgs (formatFileName args fname)
+            return $ formatArgs (formatFileName args fname) )
         _ -> return $ formatArgs args
 
 dispatch :: MainArgs -> IO ()
