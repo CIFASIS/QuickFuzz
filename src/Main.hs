@@ -104,15 +104,15 @@ dispatch arg = do
 
 #ifdef IMGS
 
-            "Bmp"  -> Process.main (Bmp.mencode,undefined, undefined) args b
-            "Gif"  -> Process.main (Gif.mencode,Gif.mdecode, undefined) args b
-            "Jpeg" -> Process.main (Jpeg.mencode,Jpeg.mdecode, undefined) args b
-            "Png"  -> Process.main (Png.mencode,Png.mdecode, undefined) args b
-            "Tiff" -> Process.main (Tiff.mencode,undefined, undefined)  args b
-            "Tga"  -> Process.main (Tga.mencode,undefined, undefined)  args b
-            "Pnm"  -> Process.main (Pnm.mencode,undefined, undefined)  args b
-            "Svg"  -> Process.main (Svg.mencode,Svg.mdecode, undefined)  args b
-            "Ico"  -> Process.main (Ico.mencode, undefined, undefined)  args b
+            "Bmp"  -> Process.main (Bmp.mencode,undefined) args b
+            "Gif"  -> Process.main (Gif.mencode,Gif.mdecode) args b
+            "Jpeg" -> Process.main (Jpeg.mencode,Jpeg.mdecode) args b
+            "Png"  -> Process.main (Png.mencode,Png.mdecode) args b
+            "Tiff" -> Process.main (Tiff.mencode,undefined)  args b
+            "Tga"  -> Process.main (Tga.mencode,undefined)  args b
+            "Pnm"  -> Process.main (Pnm.mencode,undefined)  args b
+            "Svg"  -> Process.main (Svg.mencode,Svg.mdecode)  args b
+            "Ico"  -> Process.main (Ico.mencode, undefined)  args b
 #endif
 
 #ifdef ARCHS
