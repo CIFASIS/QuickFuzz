@@ -38,7 +38,7 @@ data IcoEntry = IcoEntry
   , icoOffset     :: !Word32
   } deriving (Show, Read, Eq)
 
---data IcoFile = IcoFile IcoHeader [IcoEntry] [(Image PixelRGBA8, Image PixelRGBA8)] deriving Show--(xor, and); and is 1bit (different type?)
+--data IcoFile = IcoFile IcoHeader [IcoEntry] [([PixelRGBA8], [Pixel8])] deriving Show--(xor, and); and is 1bit (different type?)
 data IcoFile = IcoFile IcoHeader [IcoEntry] [(BmpInfoHeader, [PixelRGBA8], [Pixel8])] deriving Show
 
 {-
@@ -82,8 +82,8 @@ instance Binary IcoEntry where
   get = undefined
 
 instance Binary PixelRGBA8 where
-  put (PixelRGBA8 r g b a) = put r >> put g >> put b >> put a    
-  get = undefined                           
+  put (PixelRGBA8 r g b a) = put r >> put g >> put b >> put a
+  get = undefined
 
 --empty lists?
 {-instance Binary IcoFile where
@@ -119,14 +119,14 @@ mencode = encodeIco
 {-cons4 :: V.Storable a => a -> a -> a -> a -> V.Vector a
 cons4 r g b a = V.cons r (V.cons g (V.cons b (V.singleton a)))
 
-andmask :: Image PixelRGBA8
-andmask = Image 1 1 (cons4 1 1 1 1)
+andmask :: [Pixel8]
+andmask = [1]
 
-whitepixel :: Image PixelRGBA8
-whitepixel = Image 1 1 (cons4 255 255 255 0)
+whitepixel :: [PixelRGBA8]
+whitepixel = [PixelRGBA8 255 255 255 0]
 
-blackpixel :: Image PixelRGBA8
-blackpixel = Image 1 1 (cons4 0 0 0 255)
+blackpixel :: [PixelRGBA8]
+blackpixel = [PixelRGBA8 0 0 0 255]
 
 filepath :: FilePath
 filepath = "/home/franco/ej.ico"
@@ -153,8 +153,8 @@ filepath = "/home/franco/ej.ico"
 
 ej1 :: IO ()
 ej1 = let ih        = IcoHeader {icoType = Icon, icoCount = 1}
-          eh        = [IcoEntry {icoWidth = 1, icoHeight = 1, icoColorCount = 0, icoEReserved = 0, icoPlanes  = 0, icoBitCount = 32, icoSize = 41, icoOffset = 22} ]
-          bh        = BmpInfoHeader {size = 40, width = 1, height = 2, planes = 1, bitPerPixel = 8, bitmapCompression = 0, byteImageSize = 1, xResolution = 0, yResolution = 0, colorCount = 0, importantColours = 0}
+          eh        = [IcoEntry {icoWidth = 1, icoHeight = 1, icoColorCount = 0, icoEReserved = 0, icoPlanes  = 0, icoBitCount = 8, icoSize = 45, icoOffset = 22} ]
+          bh        = BmpInfoHeader {size = 40, width = 1, height = 2, planes = 1, bitPerPixel = 8, bitmapCompression = 0, byteImageSize = 5, xResolution = 0, yResolution = 0, colorCount = 0, importantColours = 0}
           bm        = [(bh, whitepixel, andmask)]
           ico       = IcoFile ih eh bm
           encoded   = mencode ico
