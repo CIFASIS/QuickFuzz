@@ -20,14 +20,13 @@ import Strings
 data MHtml = MHtml [Content ()] deriving Show
 
 $(devArbitrary ''MHtml)
-$(devIntGen ''MHtml)
-
+-- $(devIntGen ''MHtml)
 
 instance Arbitrary String where
    arbitrary = mgenName
 
-mgen :: [Int] -> Gen MHtml 
-mgen = customGen_Html_MHtml
+--mgen :: [Int] -> Gen MHtml 
+--mgen = customGen_Html_MHtml
 
 mencode :: MHtml -> L8.ByteString
 mencode (MHtml x) = L8.pack $ render $ htmlprint x

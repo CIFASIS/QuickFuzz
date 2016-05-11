@@ -16,6 +16,7 @@ import Data.DeriveTH
 import qualified Data.ByteString.Lazy as BL
 
 import Data.Word (Word8, Word16, Word32)
+import qualified Data.Vector.Storable as V
 
 
 data IcoType = Icon | Cursor deriving (Show, Read, Eq)
@@ -90,10 +91,10 @@ instance Binary IcoEntry where
 --                            put' es
 --                            put'' bs
 --                          where  put' []      = put (IcoEntry 0 0 0 0 0 0 0 0)
---                                 put' (e:es)  = put e >> put' es    
+--                                 put' (e:es)  = put e >> put' es
 --                                 put'' []     = put ???
---                                 put'' (b:bs) = put b >> put'' bs                                           
-                                                  
+--                                 put'' (b:bs) = put b >> put'' bs
+
 --  get = undefined
 
 
@@ -107,3 +108,26 @@ encodeIco :: IcoFile -> BL.ByteString
 encodeIco (IcoFile h es bs) = BL.append (encode h) (BL.append (encode es) (encodeMasks bs))
 
 mencode = encodeIco
+
+cons4 :: V.Storable a => a -> a -> a -> a -> V.Vector a
+cons4 r g b a = V.cons r (V.cons g (V.cons b (V.singleton a)))
+
+andmask :: Image PixelRGBA8
+andmask = Image 1 1 (cons4 1 1 1 1)
+
+whitepixel :: Image PixelRGBA8
+whitepixel = Image 1 1 (cons4 255 255 255 0)
+
+blackpixel :: Image PixelRGBA8
+blackpixel = Image 1 1 (cons4 0 0 0 255)
+
+filepath :: FilePath
+filepath = "/home/franco/ej.ico"
+
+ej1 :: IO ()
+ej1 = let ih        = IcoHeader {icoType = Icon, icoCount = 1}
+          eh        = [IcoEntry {icoWidth = 1, icoHeight = 1, icoColorCount = 0, icoEReserved = 0, icoPlanes  = 0, icoBitCount = 32, icoSize = 1, icoOffset = 22} ]
+          bm        = [(andmask, whitepixel)]
+          ico       = IcoFile ih eh bm
+          encoded   = mencode ico
+      in BL.writeFile filepath encoded

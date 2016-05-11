@@ -8,9 +8,9 @@ module DeriveArbitrary (
     module ByteString,
     module Vector,
     module ProbGen,
-    createIntGen,
-    instaGen,
-    devIntGen
+    --createIntGen,
+    --instaGen,
+    --devIntGen
     ) where
 
 import Megadeth.Prim
@@ -29,6 +29,8 @@ import Language.Haskell.TH.Syntax
 import Test.QuickCheck
 import GHC.Exts
 import GHC.Types
+
+{-
 -- Gen
 --
 ---
@@ -208,3 +210,5 @@ instaGen mm = [d|instance ProbGen $(conT mm) where
 
 devIntGen :: Name -> Q [Dec]
 devIntGen = megaderive createIntGen (const $ return False) isGenName
+-}
+
