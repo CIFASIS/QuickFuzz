@@ -19,7 +19,7 @@ It has found [some interesting bugs](http://QuickFuzz.org/).
 In Ubuntu, a PPA to install GHC 7.10 is available [here](https://launchpad.net/~hvr/+archive/ubuntu/ghc). Do not forget to add suitable directories
 to your path (e.g. /opt/ghc/7.10.3/bin and /opt/cabal/1.22/bin)
 
-## Instalation
+## Installation
 
     $ git clone https://github.com/CIFASIS/QuickFuzz.git
     $ cd QuickFuzz
