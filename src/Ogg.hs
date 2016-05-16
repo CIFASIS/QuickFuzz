@@ -5,6 +5,7 @@ import DeriveArbitrary hiding (derive)
 import Test.QuickCheck
 
 import Codec.Container.Ogg.Page
+import Codec.Container.Ogg.Packet
 import Codec.Container.Ogg.Granulepos
 import Codec.Container.Ogg.Track
 import Codec.Container.Ogg.MessageHeaders
@@ -19,9 +20,8 @@ import ByteString
 
 
 instance Arbitrary ContentType where
-    arbitrary = oneof $ (map return [flac])
-
---   arbitrary = oneof $ (map return [skeleton, cmml, vorbis, theora, speex, celt, flac])
+--    arbitrary = oneof $ (map return [flac])
+      arbitrary = oneof $ (map return [skeleton, cmml, vorbis, theora, speex, celt, flac])
 
 instance Arbitrary MessageHeaders where
    arbitrary = do
@@ -29,9 +29,11 @@ instance Arbitrary MessageHeaders where
      x <- (arbitrary :: (Gen String))
      return $ mhAppends x y mhEmpty
 
-$(devArbitrary ''OggPage)
+$(devArbitrary ''OggPacket)
+
+type MOgg = [OggPacket]
 
 appendvorbis d = L.append flacIdent d
 appendh (OggPage x track cont incplt bos eos gp seqno s) = OggPage x track cont incplt bos eos gp seqno (map appendvorbis s)
 
-mencode = appendvorbis
+mencode = L.concat . (map pageWrite) . (map appendh) . packetsToPages --appendvorbis
