@@ -38,7 +38,12 @@ data IcoEntry = IcoEntry
   , icoOffset     :: !Word32
   } deriving (Show, Read, Eq)
 
-data IcoFile = IcoFile IcoHeader [IcoEntry] [(BmpInfoHeader, Image PixelRGBA8, Image Pixel8)] deriving Show
+--Ico0 generates "garbage", Ico1 should generate good icons
+data IcoFile = Ico0 IcoHeader [IcoEntry] [(BmpInfoHeader, Image PixelRGBA8, Image Pixel8)] | Ico1 [(Image PixelRGBA8, Image Pixel8)] deriving Show
+
+sizeofIcoHeader, sizeofIcoEntry :: Word32
+sizeofIcoHeader = 6
+sizeofIcoEntry = 16
 
 {-
 instance Arbitrary IcoFile where
@@ -54,7 +59,6 @@ sameLength = do
 -}
 
 $(devArbitrary ''IcoFile)
---restrictions on arbitrary?
 
 instance Binary IcoType where
   put Icon = putWord16le 1
@@ -73,21 +77,66 @@ instance Binary IcoEntry where
                   putWord8 $ icoWidth entry
                   putWord8 $ icoHeight entry
                   putWord8 $ icoColorCount entry
-                  putWord8 $ 0--icoEReserved entry
+                  putWord8 $ 0 --icoEReserved entry
                   putWord16le $ icoPlanes entry
                   putWord16le $ icoBitCount entry
                   putWord32le $ icoSize entry
                   putWord32le $ icoOffset entry
   get = undefined
 
-encodeImgData :: (BmpInfoHeader, Image PixelRGBA8, Image Pixel8) -> Put
-encodeImgData (ih, xbmp, ibmp) = put ih >> bmpEncode xbmp >> bmpEncode ibmp
+encodeImgDataWithHeader :: (BmpInfoHeader, Image PixelRGBA8, Image Pixel8) -> Put
+encodeImgDataWithHeader (ih, xbmp, abmp) = put ih >> bmpEncode xbmp >> bmpEncode abmp
+
+encodeImgData :: (Image PixelRGBA8, Image Pixel8) -> Put
+encodeImgData (xbmp, abmp) = bmpEncode xbmp >> bmpEncode abmp
+
+getHeaders :: [(Image PixelRGBA8, Image Pixel8)] -> Integer -> [(IcoEntry, BmpInfoHeader)]
+getHeaders [] _ = []
+getHeaders ((x, a):imgs) off = let xWidth = fromIntegral $ imageWidth x
+                                   xHeight = fromIntegral $ imageHeight x
+                                   xSize = xWidth * xHeight * 4
+                                   aWidth = fromIntegral $ imageWidth a
+                                   aHeight = fromIntegral $ imageHeight a
+                                   aSize = (fromIntegral $ xHeight) * 4
+                                   ie = IcoEntry {
+                                          icoWidth = fromIntegral $ xWidth,
+                                          icoHeight = fromIntegral $ xHeight,
+                                          icoColorCount = 0,
+                                          icoPlanes = 1,
+                                          icoBitCount = 32,
+                                          icoSize = sizeofBmpInfo + (fromIntegral xSize) + (fromIntegral aSize),
+                                          icoOffset = (fromIntegral $ off) + sizeofIcoEntry
+                                        }
+                                   bih = BmpInfoHeader {
+                                          size = sizeofBmpInfo,
+                                          width = fromIntegral $ xWidth,
+                                          height = fromIntegral $ (xHeight + aHeight),
+                                          planes = 1,
+                                          bitPerPixel = 32,
+                                          bitmapCompression = 0,
+                                          byteImageSize = fromIntegral $ xSize,
+                                          xResolution = 0,
+                                          yResolution = 0,
+                                          colorCount = 0,
+                                          importantColours = 0
+                                       }
+                               in (ie, bih):(getHeaders imgs (off + (toInteger sizeofIcoEntry) + (toInteger sizeofBmpInfo) + xSize + aSize))
 
 encodeIco :: IcoFile -> BL.ByteString
-encodeIco (IcoFile h es bs) = runPut $ put h >> (mapM_ put es) >> mapM_ encodeImgData bs
+encodeIco (Ico0 h es bs) = runPut $ put h >> (mapM_ put es) >> mapM_ encodeImgDataWithHeader bs
+encodeIco (Ico1 bs) = let
+                        ih = IcoHeader {
+                              icoType = Icon,
+                              icoCount = fromIntegral $ length bs
+                            }
+                        heads = getHeaders bs (toInteger $ sizeofIcoHeader)
+                        ies = map fst heads
+                        bihs = map snd heads
+                      in runPut $ put ih >> mapM_ put ies >> mapM_ put bihs >> mapM_ encodeImgData bs
 
 mencode = encodeIco
 
+--Some test cases
 andpixel :: Image Pixel8
 andpixel = Image 1 1 (V.singleton 0)
 
@@ -106,20 +155,30 @@ filepath = "/home/franco/ej.ico"
 square :: Image PixelRGBA8
 square = Image 2 2 (V.fromList [0,0,255,255, 0,255,0,255, 255,0,0,255, 255,255,255,255]) --blue, green, red, white
 
-ej1 :: IO ()
-ej1 = let ih        = IcoHeader {icoType = Icon, icoCount = 1}
-          eh        = [IcoEntry {icoWidth = 1, icoHeight = 1, icoColorCount = 0, icoPlanes  = 1, icoBitCount = 32, icoSize = 48, icoOffset = 22} ]
-          bh        = BmpInfoHeader {size = 40, width = 1, height = 1, planes = 1, bitPerPixel = 32, bitmapCompression = 0, byteImageSize = 4, xResolution = 0, yResolution = 0, colorCount = 0, importantColours = 0}
-          bm        = [(bh, blackpixel, andpixel)]
-          ico       = IcoFile ih eh bm
-          encoded   = mencode ico
-      in BL.writeFile filepath encoded
+ej10 :: IO ()
+ej10 = let ih        = IcoHeader {icoType = Icon, icoCount = 1}
+           eh        = [IcoEntry {icoWidth = 1, icoHeight = 1, icoColorCount = 0, icoPlanes  = 1, icoBitCount = 32, icoSize = 48, icoOffset = 22} ]
+           bh        = BmpInfoHeader {size = 40, width = 1, height = 2, planes = 1, bitPerPixel = 32, bitmapCompression = 0, byteImageSize = 4, xResolution = 0, yResolution = 0, colorCount = 0, importantColours = 0}
+           bm        = [(bh, blackpixel, andpixel)]
+           ico       = Ico0 ih eh bm
+           encoded   = mencode ico
+       in BL.writeFile filepath encoded
 
-ej2 :: IO ()
-ej2 = let ih        = IcoHeader {icoType = Icon, icoCount = 1}
-          eh        = [IcoEntry {icoWidth = 2, icoHeight = 2, icoColorCount = 0, icoPlanes  = 1, icoBitCount = 32, icoSize = 64, icoOffset = 22} ]
-          bh        = BmpInfoHeader {size = 40, width = 2, height = 4, planes = 1, bitPerPixel = 32, bitmapCompression = 0, byteImageSize = 16, xResolution = 0, yResolution = 0, colorCount = 0, importantColours = 0}
-          bm        = [(bh, square, andsquare)]
-          ico       = IcoFile ih eh bm
-          encoded   = mencode ico
-      in BL.writeFile "/home/franco/sq.ico" encoded
+ej11 :: IO ()
+ej11 = let ico = Ico1 [(whitepixel, andpixel)]
+           encoded = mencode ico
+       in BL.writeFile "/home/franco/ej2.ico" encoded
+
+ej21 :: IO ()
+ej21 = let ih        = IcoHeader {icoType = Icon, icoCount = 1}
+           eh        = [IcoEntry {icoWidth = 2, icoHeight = 2, icoColorCount = 0, icoPlanes  = 1, icoBitCount = 32, icoSize = 64, icoOffset = 22} ]
+           bh        = BmpInfoHeader {size = 40, width = 2, height = 4, planes = 1, bitPerPixel = 32, bitmapCompression = 0, byteImageSize = 16, xResolution = 0, yResolution = 0, colorCount = 0, importantColours = 0}
+           bm        = [(bh, square, andsquare)]
+           ico       = Ico0 ih eh bm
+           encoded   = mencode ico
+       in BL.writeFile "/home/franco/sq.ico" encoded
+
+ej22 :: IO ()
+ej22 = let ico = Ico1 [(square, andsquare)]
+           encoded = mencode ico
+       in BL.writeFile "/home/franco/sq2.ico" encoded
