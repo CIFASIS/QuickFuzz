@@ -14,6 +14,7 @@ import qualified Bmp
 import qualified Gif
 import qualified Pnm
 import qualified Svg
+import qualified Ico
 
 #endif
 
@@ -111,7 +112,7 @@ dispatch arg = do
             "Tga"  -> Process.main (Tga.mencode,undefined)  args b
             "Pnm"  -> Process.main (Pnm.mencode,undefined)  args b
             "Svg"  -> Process.main (Svg.mencode,Svg.mdecode)  args b
-
+            "Ico"  -> Process.main (Ico.mencode, undefined)  args b
 #endif
 
 #ifdef ARCHS
