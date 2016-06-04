@@ -27,7 +27,7 @@ parser = MainArgs
     `andBy`    optFlag 50        "size"        `Descr` "Maximum structural size of generated values"
     `andBy`    optFlag "outdir"  "outdir"      `Descr` "Directory to dump crashes"
     `andBy`    optFlag ""        "indir"       `Descr` "Directory to look for seeds"
-    `andBy`    boolFlag          "paralllel"   `Descr` "Activate parallel execution"
+    `andBy`    boolFlag          "parallel"    `Descr` "Activate parallel execution"
 
 
 cli :: IO (CmdLnInterface MainArgs)
