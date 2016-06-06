@@ -21,8 +21,9 @@ instance Show MPnmType where
    show BinaryPnm = "BPPM"
    show TextPnm = "TPPM"
 
-type MPnmImage  = (MPnmType,Integer,Integer, [(Word8,Word8,Word8)])
-$(deriveArbitrary ''MPnmType)
+type MPnmImage  = (MPnmType,Integer,Integer,[(Word8,Word8,Word8)])
+
+$(devArbitrary ''MPnmImage)
 
 encodePnmImage (BinaryPnm, x, y, d) = BPPM.stringPPM (x,y) d
 encodePnmImage (TextPnm, x, y, d) = BPPM.stringPPM (x,y) d
