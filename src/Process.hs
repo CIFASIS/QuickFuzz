@@ -79,7 +79,7 @@ process_custom gen (mencode,mdecode) par filename cmd prop maxSuccess maxSize ou
             (prog, args) = (Prelude.head spl, Prelude.tail spl)
             qcconf = stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } in
         createDirectoryIfMissing True outdir >>
-        quickCheckWithResult qcconf (noShrinking $ forAll gen $ (str2prop prop) filename (prog,args) mencode outdir)
+        quickCheckWithResult qcconf (forAll gen $ (str2prop prop) filename (prog,args) mencode outdir)
 
 
 process :: (Mutation a, Show a, Arbitrary a)
