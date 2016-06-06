@@ -7,7 +7,7 @@ import Test.QuickCheck.Monadic (assert, monadicIO, run)
 
 import qualified Parallel as P
 
-import Control.Exception
+import Control.Exception (catch)
 import Control.Monad
 
 import qualified Data.ByteString.Lazy as L
@@ -51,6 +51,38 @@ getFileSize path = do
 
 --quickhandler x = Nothing
 
+type Cmd = (FilePath,[String])
+
+has_failed :: ExitCode -> Bool
+has_failed (ExitFailure n) =
+    (n < 0 || n > 128) && n /= 143
+has_failed ExitSuccess = False
+
+write :: L.ByteString -> FilePath -> IO ()
+write x filename =  Control.Exception.catch (L.writeFile filename x) handler
+
+exec :: Cmd -> IO ExitCode
+exec (prog, args) = rawSystem prog args
+
+save filename outdir = 
+  do 
+     seed <- (randomIO :: IO Int)
+     copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
+ 
+report value filename outdir =
+  do 
+     seed <- (randomIO :: IO Int)
+     LC8.writeFile (outdir ++ "/" ++ show seed ++ "." ++ filename ++ ".val") (LC8.pack (show value))
+     copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
+    
+freport value orifilename filename outdir =
+  do 
+     seed <- (randomIO :: IO Int)
+     LC8.writeFile (outdir ++ "/" ++ show seed ++ "." ++ filename ++ ".val") (LC8.pack (show value))
+     copyFile orifilename (outdir ++ "/" ++ show seed ++ "." ++ filename ++ ".ori")
+     copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
+
+{-
 genprop filename prog args encode outdir x = 
          monadicIO $ do
          seed <- run (randomIO :: IO Int)
@@ -88,6 +120,7 @@ checkprop filename prog args encode outdir x =
                       )
                   else Test.QuickCheck.Monadic.assert True
                )
+
 
 call_honggfuzz filename exprog args seed outdir = 
    rawSystem "honggfuzz" (["-q", "-v", "-n", "2", "-N", "5", "-r", "0.00001", "-t","60", "-f", filename,  "-W", outdir, "--", exprog] ++ args)
@@ -209,35 +242,94 @@ mutprop filename prog args encode outdir maxsize vals =
          --)
 
 
+-}
 
+exec_honggfuzz filename (prog,args) seed outdir = 
+   rawSystem "honggfuzz" (["-q", "-v", "-n", "2", "-N", "5", "-r", "0.00001", "-t","60", "-f", filename,  "-W", outdir, "--", prog] ++ args)
 
-
-execprop filename prog args encode outdir x = 
+prop_HonggfuzzExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+prop_HonggfuzzExec filename pcmd encode outdir x = 
          noShrinking $ monadicIO $ do
-         --run $ Prelude.putStrLn (show x)
-         run $  Control.Exception.catch (L.writeFile filename (encode x)) handler
+         run $ write (encode x) filename
          size <- run $ getFileSize filename
          if size == 0 
-            then Test.QuickCheck.Monadic.assert True 
+            then assert True
          else (
            do 
-           seed <- run (randomIO :: IO Int)
-           --run $ system $ "/usr/bin/zzuf -r 0.004:0.000001 -s" ++ (show (seed `mod` 10024))++":"++(show (seed `mod` 10024 + 1)) ++ "<" ++ filename ++ " > " ++ filename ++ ".fuzzed"
-           ret <- run $ rawSystem prog args
-           --run $ putStrLn (show ret)
-           case ret of
-              ExitFailure x -> (
-                                
-                                if ((x < 0 || x > 128) && x /= 143) then
-                                 do
-                                   run $ copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
-                                   Test.QuickCheck.Monadic.assert True
-                                 else
-                                   Test.QuickCheck.Monadic.assert True
-                )
-              _             -> Test.QuickCheck.Monadic.assert True
+             ret <- run $ exec_honggfuzz filename pcmd undefined outdir
+             assert True
+             )
+         
+
+exec_zzuf infile outfile = 
+  system $ "zzuf  -r 0.004:0.000001 -s" ++ show seed ++ " < " ++ infile ++ " > " ++ outfile
+    where seed = unsafePerformIO (randomIO :: IO Int)
+
+prop_ZzufExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+prop_ZzufExec filename pcmd encode outdir x = 
+         noShrinking $ monadicIO $ do
+         let tmp_filename = ".qf." ++ filename
+
+         run $ write (encode x) tmp_filename
+         run $ exec_zzuf tmp_filename filename
+         ret <- run $ exec pcmd
+         case not (has_failed ret) of
+           False -> (do 
+                        run $ freport x tmp_filename filename outdir
+                        assert False
+               )
+           _     -> assert True
+           
+
+exec_radamsa infile outfile =
+ rawSystem "radamsa" [infile, "-o", outfile]
+
+prop_RadamsaExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+prop_RadamsaExec filename pcmd encode outdir x = 
+         noShrinking $ monadicIO $ do
+         let tmp_filename = ".qf." ++ filename
+
+         run $ write (encode x) tmp_filename
+         run $ exec_radamsa tmp_filename filename
+         ret <- run $ exec pcmd
+         case not (has_failed ret) of
+           False -> (do 
+                        run $ freport x tmp_filename filename outdir
+                        assert False
+               )
+           _     -> assert True
+           
+
+prop_Exec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+prop_Exec filename pcmd encode outdir x = 
+         noShrinking $ monadicIO $ do
+         run $ write (encode x) filename
+         size <- run $ getFileSize filename
+         if size == 0 
+            then assert True
+         else (
+           do 
+           ret <- run $ exec pcmd
+           case not (has_failed ret) of
+              False -> (do 
+                        run $ report x filename outdir
+                        assert False
+               )
+              _             -> assert True
            )
 
+prop_Gen :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+prop_Gen filename pcmd encode outdir x = 
+         noShrinking $ monadicIO $ do
+         run $ write (encode x) filename
+         size <- run $ getFileSize filename
+         if size == 0 
+            then assert True
+         else (
+           do
+           run $ save filename outdir
+           assert True
+           )
 
 #ifdef NET
 
