@@ -23,7 +23,7 @@ import qualified Ico
 import qualified Zip
 import qualified Tar
 import qualified Gzip
-import qualified Bzip
+--import qualified Bzip
 import qualified CPIO
 
 #endif
@@ -118,7 +118,7 @@ dispatch arg = do
 #ifdef ARCHS
 
             "Zip"  -> Process.main (Zip.mencode,undefined)  args b
-            "Bzip" -> Process.main (Bzip.mencode,undefined)  args b
+            --"Bzip" -> Process.main (Bzip.mencode,undefined)  args b
             "Gzip" -> Process.main (Gzip.mencode,undefined)  args b
             "Tar"  -> Process.main (Tar.mencode,undefined)  args b
             "CPIO" -> Process.main (CPIO.mencode,undefined)  args b
