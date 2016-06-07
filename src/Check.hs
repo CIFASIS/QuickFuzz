@@ -55,7 +55,7 @@ type Cmd = (FilePath,[String])
 
 has_failed :: ExitCode -> Bool
 has_failed (ExitFailure n) =
-    (n < 0 || n > 128) && n /= 143
+    (n < 0 || (n > 128 && n < 143))
 has_failed ExitSuccess = False
 
 write :: L.ByteString -> FilePath -> IO ()
