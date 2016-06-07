@@ -3,7 +3,7 @@
 module Check where
 
 import Test.QuickCheck
-import Test.QuickCheck.Monadic (assert, monadicIO, run)
+import Test.QuickCheck.Monadic (assert, monadicIO, run, PropertyM (..) )
 
 import qualified Parallel as P
 
@@ -83,20 +83,6 @@ freport value orifilename filename outdir =
      copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
 
 {-
-genprop filename prog args encode outdir x = 
-         monadicIO $ do
-         seed <- run (randomIO :: IO Int)
-         sfilename <- run $ return (outdir ++ "/" ++ show seed ++ "." ++ filename)
-         --run $ print x
-         run $ Control.Exception.catch (L.writeFile sfilename (encode x)) handler
-         size <- run $ getFileSize sfilename
-         if size == 0 
-            then (do 
-                    run $ removeFile sfilename
-                    Test.QuickCheck.Monadic.assert True)
-            else
-              Test.QuickCheck.Monadic.assert True
-
 
 checkprop filename prog args encode outdir x = 
          monadicIO $ do
@@ -120,71 +106,6 @@ checkprop filename prog args encode outdir x =
                       )
                   else Test.QuickCheck.Monadic.assert True
                )
-
-
-call_honggfuzz filename exprog args seed outdir = 
-   rawSystem "honggfuzz" (["-q", "-v", "-n", "2", "-N", "5", "-r", "0.00001", "-t","60", "-f", filename,  "-W", outdir, "--", exprog] ++ args)
-
-honggprop :: FilePath -> FilePath -> [String] -> (t -> L.ByteString) -> FilePath -> t -> Property
-honggprop filename prog args encode outdir x = 
-            noShrinking $ monadicIO $ do
-               run $ Control.Exception.catch (L.writeFile filename (encode x)) handler
-               size <- run $ getFileSize filename
-               when (size > 0) $ do
-               --   (Test.QuickCheck.Monadic.assert True) $ do
-                 ret <- run $ call_honggfuzz filename prog args undefined outdir
-                 Test.QuickCheck.Monadic.assert True
-
-
--- write_and_check filename encode x =    
-call_zzuf filename exprog args seed outdir = 
-  rawSystem "zzuf" (["-M", "-1", "-q", "-r","0.004:0.000001", "-s", show seed ++":"++ show (seed+50), "-I", filename, "-S", "-T", "5", "-j", "1", exprog] ++ args)
-
-zzufprop :: FilePath -> FilePath -> [String] -> (t -> L.ByteString) -> FilePath -> t -> Property
-zzufprop filename prog args encode outdir x = 
-            noShrinking $ monadicIO $ do
-            --run $ createDirectoryIfMissing False outdir
-            run $ Control.Exception.catch (L.writeFile filename (encode x)) handler
-            size <- run $ getFileSize filename
-            unless (size > 0) 
-              (Test.QuickCheck.Monadic.assert True)
-            seed <- run (randomIO :: IO Int)
-            ret <- run $ call_zzuf filename prog args seed outdir
-            case ret of
-              ExitFailure x ->do
-                             run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
-                             Test.QuickCheck.Monadic.assert True
-              _             -> Test.QuickCheck.Monadic.assert True
-
-
-radamprop filename prog args encode outdir x = 
-         noShrinking $ monadicIO $ do
-         let tmp_filename = ".qf." ++ filename
-         run $  Control.Exception.catch (L.writeFile tmp_filename (encode x)) handler
-         size <- run $ getFileSize tmp_filename
-         if size == 0 
-            then Test.QuickCheck.Monadic.assert True 
-         else (
-           do 
-           seed <- run (randomIO :: IO Int)
-           run $ system $ "radamsa" ++ "<" ++ tmp_filename ++ " > " ++ filename
-           ret <- run $ rawSystem prog args
-           --run $ putStrLn (show ret)
-           case ret of
-              ExitFailure x -> (
-                                
-                                if (x < 0 || x > 128) then
-                                 do 
-                                   run $ copyFile filename (outdir ++ "/" ++ filename ++ "."++ show seed)
-                                   Test.QuickCheck.Monadic.assert True
-                                 else
-                                   Test.QuickCheck.Monadic.assert True
-                )
-              _             -> Test.QuickCheck.Monadic.assert True
-           )
-
-
-
 timed_encode f x = unsafePerformIO ( 
              do r <- timeout 10000 $ evaluate $ f x
                 case r of
@@ -267,7 +188,7 @@ exec_zzuf infile outfile =
 
 prop_ZzufExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
 prop_ZzufExec filename pcmd encode outdir x = 
-         noShrinking $ monadicIO $ do
+         monadicIO $ do
          let tmp_filename = ".qf." ++ filename
 
          run $ write (encode x) tmp_filename
@@ -293,11 +214,10 @@ prop_RadamsaExec filename pcmd encode outdir x =
          run $ exec_radamsa tmp_filename filename
          ret <- run $ exec pcmd
          case not (has_failed ret) of
-           False -> (do 
+             False -> (do 
                         run $ freport x tmp_filename filename outdir
-                        assert False
-               )
-           _     -> assert True
+                        assert False)
+             _     -> (assert True) 
            
 
 prop_Exec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
