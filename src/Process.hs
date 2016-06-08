@@ -10,6 +10,7 @@ import Data.List.Split
 import Data.Maybe
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString as BS
+import ByteString
 
 --import System.FilePath
 import System.Directory hiding (listDirectory, withCurrentDirectory)
@@ -69,6 +70,19 @@ str2prop "exec" = prop_Exec
 str2prop "honggfuzz" = prop_HonggfuzzExec
 str2prop _ = prop_Exec
 
+
+reduce filename
+       (prog,args)
+       outdir 
+       r@(Failure {}) = do
+                         x <- BSL.readFile (outdir ++ "/last")
+                         r <- quickCheckResult (forAllShrink (return x) shrink $ prop_Exec filename (prog,args) id outdir)
+                         print r
+                         return r
+
+   
+reduce _ _ _ r = return r
+
 process_custom :: Show a
     => Gen a -> ((a -> BSL.ByteString),(BS.ByteString -> a)) 
     -> Bool -> FilePath -> String -> String -> Int
@@ -79,7 +93,9 @@ process_custom gen (mencode,mdecode) par filename cmd prop maxSuccess maxSize ou
             (prog, args) = (Prelude.head spl, Prelude.tail spl)
             qcconf = stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } in
         createDirectoryIfMissing True outdir >>
-        quickCheckWithResult qcconf (forAll gen $ (str2prop prop) filename (prog,args) mencode outdir)
+        do 
+           result <- quickCheckWithResult qcconf (forAll gen $ (str2prop prop) filename (prog,args) mencode outdir)
+           reduce filename (prog,args) outdir result
 
 
 process :: (Mutation a, Show a, Arbitrary a)

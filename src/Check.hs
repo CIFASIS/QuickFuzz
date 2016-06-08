@@ -81,6 +81,7 @@ freport value orifilename filename outdir =
      LC8.writeFile (outdir ++ "/" ++ show seed ++ "." ++ filename ++ ".val") (LC8.pack (show value))
      copyFile orifilename (outdir ++ "/" ++ show seed ++ "." ++ filename ++ ".ori")
      copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
+     copyFile filename (outdir ++ "/last")
 
 {-
 
@@ -222,7 +223,7 @@ prop_RadamsaExec filename pcmd encode outdir x =
 
 prop_Exec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
 prop_Exec filename pcmd encode outdir x = 
-         noShrinking $ monadicIO $ do
+         monadicIO $ do
          run $ write (encode x) filename
          size <- run $ getFileSize filename
          if size == 0 
