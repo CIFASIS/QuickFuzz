@@ -253,7 +253,7 @@ prop_Red filename pcmd encode outdir x =
          ret <- run $ exec pcmd
          case not (has_failed ret) of
               False -> (do 
-                        run $ report x filename outdir
+                        run $ rreport x filename outdir
                         assert False
                )
               _             -> assert True
