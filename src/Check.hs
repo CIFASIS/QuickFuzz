@@ -83,6 +83,12 @@ freport value orifilename filename outdir =
      copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
      copyFile filename (outdir ++ "/last")
 
+rreport value filename outdir =
+  do 
+     seed <- (randomIO :: IO Int)
+     copyFile filename (outdir ++ "/red." ++ show seed ++ "." ++ filename)
+ 
+
 {-
 
 checkprop filename prog args encode outdir x = 
@@ -238,6 +244,22 @@ prop_Exec filename pcmd encode outdir x =
                )
               _             -> assert True
            )
+
+
+prop_Red :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+prop_Red filename pcmd encode outdir x = 
+         monadicIO $ do
+         run $ write (encode x) filename
+         ret <- run $ exec pcmd
+         case not (has_failed ret) of
+              False -> (do 
+                        run $ report x filename outdir
+                        assert False
+               )
+              _             -> assert True
+         
+
+
 
 prop_Gen :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
 prop_Gen filename pcmd encode outdir x = 

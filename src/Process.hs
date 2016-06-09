@@ -76,7 +76,7 @@ reduce filename
        outdir 
        r@(Failure {}) = do
                          x <- BSL.readFile (outdir ++ "/last")
-                         r <- quickCheckResult (forAllShrink (return x) shrink $ prop_Exec filename (prog,args) id outdir)
+                         r <- quickCheckResult (forAllShrink (return x) shrink $ prop_Red filename (prog,args) id outdir)
                          print r
                          return r
 
