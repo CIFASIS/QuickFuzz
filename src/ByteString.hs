@@ -20,7 +20,8 @@ instance Arbitrary L.ByteString where
      l <- listOf (arbitrary :: Gen Word8)
      return $ L.pack l
 
-   shrink xs = (init (L.inits xs))
+   shrink xs = ys -- ++ concat (map shrink ys)
+                where ys = (tail (L.tails xs)) ++ (init (L.inits xs))
 
 instance CoArbitrary L.ByteString where
    coarbitrary x = coarbitrary $ L.unpack x
