@@ -55,7 +55,7 @@ type Cmd = (FilePath,[String])
 
 has_failed :: ExitCode -> Bool
 has_failed (ExitFailure n) =
-    (n < 0 || n > 128) && n /= 143
+    (n < 0 || (n > 128 && n < 143))
 has_failed ExitSuccess = False
 
 write :: L.ByteString -> FilePath -> IO ()
@@ -81,6 +81,13 @@ freport value orifilename filename outdir =
      LC8.writeFile (outdir ++ "/" ++ show seed ++ "." ++ filename ++ ".val") (LC8.pack (show value))
      copyFile orifilename (outdir ++ "/" ++ show seed ++ "." ++ filename ++ ".ori")
      copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
+     copyFile filename (outdir ++ "/last")
+
+rreport value filename outdir =
+  do 
+     seed <- (randomIO :: IO Int)
+     copyFile filename (outdir ++ "/red." ++ show seed ++ "." ++ filename)
+ 
 
 {-
 
@@ -222,7 +229,7 @@ prop_RadamsaExec filename pcmd encode outdir x =
 
 prop_Exec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
 prop_Exec filename pcmd encode outdir x = 
-         noShrinking $ monadicIO $ do
+         monadicIO $ do
          run $ write (encode x) filename
          size <- run $ getFileSize filename
          if size == 0 
@@ -237,6 +244,22 @@ prop_Exec filename pcmd encode outdir x =
                )
               _             -> assert True
            )
+
+
+prop_Red :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+prop_Red filename pcmd encode outdir x = 
+         monadicIO $ do
+         run $ write (encode x) filename
+         ret <- run $ exec pcmd
+         case not (has_failed ret) of
+              False -> (do 
+                        run $ rreport x filename outdir
+                        assert False
+               )
+              _             -> assert True
+         
+
+
 
 prop_Gen :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
 prop_Gen filename pcmd encode outdir x = 
