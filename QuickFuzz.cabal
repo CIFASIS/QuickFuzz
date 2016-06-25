@@ -77,7 +77,7 @@ executable QuickFuzz
       build-depends:  zlib, JuicyPixels, svg-tree, xml, AC-PPM
 
   if flag(archs)
-      build-depends:  zlib, tar, zip-archive, bzlib, base16-bytestring 
+      build-depends:  zlib, tar, zip-archive, base16-bytestring 
 
   if flag(docs)
       build-depends: pandoc-types, pandoc, data-default, hps, hcg-minus, asn1-data
