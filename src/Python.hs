@@ -11,6 +11,108 @@ import qualified Data.ByteString.Lazy.Char8 as LC8
 
 import DeriveArbitrary
 import Strings 
+import Data.Char
+import Data.Data
+
+--Possibly incomplete
+isReservedWord :: String -> Bool
+isReservedWord w = elem w rwords
+  where rwords = keywords ++ constants
+        keywords = ["and", "as", "assert", "break", "class", "continue", "def", "del", "elif", "else", "except", "exec", "finally",
+                    "for", "from", "global", "if", "import", "in", "is", "lambda", "not", "or", "pass", "print", "raise", "return",
+                    "try", "while", "with", "yield"]
+        constants = ["True", "False", "None"]
+
+--python reference 2.3, missing other_start
+isValidStart :: Char -> Bool
+isValidStart c = unicodeLetter c || c == '_'
+  where unicodeLetter c = case generalCategory c of
+                            UppercaseLetter -> True
+                            LowercaseLetter -> True
+                            TitlecaseLetter -> True
+                            ModifierLetter  -> True
+                            OtherLetter     -> True
+                            LetterNumber    -> True
+                            _               -> False
+
+--python reference 2.3, missing other_continue
+isValidContinue :: Char -> Bool
+isValidContinue c = isValidStart c || validContinue c
+  where validContinue c = case generalCategory c of
+                            NonSpacingMark       -> True
+                            SpacingCombiningMark -> True
+                            DecimalNumber        -> True
+                            ConnectorPunctuation -> True
+                            _                    -> False
+
+class Fixable a where
+  fix :: a -> Gen a
+
+instance Data a => Fixable (Module a) where
+  fix = undefined
+                          
+instance Data a => Fixable (Ident a) where
+  fix = undefined
+
+instance Data a => Fixable (Statement a) where
+  fix = undefined
+
+instance Data a => Fixable (Parameter a) where
+  fix = undefined
+
+instance Data a => Fixable (Decorator a) where
+  fix = undefined
+
+instance Data a => Fixable (Expr a) where
+  fix = undefined
+
+instance Data a => Fixable (Argument a) where
+  fix = undefined
+
+instance Data a => Fixable (Slice a) where
+  fix = undefined
+
+instance Data a => Fixable (DictMappingPair a) where
+  fix = undefined
+
+instance Data a => Fixable (YieldArg a) where
+  fix = undefined
+
+instance Data a => Fixable (ImportItem a) where
+  fix = undefined
+
+instance Data a => Fixable (FromItem a) where
+  fix = undefined
+
+instance Data a => Fixable (FromItems a) where
+  fix = undefined
+
+instance Data a => Fixable (ImportRelative a) where
+  fix = undefined
+
+instance Data a => Fixable (Handler a) where
+  fix = undefined
+
+instance Data a => Fixable (ExceptClause a) where
+  fix = undefined
+
+instance Data a => Fixable (RaiseExpr a) where
+  fix = undefined
+
+instance Data a => Fixable (Comprehension a) where
+  fix = undefined
+
+instance Data a => Fixable (ComprehensionExpr a) where
+  fix = undefined
+
+instance Data a => Fixable (CompFor a) where
+  fix = undefined
+
+instance Data a => Fixable (CompIf a) where
+  fix = undefined
+
+instance Data a => Fixable (CompIter a) where
+  fix = undefined
 
 type MPy = Module ()
 
