@@ -49,6 +49,13 @@ import qualified PS
 import qualified ASN1
 #endif
 
+#ifdef PKI
+
+import qualified ASN1
+import qualified X509
+
+#endif
+
 #ifdef NET
 
 import qualified URI
@@ -146,9 +153,16 @@ dispatch arg = do
             "Docx"  -> Process.main (Pandoc.mencode_docx,undefined)  args b
             "Odt"  -> Process.main (Pandoc.mencode_odt,undefined)  args b
             "PS"  -> Process.main (PS.mencode,undefined)  args b
-            "ASN1"  -> Process.main (ASN1.mencode,undefined)  args b
 
 #endif
+
+
+#ifdef PKI
+            "ASN1"  -> Process.main (ASN1.mencode,undefined)  args b
+            "X509"  -> Process.main (X509.mencode,undefined)  args b
+
+#endif
+
 
 #ifdef NET
 

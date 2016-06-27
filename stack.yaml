@@ -11,6 +11,8 @@ packages:
 - location: https://github.com/CIFASIS/hogg/archive/master.zip
 - location: https://github.com/CIFASIS/Juicy.Pixels/archive/master.zip
 - location: https://github.com/CIFASIS/megadeth/archive/master.zip
+- location: https://github.com/CIFASIS/certificate/archive/master.zip
+
 - '.'
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
 extra-deps:
@@ -37,7 +39,8 @@ flags:
     docs : false
     codes : false
     media : false
-  
+    pki : false
+ 
 # Extra package databases containing global packages
 extra-package-dbs: []
 
