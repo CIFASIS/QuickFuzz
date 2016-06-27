@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
+{-# LANGUAGE TemplateHaskell, FlexibleInstances, ScopedTypeVariables, IncoherentInstances#-}
 
 module Python where
 
@@ -13,6 +13,10 @@ import DeriveArbitrary
 import Strings 
 import Data.Char
 import Data.Data
+import Data.Generics.Str
+import Data.Generics.Uniplate.Data
+import Data.Generics.Uniplate.Operations
+import Control.Monad
 
 --Possibly incomplete
 isReservedWord :: String -> Bool
@@ -45,82 +49,125 @@ isValidContinue c = isValidStart c || validContinue c
                             ConnectorPunctuation -> True
                             _                    -> False
 
+--maybe add random char instead of _
+identifierFix :: String -> String
+identifierFix s = let fixStart c = if isValidStart c then c else '_'
+                      fixContinue c = if isValidContinue c then c else '_'
+                  in case s of
+                    ""      -> "_"
+                    (st:c)  -> let fixed = (fixStart st):(map fixContinue c)
+                               in if isReservedWord fixed then '_':fixed else fixed
+
+identFix :: Ident a -> Ident a
+identFix (Ident s a) = let fs = identifierFix s
+                       in Ident fs a
+
+dottedNameFix :: DottedName a -> DottedName a
+dottedNameFix xs = map identFix xs
+
+-- (>=>) :: Monad m => (a -> m b) -> (b -> m c) -> a -> m c
+
 class Fixable a where
   fix :: a -> Gen a
 
-instance Data a => Fixable (Module a) where
-  fix = undefined
+instance (Data a) => Fixable (Module a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+       >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
                           
-instance Data a => Fixable (Ident a) where
-  fix = undefined
+instance (Data a) => Fixable (Ident a) where
+  fix = return . identFix
 
-instance Data a => Fixable (Statement a) where
-  fix = undefined
+instance (Data a) => Fixable (Statement a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (Parameter a) where
-  fix = undefined
+instance (Data a) => Fixable (Parameter a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (Decorator a) where
-  fix = undefined
+instance (Data a) => Fixable (ParamTuple a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (Expr a) where
-  fix = undefined
+instance (Data a) => Fixable (Decorator a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (Argument a) where
-  fix = undefined
+instance (Data a) => Fixable (Expr a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (Slice a) where
-  fix = undefined
+instance (Data a) => Fixable (Argument a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (DictMappingPair a) where
-  fix = undefined
+instance (Data a) => Fixable (Slice a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (YieldArg a) where
-  fix = undefined
+instance (Data a) => Fixable (DictMappingPair a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (ImportItem a) where
-  fix = undefined
+instance (Data a) => Fixable (YieldArg a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (FromItem a) where
-  fix = undefined
+instance (Data a) => Fixable (ImportItem a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (FromItems a) where
-  fix = undefined
+instance (Data a) => Fixable (FromItem a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (ImportRelative a) where
-  fix = undefined
+instance (Data a) => Fixable (FromItems a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (Handler a) where
-  fix = undefined
+instance (Data a) => Fixable (ImportRelative a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (ExceptClause a) where
-  fix = undefined
+instance (Data a) => Fixable (Handler a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (RaiseExpr a) where
-  fix = undefined
+instance (Data a) => Fixable (ExceptClause a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (Comprehension a) where
-  fix = undefined
+instance (Data a) => Fixable (RaiseExpr a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (ComprehensionExpr a) where
-  fix = undefined
+instance (Data a) => Fixable (Comprehension a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (CompFor a) where
-  fix = undefined
+instance (Data a) => Fixable (ComprehensionExpr a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (CompIf a) where
-  fix = undefined
+instance (Data a) => Fixable (CompFor a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
-instance Data a => Fixable (CompIter a) where
-  fix = undefined
+instance (Data a) => Fixable (CompIf a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
+
+instance (Data a) => Fixable (CompIter a) where
+  fix = transformBiM (return . identFix :: Ident a -> Gen (Ident a))
+        >=>transformBiM (return . dottedNameFix :: DottedName a -> Gen (DottedName a))
 
 type MPy = Module ()
 
 {-$(devArbitrary ''MPy)-}
 
-instance Arbitrary annot_arpf => Arbitrary (Ident annot_arpf) where
+instance (Data a, Arbitrary a) => Arbitrary (Ident a) where
       arbitrary
-        = sized go_arvR
+        = sized go_arvR >>= fix
         where
             go_arvR n_arvS
               | (n_arvS <= 1)
@@ -130,9 +177,9 @@ instance Arbitrary annot_arpf => Arbitrary (Ident annot_arpf) where
               = oneof
                   ([Ident <$> resize n_arvS arbitrary <*> resize n_arvS arbitrary]
                    ++ [Ident <$> resize n_arvS arbitrary <*> resize n_arvS arbitrary])
-instance Arbitrary annot_arr8 => Arbitrary (Slice annot_arr8) where
+instance (Data a, Arbitrary a) => Arbitrary (Slice a) where
       arbitrary
-        = sized go_arvT
+        = sized go_arvT >>= fix
         where
             go_arvT n_arvU
               | (n_arvU <= 1)
@@ -158,7 +205,7 @@ instance Arbitrary annot_arr8 => Arbitrary (Slice annot_arr8) where
                       <*> resize n_arvU arbitrary,
                       SliceExpr <$> resize n_arvU arbitrary <*> resize n_arvU arbitrary,
                       SliceEllipsis <$> resize n_arvU arbitrary])
-instance Arbitrary annot_arrl => Arbitrary (Op annot_arrl) where
+instance (Data a, Arbitrary a) => Arbitrary (Op a) where
       arbitrary
         = sized go_arvV
         where
@@ -243,10 +290,9 @@ instance Arbitrary annot_arrl => Arbitrary (Op annot_arrl) where
                       FloorDivide <$> resize n_arvW arbitrary,
                       Invert <$> resize n_arvW arbitrary,
                       Modulo <$> resize n_arvW arbitrary])
-instance Arbitrary annot_artp =>
-             Arbitrary (ParamTuple annot_artp) where
+instance (Data a, Arbitrary a) => Arbitrary (ParamTuple a) where
       arbitrary
-        = sized go_arvX
+        = sized go_arvX >>= fix
         where
             go_arvX n_arvY
               | (n_arvY <= 1)
@@ -262,10 +308,9 @@ instance Arbitrary annot_artp =>
                       <*> resize n_arvY arbitrary,
                       ParamTuple <$> (listOf $ (resize (n_arvY `div` 10) arbitrary))
                       <*> resize n_arvY arbitrary])
-instance Arbitrary annot_arpj =>
-             Arbitrary (Parameter annot_arpj) where
+instance (Data a, Arbitrary a) => Arbitrary (Parameter a) where
       arbitrary
-        = sized go_arvZ
+        = sized go_arvZ >>= fix
         where
             go_arvZ n_arw0
               | (n_arw0 <= 1)
@@ -306,9 +351,9 @@ instance Arbitrary annot_arpj =>
                       EndPositional <$> resize n_arw0 arbitrary,
                       UnPackTuple <$> resize n_arw0 arbitrary <*> resize n_arw0 arbitrary
                       <*> resize n_arw0 arbitrary])
-instance Arbitrary annot_art6 => Arbitrary (YieldArg annot_art6) where
+instance (Data a, Arbitrary a) => Arbitrary (YieldArg a) where
       arbitrary
-        = sized go_arw1
+        = sized go_arw1 >>= fix
         where
             go_arw1 n_arw2
               | (n_arw2 <= 1)
@@ -323,9 +368,9 @@ instance Arbitrary annot_art6 => Arbitrary (YieldArg annot_art6) where
                    ++
                      [YieldFrom <$> resize n_arw2 arbitrary <*> resize n_arw2 arbitrary,
                       YieldExpr <$> resize n_arw2 arbitrary])
-instance Arbitrary annot_artk => Arbitrary (DictMappingPair annot_artk) where
+instance (Data a, Arbitrary a) => Arbitrary (DictMappingPair a) where
       arbitrary
-        = sized go_arw3
+        = sized go_arw3 >>= fix
         where
             go_arw3 n_arw4
               | (n_arw4 <= 1)
@@ -339,10 +384,9 @@ instance Arbitrary annot_artk => Arbitrary (DictMappingPair annot_artk) where
                    ++
                      [DictMappingPair <$> resize n_arw4 arbitrary
                       <*> resize n_arw4 arbitrary])
-instance Arbitrary annot_arty =>
-             Arbitrary (ComprehensionExpr annot_arty) where
+instance (Data a, Arbitrary a) => Arbitrary (ComprehensionExpr a) where
       arbitrary
-        = sized go_arw5
+        = sized go_arw5 >>= fix
         where
             go_arw5 n_arw6
               | (n_arw6 <= 1)
@@ -356,8 +400,7 @@ instance Arbitrary annot_arty =>
                    ++
                      [ComprehensionExpr <$> resize n_arw6 arbitrary,
                       ComprehensionDict <$> resize n_arw6 arbitrary])
-instance Arbitrary annot_artV =>
-             Arbitrary (CompIf annot_artV) where
+instance (Data a, Arbitrary a) => Arbitrary (CompIf a) where
       arbitrary
         = sized go_arw7
         where
@@ -373,10 +416,9 @@ instance Arbitrary annot_artV =>
                    ++
                      [CompIf <$> resize n_arw8 arbitrary <*> resize n_arw8 arbitrary
                       <*> resize n_arw8 arbitrary])
-instance Arbitrary annot_artM =>
-             Arbitrary (CompIter annot_artM) where
+instance (Data a, Arbitrary a) => Arbitrary (CompIter a) where
       arbitrary
-        = sized go_arw9
+        = sized go_arw9 >>= fix
         where
             go_arw9 n_arwa
               | (n_arwa <= 1)
@@ -390,10 +432,9 @@ instance Arbitrary annot_artM =>
                    ++
                      [IterFor <$> resize n_arwa arbitrary <*> resize n_arwa arbitrary,
                       IterIf <$> resize n_arwa arbitrary <*> resize n_arwa arbitrary])
-instance Arbitrary annot_artH =>
-             Arbitrary (CompFor annot_artH) where
+instance (Data a, Arbitrary a) => Arbitrary (CompFor a) where
       arbitrary
-        = sized go_arwb
+        = sized go_arwb >>= fix
         where
             go_arwb n_arwc
               | (n_arwc <= 1)
@@ -413,10 +454,9 @@ instance Arbitrary annot_artH =>
                       <*> resize n_arwc arbitrary
                       <*> resize n_arwc arbitrary
                       <*> resize n_arwc arbitrary])
-instance Arbitrary annot_artf =>
-             Arbitrary (Comprehension annot_artf) where
+instance (Data a, Arbitrary a) => Arbitrary (Comprehension a) where
       arbitrary
-        = sized go_arwd
+        = sized go_arwd >>= fix
         where
             go_arwd n_arwe
               | (n_arwe <= 1)
@@ -433,9 +473,9 @@ instance Arbitrary annot_artf =>
                      [Comprehension <$> resize n_arwe arbitrary
                       <*> resize n_arwe arbitrary
                       <*> resize n_arwe arbitrary])
-instance Arbitrary annot_arnc => Arbitrary (Expr annot_arnc) where
+instance (Data a, Arbitrary a) => Arbitrary (Expr a) where
       arbitrary
-        = sized go_arwf
+        = sized go_arwf >>= fix
         where
             go_arwf n_arwg
               | (n_arwg <= 1)
@@ -548,10 +588,9 @@ instance Arbitrary annot_arnc => Arbitrary (Expr annot_arnc) where
                       Starred <$> go_arwf (n_arwg - 1) <*> resize n_arwg arbitrary,
                       Paren <$> go_arwf (n_arwg - 1) <*> resize n_arwg arbitrary,
                       StringConversion <$> go_arwf (n_arwg - 1) <*> resize n_arwg arbitrary])
-instance Arbitrary annot_arpE =>
-             Arbitrary (Argument annot_arpE) where
+instance (Data a, Arbitrary a) => Arbitrary (Argument a) where
       arbitrary
-        = sized go_arwh
+        = sized go_arwh >>= fix
         where
             go_arwh n_arwi
               | (n_arwi <= 1)
@@ -580,8 +619,7 @@ instance Arbitrary annot_arpE =>
                       <*> resize n_arwi arbitrary,
                       ArgKeyword <$> resize n_arwi arbitrary <*> resize n_arwi arbitrary
                       <*> resize n_arwi arbitrary])
-instance Arbitrary annot_arpV =>
-             Arbitrary (AssignOp annot_arpV) where
+instance (Data a, Arbitrary a) => Arbitrary (AssignOp a) where
       arbitrary
         = sized go_arwj
         where
@@ -627,10 +665,9 @@ instance Arbitrary annot_arpV =>
                       LeftShiftAssign <$> resize n_arwk arbitrary,
                       RightShiftAssign <$> resize n_arwk arbitrary,
                       FloorDivAssign <$> resize n_arwk arbitrary])
-instance Arbitrary annot_arqI =>
-             Arbitrary (Decorator annot_arqI) where
+instance (Data a, Arbitrary a) => Arbitrary (Decorator a) where
       arbitrary
-        = sized go_arwl
+        = sized go_arwl >>= fix
         where
             go_arwl n_arwm
               | (n_arwm <= 1)
@@ -647,10 +684,9 @@ instance Arbitrary annot_arqI =>
                      [Decorator <$> resize n_arwm arbitrary
                       <*> (listOf $ (resize (n_arwm `div` 10) arbitrary))
                       <*> resize n_arwm arbitrary])
-instance Arbitrary annot_aru0 =>
-             Arbitrary (ExceptClause annot_aru0) where
+instance (Data a, Arbitrary a) => Arbitrary (ExceptClause a) where
       arbitrary
-        = sized go_arwn
+        = sized go_arwn >>= fix
         where
             go_arwn n_arwo
               | (n_arwo <= 1)
@@ -664,10 +700,9 @@ instance Arbitrary annot_aru0 =>
                    ++
                      [ExceptClause <$> resize n_arwo arbitrary
                       <*> resize n_arwo arbitrary])
-instance Arbitrary annot_arr3 =>
-             Arbitrary (FromItem annot_arr3) where
+instance (Data a, Arbitrary a) => Arbitrary (FromItem a) where
       arbitrary
-        = sized go_arwp
+        = sized go_arwp >>= fix
         where
             go_arwp n_arwq
               | (n_arwq <= 1)
@@ -681,10 +716,9 @@ instance Arbitrary annot_arr3 =>
                    ++
                      [FromItem <$> resize n_arwq arbitrary <*> resize n_arwq arbitrary
                       <*> resize n_arwq arbitrary])
-instance Arbitrary annot_arn3 =>
-             Arbitrary (FromItems annot_arn3) where
+instance (Data a, Arbitrary a) => Arbitrary (FromItems a) where
       arbitrary
-        = sized go_arwr
+        = sized go_arwr >>= fix
         where
             go_arwr n_arws
               | (n_arws <= 1)
@@ -701,10 +735,9 @@ instance Arbitrary annot_arn3 =>
                      [ImportEverything <$> resize n_arws arbitrary,
                       FromItems <$> (listOf $ (resize (n_arws `div` 10) arbitrary))
                       <*> resize n_arws arbitrary])
-instance Arbitrary annot_armT =>
-             Arbitrary (ImportItem annot_armT) where
+instance (Data a, Arbitrary a) => Arbitrary (ImportItem a) where
       arbitrary
-        = sized go_arwt
+        = sized go_arwt >>= fix
         where
             go_arwt n_arwu
               | (n_arwu <= 1)
@@ -719,10 +752,9 @@ instance Arbitrary annot_armT =>
                    ++
                      [ImportItem <$> resize n_arwu arbitrary <*> resize n_arwu arbitrary
                       <*> resize n_arwu arbitrary])
-instance Arbitrary annot_armY =>
-             Arbitrary (ImportRelative annot_armY) where
+instance (Data a, Arbitrary a) => Arbitrary (ImportRelative a) where
       arbitrary
-        = sized go_arwv
+        = sized go_arwv >>= fix
         where
             go_arwv n_arww
               | (n_arww <= 1)
@@ -739,10 +771,9 @@ instance Arbitrary annot_armY =>
                      [ImportRelative <$> resize n_arww arbitrary
                       <*> resize n_arww arbitrary
                       <*> resize n_arww arbitrary])
-instance Arbitrary annot_arqS =>
-             Arbitrary (RaiseExpr annot_arqS) where
+instance (Data a, Arbitrary a) => Arbitrary (RaiseExpr a) where
       arbitrary
-        = sized go_arwx
+        = sized go_arwx >>= fix
         where
             go_arwx n_arwy
               | (n_arwy <= 1)
@@ -756,10 +787,9 @@ instance Arbitrary annot_arqS =>
                    ++
                      [RaiseV3 <$> resize n_arwy arbitrary,
                       RaiseV2 <$> resize n_arwy arbitrary])
-instance Arbitrary annot_arlk =>
-             Arbitrary (Statement annot_arlk) where
+instance (Data a, Arbitrary a) => Arbitrary (Statement a) where
       arbitrary
-        = sized go_arwz
+        = sized go_arwz >>= fix
         where
             go_arwz n_arwA
               | (n_arwA <= 1)
@@ -947,10 +977,9 @@ instance Arbitrary annot_arlk =>
                       <*> resize n_arwA arbitrary,
                       Exec <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary
                       <*> resize n_arwA arbitrary])
-instance Arbitrary annot_arqN =>
-             Arbitrary (Handler annot_arqN) where
+instance (Data a, Arbitrary a) => Arbitrary (Handler a) where
       arbitrary
-        = sized go_arwB
+        = sized go_arwB >>= fix
         where
             go_arwB n_arwC
               | (n_arwC <= 1)
@@ -964,10 +993,9 @@ instance Arbitrary annot_arqN =>
                    ++
                      [Handler <$> resize n_arwC arbitrary <*> resize n_arwC arbitrary
                       <*> resize n_arwC arbitrary])
-instance Arbitrary annot_arbb =>
-             Arbitrary (Module annot_arbb) where
+instance (Data a, Arbitrary a) => Arbitrary (Module a) where
       arbitrary
-        = sized go_arwD
+        = sized go_arwD >>= fix
         where
             go_arwD n_arwE
               | (n_arwE <= 1)
