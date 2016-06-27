@@ -24,16 +24,15 @@ type MPS  = (String, Paper,[Image])
 instance Arbitrary String where
    arbitrary = mgenName
 
+--instance Arbitrary a => Arbitrary (Pt a) where
+--   arbitrary = do 
+--     (x,y) <- arbitrary
+--     return $ Pt x y
 
-instance Arbitrary a => Arbitrary (Pt a) where
-   arbitrary = do 
-     (x,y) <- arbitrary
-     return $ Pt x y
-
-instance Arbitrary a => Arbitrary (Matrix a) where
-   arbitrary = do 
-     (n1,n2,n3,n4,n5,n6) <- arbitrary
-     return $ Matrix n1 n2 n3 n4 n5 n6
+--instance Arbitrary a => Arbitrary (Matrix a) where
+--   arbitrary = do 
+--     (n1,n2,n3,n4,n5,n6) <- arbitrary
+--     return $ Matrix n1 n2 n3 n4 n5 n6
 
 $(devArbitrary ''MPS)
    
