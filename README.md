@@ -33,7 +33,7 @@ activation flags. Currently we have 5 flags:
 We **recommend** and stimulate the use (and abuse) of
 [Stack](www.haskellstack.org).
     
-    $ stack install --flags Quickfuzz:imgs
+    $ stack install --flag QuickFuzz:imgs
 
 ###  Manual Compilation
 
