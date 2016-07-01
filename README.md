@@ -21,7 +21,11 @@ There is more information in its [website](http://QuickFuzz.org/).
 
 ### Stack
 
-We **support** [Stack](www.haskellstack.org) to compile and install QuickFuzz. Before starting with it, make sure you have libgmp-dev installed otherwise ghc will fail to compile. After [installing stack](http://docs.haskellstack.org/en/stable/README/#how-to-install), you should:
+We **support** [Stack](www.haskellstack.org) to compile and install QuickFuzz. Before starting with it, make sure you have libgmp-dev installed otherwise ghc will fail to compile. Also, zlib.h is required to compile QuickFuzz (some packages required it). For instance, in Ubuntu/Debian:
+
+    # apt-get install zlib1g-dev libgmp-dev
+
+After [installing stack](http://docs.haskellstack.org/en/stable/README/#how-to-install), you should:
 
     $ git clone https://github.com/CIFASIS/QuickFuzz
     $ stack setup
