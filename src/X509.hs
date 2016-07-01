@@ -3,8 +3,11 @@
 module X509 where
 
 import Test.QuickCheck
+--import Test.QuickCheck.Instances
 import DeriveArbitrary
 import Data.Certificate.X509
+
+import Time
 
 --import qualified Data.ByteString.Lazy.Char8 as LC8
 import qualified Data.ByteString.Lazy as L
