@@ -11,7 +11,7 @@ There is more information in its [website](http://QuickFuzz.org/).
 
 ## Students
 
-* Franco Constantini
+* Franco Costantini
 
 ## Former Members
 
@@ -30,7 +30,7 @@ After [installing stack](http://docs.haskellstack.org/en/stable/README/#how-to-i
     $ git clone https://github.com/CIFASIS/QuickFuzz
     $ stack setup
     
-Because *QuickFuzz* generate a lot of dependencies that may not be necessary to test an specific category of files, we slitted the project with different activation flags. Currently we have 5 flags:
+Because *QuickFuzz* generate a lot of dependencies that may not be necessary to test an specific category of files, we slitted the project with different activation flags. Currently we have 6 flags:
     
 * imgs
 * archs
