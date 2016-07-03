@@ -13,20 +13,19 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 import Data.DeriveTH
 import DeriveArbitrary
 
+import Megadeth.DeriveShow
+
 import Vector
 import ByteString
 import Strings
 
-data MHtml = MHtml [Content ()] deriving Show
+data MHtml = MHtml [Content ()]
 
+$(devShow ''MHtml)
 $(devArbitrary ''MHtml)
--- $(devIntGen ''MHtml)
 
 instance Arbitrary String where
    arbitrary = mgenName
-
---mgen :: [Int] -> Gen MHtml 
---mgen = customGen_Html_MHtml
 
 mencode :: MHtml -> L8.ByteString
 mencode (MHtml x) = L8.pack $ render $ htmlprint x

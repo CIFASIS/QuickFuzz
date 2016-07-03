@@ -45,8 +45,15 @@ import qualified Regex
 #ifdef DOCS
 
 import qualified Pandoc
---import qualified PS
+import qualified PS
 import qualified ASN1
+#endif
+
+#ifdef PKI
+
+import qualified ASN1
+import qualified X509
+
 #endif
 
 #ifdef NET
@@ -145,10 +152,17 @@ dispatch arg = do
             "Rtf"  -> Process.main (Pandoc.mencode_rtf,undefined)  args b
             "Docx"  -> Process.main (Pandoc.mencode_docx,undefined)  args b
             "Odt"  -> Process.main (Pandoc.mencode_odt,undefined)  args b
-            --"PS"  -> Process.main (PS.mencode,undefined)  args b
-            "ASN1"  -> Process.main (ASN1.mencode,undefined)  args b
+            "PS"  -> Process.main (PS.mencode,undefined)  args b
 
 #endif
+
+
+#ifdef PKI
+            "ASN1"  -> Process.main (ASN1.mencode,undefined)  args b
+            "X509"  -> Process.main (X509.mencode,undefined)  args b
+
+#endif
+
 
 #ifdef NET
 

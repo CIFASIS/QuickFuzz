@@ -15,7 +15,7 @@ import ByteString
 
 type MBzipFile  = (CompressParams,L.ByteString)
 
-$(deriveArbitraryRec ''CompressParams)
+$(deriveArbitrary ''MBzipFile)
 derive makeShow ''CompressParams
 derive makeShow ''WorkFactor
 derive makeShow ''BlockSize

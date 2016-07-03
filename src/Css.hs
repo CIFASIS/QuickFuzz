@@ -25,7 +25,6 @@ import Language.Css.Build
 import Data.Monoid
 import Data.List.Split
 import Data.Char (chr)
---import qualified Data.Text as T
 
 import Mutation
 import DeriveMutation
@@ -36,10 +35,9 @@ import Linear
 type MCssFile  = StyleSheet
 
 instance Arbitrary String where
-   arbitrary = genName --oneof $ Prelude.map return ["a", "b", "c", "d", "e"]
+   arbitrary = mgenName
 
 $(devArbitrary ''MCssFile)
--- $(devMutationRec ''MCssFile)
 
 encodeMCssFile x = LC8.pack $ (render (pretty x)) 
 
