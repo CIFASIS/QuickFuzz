@@ -28,9 +28,10 @@ We **support** [Stack](www.haskellstack.org) to compile and install QuickFuzz. B
 After [installing stack](http://docs.haskellstack.org/en/stable/README/#how-to-install), you should:
 
     $ git clone https://github.com/CIFASIS/QuickFuzz
+    $ cd QuickFuzz
     $ stack setup
     
-Because *QuickFuzz* generate a lot of dependencies that may not be necessary to test an specific category of files, we slitted the project with different activation flags. Currently we have 6 flags:
+Because *QuickFuzz* generatse a lot of dependencies that may not be necessary to test an specific category of files, we modularized the project with different activation flags. Currently we have 6 flags:
     
 * imgs
 * archs
