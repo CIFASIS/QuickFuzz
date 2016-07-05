@@ -46,7 +46,7 @@ import qualified Regex
 
 import qualified Pandoc
 import qualified PS
-import qualified ASN1
+import qualified ICal
 #endif
 
 #ifdef PKI
@@ -153,6 +153,7 @@ dispatch arg = do
             "Docx"  -> Process.main (Pandoc.mencode_docx,undefined)  args b
             "Odt"  -> Process.main (Pandoc.mencode_odt,undefined)  args b
             "PS"  -> Process.main (PS.mencode,undefined)  args b
+            "ICal"  -> Process.main (ICal.mencode,undefined)  args b
 
 #endif
 
