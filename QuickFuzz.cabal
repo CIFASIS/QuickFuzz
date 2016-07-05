@@ -88,7 +88,7 @@ executable QuickFuzz
       build-depends:  zlib, tar, zip-archive, base16-bytestring 
 
   if flag(docs)
-      build-depends: pandoc-types, pandoc, data-default, hps, hcg-minus, iCalendar, quickcheck-instances
+      build-depends: pandoc-types, pandoc, data-default, hps, hcg-minus, iCalendar
 
   if flag(pki)
       build-depends: certificate, asn1-data, time

@@ -4,16 +4,17 @@
 module ICal where
 
 import Test.QuickCheck
-import Test.QuickCheck.Instances
+
 import DeriveArbitrary
 import Text.ICalendar.Types
 import Text.ICalendar.Printer
 import Data.Char (ord)
 
---import Time
 import qualified Data.ByteString.Lazy.Char8 as LC8
-
 import qualified Data.ByteString.Lazy.Builder as Bu
+
+import Time
+import Strings
 
 $(devArbitrary ''VCalendar)
 
