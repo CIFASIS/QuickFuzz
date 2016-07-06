@@ -41,8 +41,9 @@
 <li>Mxml (<a href="http://www.openwall.com/lists/oss-security/2016/05/09/16">CVE-2016-4570, CVE-2016-4571</a>)</li>
 <li>Cairo (<a href="http://seclists.org/oss-sec/2016/q1/676">CVE-2016-3190</a>)</li>
 <li>GraphicsMagick ( <a href="http://seclists.org/oss-sec/2016/q1/288">CVE-2015-8808</a>, <a href="http://seclists.org/oss-sec/2016/q1/297">CVE-2016-2317, CVE-2016-2318</a> )</li>
+<li>LibGD (<a href="http://seclists.org/oss-sec/2016/q2/636">CVE-2016-6132</a>)</li>
 <li>Librsvg (<a href="http://www.openwall.com/lists/oss-security/2015/12/21/5">CVE-2015-7557, CVE-2015-7558</a>, <a href="http://www.openwall.com/lists/oss-security/2016/04/28/7">CVE-2016-4348</a>)</li>
-<li>Gdk-Pixbuf (<a href="https://bugzilla.suse.com/show_bug.cgi?id=958963">CVE-2015-7552</a>,  <a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-88/">CVE-2015-4491</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/10">CVE-2015-7674</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/9">CVE-2015-7673</a>, <a href="http://seclists.org/oss-sec/2016/q2/355">CVE-2015-8875</a>)</li>
+<li>Gdk-Pixbuf (<a href="https://bugzilla.suse.com/show_bug.cgi?id=958963">CVE-2015-7552</a>,  <a href="https://www.mozilla.org/en-US/security/advisories/mfsa2015-88/">CVE-2015-4491</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/10">CVE-2015-7674</a>, <a href="http://www.openwall.com/lists/oss-security/2015/10/02/9">CVE-2015-7673</a>, <a href="http://seclists.org/oss-sec/2016/q2/355">CVE-2015-8875</a>, undisclosed)</li>
 <li>Mplayer (<a href="http://www.openwall.com/lists/oss-security/2016/04/29/7">CVE-2016-4352</a>, <a href="https://lists.mplayerhq.hu/pipermail/mplayer-dev-eng/2015-December/073241.html">lots of crashes</a> <a href="http://www.openwall.com/lists/oss-security/2015/11/10/8">and more</a>)</li>
 <li>Jasper (<a href="https://bugzilla.redhat.com/show_bug.cgi?id=1254242">CVE-2015-5203</a>)</li>
 <li>Jq (<a href="http://www.openwall.com/lists/oss-security/2016/04/24/4">CVE-2016-4074</a>)</li>
@@ -59,7 +60,7 @@
 <h2>
 <a id="quick-introduction-to-quickfuzz" class="anchor" href="#quick-introduction-to-quickfuzz" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Quick introduction to QuickFuzz</h2>
 
-<p>A statically linked binary for x86_64 is available <a href="https://github.com/CIFASIS/QuickFuzz/releases/download/v0.1/QuickFuzz.x86_64">here</a>, otherwise QuickFuzz can be <a href="https://github.com/CIFASIS/QuickFuzz#instalation">easy compiled</a>. To generate corrupted gifs to test giffix using QuickFuzz and zzuf:</p>
+<p>To generate corrupted gifs to test giffix using QuickFuzz and zzuf:</p>
 
 <pre><code>$ QuickFuzz Gif "/usr/bin/giffix @@" -a zzuf -t 25 -s 10
 *** Error in `/usr/bin/giffix': double free or corruption (out): 0x0000000000b44f80 ***
@@ -144,6 +145,18 @@ zzuf[s=88548751,r=0.004:1e-06]: signal 11 (SIGSEGV)
 </table>
 
 <h2>
+<a id="downloads" class="anchor" href="#downloads" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Downloads</h2>
+
+<p>Pre-compiled and <em>upx</em> compressed binaries are available here:</p>
+
+<ul>
+<li><a href="https://github.com/CIFASIS/QuickFuzz/releases/download/v0.1/QuickFuzz.x86">Linux x86</a></li>
+<li><a href="https://github.com/CIFASIS/QuickFuzz/releases/download/v0.1/QuickFuzz.x86_64">Linux x86_64</a></li>
+</ul>
+
+<p>Otherwise QuickFuzz can be <a href="https://github.com/CIFASIS/QuickFuzz#instalation">easy compiled</a> using <a href="http://docs.haskellstack.org/en/stable/README/#how-to-install">stack</a>.</p>
+
+<h2>
 <a id="authors" class="anchor" href="#authors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors</h2>
 
 <h3>
@@ -170,7 +183,7 @@ zzuf[s=88548751,r=0.004:1e-06]: signal 11 (SIGSEGV)
 </ul>
 
 <h3>
-<a id="acknowledgement" class="anchor" href="#acknowledgement" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><strong>Acknowledgement</strong>
+<a id="acknowledgements" class="anchor" href="#acknowledgements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><strong>Acknowledgements</strong>
 </h3>
 
 <ul>
