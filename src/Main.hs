@@ -53,6 +53,7 @@ import qualified ICal
 
 import qualified ASN1
 import qualified X509
+import qualified CRL
 
 #endif
 
@@ -161,6 +162,7 @@ dispatch arg = do
 #ifdef PKI
             "ASN1"  -> Process.main (ASN1.mencode,undefined)  args b
             "X509"  -> Process.main (X509.mencode,undefined)  args b
+            "CRL"  -> Process.main (CRL.mencode,undefined)  args b
 
 #endif
 

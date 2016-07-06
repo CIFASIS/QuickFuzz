@@ -91,7 +91,7 @@ executable QuickFuzz
       build-depends: pandoc-types, pandoc, data-default, hps, hcg-minus, iCalendar
 
   if flag(pki)
-      build-depends: certificate, asn1-data, time
+      build-depends: asn1-types, asn1-encoding, x509, time
 
   if flag(net)
       build-depends: network, HTTP, dns, iproute, unbounded-delays, concurrent-extra,base16-bytestring, network-uri
