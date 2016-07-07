@@ -50,22 +50,21 @@ isValidContinue c = isValidStart c || validContinue c
                             ConnectorPunctuation -> True
                             _                    -> False
 
-{- REVIEW
+--Generation of easy to read identifiers
 start :: [Char]
 start = ['a'..'z'] ++ ['A'..'Z'] ++ ['_']
 
 cont :: [Char]
 cont = start ++ ['0'..'9']
 
-altFix :: String -> String
-altFix s = let fixStart c = if elem c start then c else unsafePerformIO $ generate (randomE start)
-               fixContinue c = if elem c cont then c else unsafePerformIO $ generate (randomE cont)
-           in case s of
-               ""      -> [unsafePerformIO $ generate (randomE start)]
-               (st:c)  -> let fixed = (fixStart st):(map fixContinue c)
-                          in if isReservedWord fixed then '_':fixed else fixed-}
+randomId :: Gen String
+randomId = do s <- elements start
+              c <- shuffle cont
+              let id = s:(take 4 c)
+                  fid = if isReservedWord id then '_':id else id
+              return fid
 
---maybe add random char instead of _
+--use this if you want an identifier to be made of any valid characters according to reference
 identifierFix :: String -> String
 identifierFix s = let fixStart c = if isValidStart c then c else '_'
                       fixContinue c = if isValidContinue c then c else '_'
@@ -78,9 +77,10 @@ type MPy = Module ()
 
 {-$(devArbitrary ''MPy)-}
 
-instance Arbitrary a => Arbitrary (Ident a) where --"fixed" instance
+instance Arbitrary a => Arbitrary (Ident a) where --easy to read instance
       arbitrary = sized go_arvR where
-            go_arvR n_arvS = Ident <$> liftM identifierFix (resize n_arvS arbitrary) <*> resize n_arvS arbitrary  
+            --go_arvR n_arvS = Ident <$> liftM identifierFix (resize n_arvS arbitrary) <*> resize n_arvS arbitrary  
+              go_arvR n_arvS = Ident <$> randomId <*> resize n_arvS arbitrary  
 instance Arbitrary a => Arbitrary (Slice a) where
       arbitrary
         = sized go_arvT where
