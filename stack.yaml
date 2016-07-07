@@ -11,8 +11,8 @@ packages:
 - location: https://github.com/CIFASIS/hogg/archive/master.zip
 - location: https://github.com/CIFASIS/Juicy.Pixels/archive/master.zip
 - location: https://github.com/CIFASIS/megadeth/archive/master.zip
-#- location: packages/certificate/
-#- location: packages/hs-certificate-a3fc4dcea49187d779934ecc50ca2ea11c778249/x509
+- location: https://github.com/CIFASIS/hs-certificate-x509/archive/master.zip
+- location: https://github.com/CIFASIS/hs-asn1-encoding/archive/master.zip
 
 - '.'
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
