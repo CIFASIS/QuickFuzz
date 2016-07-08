@@ -190,7 +190,7 @@ instance Arbitrary a => Arbitrary (Expr a) where
                    UnicodeStrings <$> (listOf $ (resize (n_arwg `div` 10) arbitrary))
                                   <*> resize n_arwg arbitrary,
                    Yield <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary,
-                   Generator <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary,
+                   {-Generator <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary,-}
                    {-ListComp <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary,-}
                    Dictionary <$> (listOf $ (resize (n_arwg `div` 10) arbitrary))
                               <*> resize n_arwg arbitrary{-,
@@ -236,7 +236,7 @@ instance Arbitrary a => Arbitrary (Expr a) where
                            (1, Tuple <$> (listOf $ (resize (n_arwg `div` 10) arbitrary)) 
                                      <*> resize n_arwg arbitrary),
                            (2, Yield <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary),
-                           (2, Generator <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary),
+                           {-(2, Generator <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary),-}
                            {-(2, ListComp <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary),-}
                            (1, List <$> (listOf $ (resize (n_arwg `div` 10) arbitrary)) 
                                     <*> resize n_arwg arbitrary),
@@ -401,7 +401,7 @@ instance Arbitrary a => Arbitrary (Handler a) where
                                      <*> resize n_arwC arbitrary
 
 ----------------------------------------------
-----------Manually set up variables-----------
+----------Manually set up names-----------
 ----------------------------------------------
 
 data CustomID = IdVar | IdFunc | IdParam | IdClass | Other deriving (Show)
@@ -456,11 +456,11 @@ arbPTuple = sized aux where
                                        (1, ParamTuple <$> (listOf $ (resize (n `div` 10) arbitrary))
                                                       <*> resize n arbitrary)]-}
 
--- for now just normal parameters (could be Nothing annotation)
+-- for now just normal parameters (without default or annotation)
 arbParam :: Arbitrary a => Gen (Parameter a)
 arbParam = sized aux where
-                  aux n = Param <$> resize n (custToGen IdParam) <*> (resize n $ arbMaybe arbExpr)
-                                <*> (resize n $ arbMaybe arbExpr) <*> resize n arbitrary
+                  aux n = Param <$> resize n (custToGen IdParam) <*> (return Nothing)
+                                <*> (return Nothing) <*> resize n arbitrary
 
 arbYield :: Arbitrary a => Gen (YieldArg a)
 arbYield = sized aux where
@@ -497,18 +497,15 @@ arbComp = sized aux where
             aux n = Comprehension <$> (resize n arbCompExp) <*> (resize n arbCompFor)
                                   <*> resize n arbitrary
 
---corresponding literal and number, maybe using show?
+      
+--literal now shows number, needs fix to display the correct one
 arbExpr :: Arbitrary a => Gen(Expr a) 
 arbExpr = sized aux where
             aux n | (n <= 1) = oneof [Var <$> (resize n $ (custToGen IdVar)) <*> resize n arbitrary,
-                                      Int <$> resize n arbitrary <*> resize n arbitrary
-                                          <*> resize n arbitrary,
-                                      LongInt <$> resize n arbitrary <*> resize n arbitrary
-                                          <*> resize n arbitrary,
-                                      Float <$> resize n arbitrary <*> resize n arbitrary
-                                            <*> resize n arbitrary,
-                                      Imaginary <$> resize n arbitrary <*> resize n arbitrary
-                                                <*> resize n arbitrary,
+                                      Int <$> int <*> intLit <*> resize n arbitrary,
+                                      LongInt <$> int <*> intLit <*> resize n arbitrary,
+                                      Float <$> float <*> flLit <*> resize n arbitrary,
+                                      Imaginary <$> float <*> flLit <*> resize n arbitrary,
                                       Bool <$> resize n arbitrary <*> resize n arbitrary,
                                       None <$> resize n arbitrary,
                                       Ellipsis <$> resize n arbitrary,
@@ -519,7 +516,7 @@ arbExpr = sized aux where
                                       UnicodeStrings <$> (listOf $ (resize (n `div` 10) arbitrary))
                                                      <*> resize n arbitrary,
                                       Yield <$> (resize n $ arbMaybe (arbYield)) <*> resize n arbitrary,
-                                      Generator <$> (resize n arbComp) <*> resize n arbitrary,
+                                      {-Generator <$> (resize n arbComp) <*> resize n arbitrary,-}
                                       {-ListComp <$> (resize n arbComp) <*> resize n arbitrary,-}
                                       Dictionary <$> (listOf $ (resize (n `div` 10) arbDMP))
                                                  <*> resize n arbitrary{-,
@@ -527,14 +524,10 @@ arbExpr = sized aux where
                                       SetComp <$> (resize n arbComp) <*> resize n arbitrary-}]
               | otherwise
               = frequency [(2, Var <$> (resize n $ (custToGen IdVar)) <*> resize n arbitrary),
-                           (2, Int <$> resize n arbitrary <*> resize n arbitrary
-                                   <*> resize n arbitrary),
-                           (2, LongInt <$> resize n arbitrary <*> resize n arbitrary
-                                       <*> resize n arbitrary),
-                           (2, Float <$> resize n arbitrary <*> resize n arbitrary
-                                     <*> resize n arbitrary),
-                           (2, Imaginary <$> resize n arbitrary <*> resize n arbitrary
-                                         <*> resize n arbitrary),
+                           (2, Int <$> int <*> intLit <*> resize n arbitrary),
+                           (2, LongInt <$> int <*> intLit <*> resize n arbitrary),
+                           (2, Float <$> float <*> flLit <*> resize n arbitrary),
+                           (2, Imaginary <$> float <*> flLit <*> resize n arbitrary),
                            (2, Bool <$> resize n arbitrary <*> resize n arbitrary),
                            (2, None <$> resize n arbitrary),
                            (2, Ellipsis <$> resize n arbitrary),
@@ -565,7 +558,7 @@ arbExpr = sized aux where
                            (1, Tuple <$> (listOf $ (resize (n `div` 10) arbExpr)) 
                                      <*> resize n arbitrary),
                            (2, Yield <$> (resize n $ arbMaybe (arbYield)) <*> resize n arbitrary),
-                           (2, Generator <$> (resize n arbComp) <*> resize n arbitrary),
+                           {-(2, Generator <$> (resize n arbComp) <*> resize n arbitrary),-}
                            {-ListComp <$> (resize n arbComp) <*> resize n arbitrary,-}
                            (1, List <$> (listOf $ (resize (n `div` 10) arbExpr)) 
                                     <*> resize n arbitrary),
@@ -578,6 +571,14 @@ arbExpr = sized aux where
                            (1, Starred <$> aux (n - 1) <*> resize n arbitrary), 
                            (1, Paren <$> aux (n - 1) <*> resize n arbitrary),
                            (1, StringConversion <$> aux (n - 1) <*> resize n arbitrary)]
+                where  
+                  int = (resize n (arbitrary :: Gen Integer)) 
+                  intLit = do i <- int
+                              return (show i)   
+                  float = (resize n (arbitrary :: Gen Double)) 
+                  flLit = do f <- float
+                             return (show f) 
+
 
 arbArg :: Arbitrary a => Gen (Argument a)
 arbArg = sized aux where
@@ -626,6 +627,14 @@ arbRaise= sized aux where
                   aux n = oneof [RaiseV3 <$> (resize n $ arbMaybe (liftM2 (,) arbExpr (arbMaybe arbExpr))),
                                  RaiseV2 <$> (resize n $ arbMaybe (liftM2 (,) arbExpr (arbMaybe (liftM2 (,) arbExpr (arbMaybe arbExpr)))))]
 
+oneVar :: Arbitrary a => Gen (Expr a)
+oneVar = sized aux where
+                 aux n = Var <$> (resize n $ (custToGen IdVar)) <*> resize n arbitrary
+
+lOfOneVar :: Arbitrary a => Gen [(Expr a)]
+lOfOneVar = do ov <- oneVar
+               return [ov]
+
 arbStmt :: Arbitrary a => Gen (Statement a)
 arbStmt = sized aux where
                  aux n | (n <= 1) = oneof [Import <$> (listOf $ (resize (n `div` 10) arbImpIt))
@@ -634,7 +643,7 @@ arbStmt = sized aux where
                                                       <*> resize n arbitrary,
                                            While <$> (resize n arbExpr) <*> (listOf (resize (n `div` 10) arbStmt))
                                                  <*> (listOf (resize (n `div` 10) arbStmt)) <*> resize n arbitrary,
-                                           For <$> (listOf $ (resize (n `div` 10) arbExpr))
+                                           For <$> lOfOneVar--(listOf $ (resize (n `div` 10) arbExpr))
                                                <*> (resize n arbExpr) <*> (listOf (resize (n `div` 10) arbStmt))
                                                <*> (listOf (resize (n `div` 10) arbStmt)) <*> resize n arbitrary,
                                            Fun <$> resize n (custToGen IdFunc) <*> (listOf $ (resize (n `div` 10) arbParam))
@@ -645,10 +654,10 @@ arbStmt = sized aux where
                                                  <*> (listOf (resize (n `div` 10) arbStmt)) <*> resize n arbitrary,
                                            Conditional <$> (listOf $ (resize (n `div` 10) $ liftM2 (,) arbExpr (listOf (resize (n `div` 10) arbStmt))))
                                                        <*> resize n arbitrary <*> resize n arbitrary,
-                                           Assign <$> (listOf $ (resize (n `div` 10) arbExpr)) --restrict manually to vars?
+                                           Assign <$> lOfOneVar--(listOf $ (resize (n `div` 10) arbExpr))
                                                   <*> (resize n arbExpr) <*> resize n arbitrary,
-                                           AugmentedAssign <$> (resize n arbExpr) <*> resize n arbitrary --idem
-                                                           <*> (resize n arbExpr) <*> resize n arbitrary,
+                                           AugmentedAssign <$> oneVar --(resize n arbExpr)
+                                                           <*> resize n arbitrary <*> (resize n arbExpr) <*> resize n arbitrary,
                                            Return <$> (resize n $ arbMaybe arbExpr) <*> resize n arbitrary,
                                            Try <$> (listOf (resize (n `div` 10) arbStmt)) <*> (listOf $ (resize (n `div` 10) arbHand))
                                                <*> (listOf (resize (n `div` 10) arbStmt)) <*> (listOf (resize (n `div` 10) arbStmt))
@@ -678,7 +687,7 @@ arbStmt = sized aux where
                                                               <*> resize n arbitrary),
                                                (2, While <$> (resize n arbExpr) <*> (listOf (resize (n `div` 10) arbStmt))
                                                          <*> (listOf (resize (n `div` 10) arbStmt)) <*> resize n arbitrary),
-                                               (2, For <$> (listOf $ (resize (n `div` 10) arbExpr))
+                                               (2, For <$> lOfOneVar --(listOf $ (resize (n `div` 10) arbExpr))
                                                        <*> (resize n arbExpr) <*> (listOf (resize (n `div` 10) arbStmt))
                                                        <*> (listOf (resize (n `div` 10) arbStmt)) <*> resize n arbitrary),
                                                (2, Fun <$> resize n (custToGen IdFunc) <*> (listOf $ (resize (n `div` 10) arbParam))
@@ -689,10 +698,10 @@ arbStmt = sized aux where
                                                          <*> (listOf (resize (n `div` 10) arbStmt)) <*> resize n arbitrary),
                                                (2, Conditional <$> (listOf $ (resize (n `div` 10) $ liftM2 (,) arbExpr (listOf (resize (n `div` 10) arbStmt))))
                                                                <*> resize n arbitrary <*> resize n arbitrary),
-                                               (2, Assign <$> (listOf $ (resize (n `div` 10) arbExpr)) --restrict manually to vars?
+                                               (2, Assign <$> lOfOneVar--(listOf $ (resize (n `div` 10) arbExpr))
                                                           <*> (resize n arbExpr) <*> resize n arbitrary),
-                                               (2, AugmentedAssign <$> (resize n arbExpr) <*> resize n arbitrary --idem
-                                                                   <*> (resize n arbExpr) <*> resize n arbitrary),
+                                               (2, AugmentedAssign <$> oneVar--(resize n arbExpr)
+                                                                   <*> resize n arbitrary <*> (resize n arbExpr) <*> resize n arbitrary),
                                                (1, Decorated <$> (listOf $ (resize (n `div` 10) arbDecor))
                                                              <*> aux (n - 1) <*> resize n arbitrary),
                                                (2, Return <$> (resize n $ arbMaybe arbExpr) <*> resize n arbitrary),
