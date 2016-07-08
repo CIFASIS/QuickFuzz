@@ -8,11 +8,11 @@ import qualified Data.Text.Lazy as TL
 
 -- Text
 instance Arbitrary TS.Text where
-    arbitrary = TS.pack <$> arbitrary
+    arbitrary = TS.pack <$> mgenName -- arbitrary
     shrink xs = TS.pack <$> shrink (TS.unpack xs)
 
 instance Arbitrary TL.Text where
-    arbitrary = TL.pack <$> arbitrary
+    arbitrary = TL.pack <$> mgenName --arbitrary
     shrink xs = TL.pack <$> shrink (TL.unpack xs)
 
 instance CoArbitrary TS.Text where
