@@ -59,9 +59,9 @@ import qualified CRL
 
 #ifdef NET
 
-import qualified URI
-import qualified Http
---import qualified Dns
+--import qualified URI
+--import qualified Http
+import qualified Dns
 
 #endif
 
@@ -169,12 +169,14 @@ dispatch arg = do
 
 #ifdef NET
 
-            "HttpReq" -> Process.netmain Http.mencode_req args b
-            "HttpRes" -> Process.netmain Http.mencode_res args b
+            --"HttpReq" -> Process.netmain Http.mencode_req args b
+            --"HttpRes" -> Process.netmain Http.mencode_res args b
 
             --"Tftp" -> Tftp.main args b
-            --"Dns" -> Process.netmain Dns.mencode args b
-            "URI"   -> Process.main (URI.mencode,undefined,undefined) args b
+            "Dns"  -> Process.main (Dns.mencode,undefined)  args b
+                  -- -> Process.netmain Dns.mencode args b
+
+            --"URI"   -> Process.main (URI.mencode,undefined,undefined) args b
 #endif
 
 #ifdef MEDIA

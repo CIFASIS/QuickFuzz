@@ -34,6 +34,7 @@ extra-deps:
 - asn1-data-0.7.2
 - iCalendar-0.4.0.3
 - mime-0.4.0.2
+- concurrent-extra-0.7.0.10
 
 # Override default flag values for local packages and extra-deps
 flags:
