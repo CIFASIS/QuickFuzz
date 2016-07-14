@@ -13,11 +13,11 @@ import DeriveArbitrary
 import Strings 
 import Data.Char
 import Data.Data
-import Data.Generics.Str
-import Data.Generics.Uniplate.Data
-import Data.Generics.Uniplate.Operations
+import Data.List
 import Control.Monad
-import System.IO.Unsafe
+import Data.Bifunctor
+import Control.Monad.Trans
+import Control.Monad.Trans.State
 
 --Possibly incomplete
 isReservedWord :: String -> Bool
@@ -414,9 +414,9 @@ paramList = do rl <- sublistOf params
 -}
 
 --Change these lists to set the names you want
-vars = ["Var0", "Var1", "Var2", "Var3"]
-fnames = ["Function0", "Function1", "Function2"]
-params = ["Arg0", "Arg1", "Arg2", "Arg3", "Arg4"]
+vars = ["Var0", "Var1", "Var2", "Var3", "Var4", "Var5", "Var6"]
+fnames = ["Function0", "Function1", "Function2", "Function 3"]
+params = ["Arg0", "Arg1", "Arg2", "Arg3", "Arg4", "Arg5"]
 cnames = ["Class1", "Class2", "Class3"]
 
 custToGen :: (Arbitrary a) => CustomID -> Gen (Ident a)
@@ -668,7 +668,7 @@ arbStmt = sized aux where
                                            Pass <$> resize n arbitrary,
                                            Break <$> resize n arbitrary,
                                            Continue <$> resize n arbitrary,
-                                           Delete <$> (listOf $ (resize (n `div` 10) arbExpr))
+                                           Delete <$> lOfOneVar --(listOf $ (resize (n `div` 10) arbExpr))
                                                   <*> resize n arbitrary,
                                            StmtExpr <$> (resize n arbExpr) <*> resize n arbitrary,
                                            Global <$> (listOf $ (resize (n `div` 10)(custToGen IdVar))) -- global names?
@@ -714,7 +714,7 @@ arbStmt = sized aux where
                                                (2, Pass <$> resize n arbitrary),
                                                (2, Break <$> resize n arbitrary),
                                                (2, Continue <$> resize n arbitrary),
-                                               (2, Delete <$> (listOf $ (resize (n `div` 10) arbExpr))
+                                               (2, Delete <$> lOfOneVar --(listOf $ (resize (n `div` 10) arbExpr))
                                                           <*> resize n arbitrary),
                                                (2, StmtExpr <$> (resize n arbExpr) <*> resize n arbitrary),
                                                (2, Global <$> (listOf $ (resize (n `div` 10) (custToGen IdVar))) -- global names?
@@ -738,3 +738,247 @@ arbMod = sized aux where
 
 mencode :: MPy -> LC8.ByteString
 mencode x = LC8.pack $ prettyText x
+
+--Variables coherentes
+
+data StV a = StV { gvars :: [Ident a],
+                   lvars :: [[Ident a]]} deriving Show
+
+initV :: StV a
+initV = StV [] [[]]
+
+-- >>= :: VState a b -> (b -> VState a c) -> VState a c
+type VState a b = StateT (StV a) Gen b
+
+--Saco el "scope" mas interno
+popLvars :: VState a ()
+popLvars = do st <- get
+              put $ st {lvars = tail $ lvars st}  
+
+--Agrego nuevo scope
+pushLvars :: [Ident a] -> VState a ()
+pushLvars vs = do st <- get
+                  put $ st {lvars = (vs ++ (head $ lvars st)):(lvars st)}
+
+--Agrego variables al scope actual
+pushScope :: [Ident a] -> VState a ()
+pushScope vs = do st <- get
+                  put $ st {lvars = (vs ++ (head $ lvars st)):(tail $ lvars st)}
+
+--Sacar variables del scope local
+popScope :: Eq a => Ident a -> VState a ()
+popScope i = do st <- get
+                put $ st {lvars = delete i (head $ lvars st):(lvars st)}
+
+--Para Del
+delGvars :: Eq a => Ident a -> VState a ()
+delGvars i = do st <- get
+                put $ st {gvars = delete i (gvars st)} 
+
+pushGvars :: [Ident a] -> VState a ()
+pushGvars i = do st <- get
+                 put $ st {gvars = i++(gvars st)}
+
+createVar :: Arbitrary a => [Ident a] -> Gen (Expr a)
+createVar xs = do Var <$> elements xs <*> arbitrary                  
+
+--Modulo
+cModule :: (Arbitrary a, Eq a) => Module a -> Gen (Module a)
+cModule (Module stmts) = do cstmts <- evalStateT (lStmt stmts) initV
+                            return (Module cstmts)
+
+--Statements
+lStmt :: (Arbitrary a, Eq a) => [Statement a] -> VState a [Statement a]
+lStmt = mapM cStmt
+
+auxM :: Monad m => (m a, m b) -> m (a, b)
+auxM (m1,m2) = do a <- m1
+                  b <- m2
+                  return (a,b) 
+
+cStmt :: (Arbitrary a, Eq a) => Statement a -> VState a (Statement a)
+cStmt i@(Import items a) = return i
+cStmt fi@(FromImport fmod fitems a) = return fi
+cStmt (While cond body welse a) = do ccond <- cExpr cond
+                                     cbody <- lStmt body --que pasa si el body la borra pero el else la necesita?
+                                     cwelse <- lStmt welse
+                                     return (While ccond cbody cwelse a)
+cStmt (For [targ] gen body felse a) = let targ_id = var_ident targ in
+                                          do st <- get
+                                             case elem targ_id (gvars st) of --no puede ser global, hay que generar otra
+                                                True -> let vars = head $ lvars st in
+                                                          do new_targ <- lift $ createVar vars
+                                                             pushScope [var_ident new_targ]
+                                                             cgen <- cExpr gen
+                                                             cbody <- lStmt body
+                                                             cfelse <- lStmt felse
+                                                             return (For [new_targ] gen body felse a)
+                                                False -> case elem targ_id (head $ lvars st) of --si esta en las locales, bien
+                                                            True -> do cgen <- cExpr gen
+                                                                       cbody <- lStmt body --lo mismo que en while, que pasa?
+                                                                       cfelse <- lStmt felse
+                                                                       return (For [(Var targ_id a)] cgen cbody cfelse a)
+                                                            False -> do pushScope [targ_id] --la agrego al scope actual
+                                                                        cgen <- cExpr gen 
+                                                                        cbody <- lStmt body --que pasa?
+                                                                        cfelse <- lStmt felse
+                                                                        return (For [(Var targ_id a)] cgen cbody cfelse a)
+cStmt (Fun fname args annot body a) = let args_ids = map param_name args in
+                                          do pushLvars args_ids  --los argumentos van a las variables locales
+                                             cbody <- lStmt body
+                                             popLvars --saco los argumentos al salir de la funcion
+                                             return (Fun fname args annot cbody a)
+cStmt (Class cname args body a) = do st <- get
+                                     cbody <- lStmt body --guardar el estado actual?
+                                     put st
+                                     return (Class cname args cbody a)
+{-cStmt (Conditional guards celse a) = do cguards <- sequence $ auxM $ map (bimap cExpr lStmt) guards --que pasa en el medio?
+                                        ccelse <- lStmt celse    -- [(Expr, [Stmt])] --map bimap--> [(VState Expr, VState [Stmt])] --auxM--> [VState (Expr, [Stmt])] --sequence--> VState [(Expr, [Stmt])]
+                                        return (Conditional cguards ccelse a) PREGUNTAR EL TIPO-}
+cStmt (Assign [to] ev a) = let to_id = var_ident to in
+                           do st <- get
+                              case elem to_id (gvars st) of
+                                  True -> do cev <- cExpr ev
+                                             return (Assign [to] cev a)
+                                  False -> case elem to_id (head $ lvars st) of
+                                              True -> do cev <- cExpr ev
+                                                         return (Assign [to] cev a)
+                                              False -> do pushScope [to_id] --la agregamos al scope local
+                                                          cev <- cExpr ev
+                                                          return (Assign [to] cev a)
+cStmt (AugmentedAssign to op ev a) = let to_id = var_ident to in
+                                       do st <- get
+                                          case elem to_id (gvars st) of
+                                            True -> do cev <- cExpr ev
+                                                       return (AugmentedAssign to op ev a)
+                                            False -> case elem to_id (head $ lvars st) of
+                                                        True -> do cev <- cExpr ev
+                                                                   return (AugmentedAssign to op cev a)
+                                                        False -> let pool = (gvars st) ++ (head $ lvars st) in --no esta, hay que sacarla de las que tenemos
+                                                                     do v <- lift $ createVar pool
+                                                                        cev <- cExpr ev 
+                                                                        return (AugmentedAssign v op cev a)
+cStmt (Decorated decs fun a) = do st <- get
+                                  cfun <- cStmt fun --ignora decorators
+                                  put st
+                                  return (Decorated decs cfun a)
+cStmt r@(Return ret a) = case ret of
+                             Nothing -> return r
+                             Just e -> do st <- get
+                                          ce <- cExpr e
+                                          put st
+                                          return (Return (Just ce) a) --idem funcion
+cStmt (Try body exp telse fin a) = do cbody <- lStmt body
+                                      cexp <- lHand exp
+                                      ctelse <- lStmt telse
+                                      cfin <- lStmt fin
+                                      return (Try cbody cexp ctelse cfin a) --idem while
+cStmt r@(Raise expr a) = return r
+cStmt (With cont body a) = do cbody <- lStmt body --ver cont
+                              return (With cont cbody a)
+cStmt d@(Delete [expr] a) = let expr_id = var_ident expr in --asumiendo expr = Var
+                             do st <- get
+                                case elem expr_id (gvars st) of
+                                  True -> delGvars expr_id >> return d
+                                  False -> case elem expr_id (head $ lvars st) of
+                                              True -> popScope expr_id >> return d
+                                              False -> return (Pass a) --si no existe, cambiar del por pass
+cStmt (StmtExpr expr a) = do cexpr <- cExpr expr
+                             return (StmtExpr cexpr a)
+cStmt g@(Global idlist a) = pushGvars idlist >> return g
+cStmt n@(NonLocal idlist a) = return n--ver bien
+cStmt (Assert exprl a) = do st <- get
+                            cexpr <- lExpr exprl
+                            put st
+                            return (Assert cexpr a)
+cStmt (Print c exprl t a) = do st <- get
+                               cexpr <- lExpr exprl
+                               put st                          
+                               return (Print c cexpr t a)
+cStmt (Exec expr env a) = do st <- get
+                             cexpr <- cExpr expr --entornos??
+                             put st
+                             return (Exec cexpr env a) --idem funcion
+cStmt s = return s
+
+--Expresiones
+lExpr :: (Arbitrary a, Eq a) => [Expr a] -> VState a [Expr a]
+lExpr = mapM cExpr
+
+cExpr :: (Arbitrary a, Eq a) => Expr a -> VState a (Expr a)
+cExpr v@(Var id a) = do st <- get
+                        case elem id (gvars st) of
+                           True -> return v
+                           False -> case elem id (head $ lvars st) of
+                                        True -> return v
+                                        False -> let pool = (gvars st) ++ (head $ lvars st) in --no esta, hay que sacarla de las que tenemos
+                                                   do newv <- lift $ createVar pool
+                                                      return newv
+cExpr c@(Call fun args a) = return c --ver
+cExpr (Subscript subs expr a) = do csubs <- cExpr subs --revisar
+                                   cexpr <- cExpr expr
+                                   return (Subscript csubs cexpr a)
+cExpr (SlicedExpr sle sls a) = do csle <- cExpr sle --revisar
+                                  return (SlicedExpr csle sls a)
+cExpr (CondExpr true cond false a) = do ccond <- cExpr cond --no se puede asignar pero puede ser que haya que cambiar algo
+                                        ctrue <- cExpr true
+                                        cfalse <- cExpr false
+                                        return (CondExpr ccond ctrue cfalse a)
+cExpr (BinaryOp op e1 e2 a) = do ce1 <- cExpr e1
+                                 ce2 <- cExpr e2
+                                 return (BinaryOp op ce1 ce2 a) --no deberia haber cambiado nada
+cExpr (UnaryOp op e a) = do ce <- cExpr e
+                            return (UnaryOp op ce a)
+cExpr (Lambda args body a) = let ids = map param_name args in 
+                               do pushLvars ids
+                                  cbody  <- cExpr body
+                                  popLvars
+                                  return (Lambda args cbody a)
+cExpr (Tuple exprs a) = do cexprs <- lExpr exprs
+                           return (Tuple cexprs a)
+cExpr (List exprs a) = do cexprs <- lExpr exprs
+                          return (List cexprs a)
+cExpr (Set exprs a) = do cexprs <- lExpr exprs
+                         return (Set cexprs a)
+cExpr (Starred expr a) = do cexpr <- cExpr expr
+                            return (Starred cexpr a)
+cExpr (Paren expr a) = do cexpr <- cExpr expr
+                          return (Paren cexpr a)
+cExpr (StringConversion expr a) = do cexpr <- cExpr expr
+                                     return (StringConversion cexpr a)
+cExpr x = return x
+
+
+--Handler
+lHand :: (Arbitrary a, Eq a) => [Handler a] -> VState a [Handler a]
+lHand = mapM cHand
+
+cHand :: (Arbitrary a, Eq a) => Handler a -> VState a (Handler a)
+cHand (Handler cl suite a) = do st <- get
+                                ccl <- cExpCl cl
+                                csuite <- lStmt suite
+                                put st
+                                return (Handler ccl csuite a) --no deberia cambiar nada
+
+cExpCl :: (Arbitrary a, Eq a) => ExceptClause a -> VState a (ExceptClause a)
+cExpCl e@(ExceptClause cl a) = case cl of
+                                  Nothing -> return e
+                                  Just (exp, m) -> do cexp <- cExpr exp
+                                                      case m of
+                                                         Nothing -> return (ExceptClause (Just (cexp, Nothing)) a)
+                                                         Just exp2 -> do cexp2 <- cExpr exp2
+                                                                         return (ExceptClause (Just (cexp, Just cexp2)) a)
+testModule :: MPy
+testModule = Module [stmt1, stmt2, stmt3, stmt4]
+stmt1, stmt2, stmt3, stmt4 :: Statement ()
+stmt1 = Assign [Var (Ident "a" () ) () ] (Int 1 "1" () ) ()
+stmt2 = Assign [Var (Ident "b" () ) () ] (Int 2 "2" () ) ()
+stmt3 = Assign [Var (Ident "c" () ) () ] (Int 3 "3" () ) ()
+stmt4 = Assign [Var (Ident "d" () ) () ] (BinaryOp (Plus () ) (Var (Ident "x" () ) () ) (BinaryOp (Plus () ) (Var (Ident "y" () ) () ) (BinaryOp (Plus () ) (Var (Ident "z" () ) () ) (Var (Ident "x" () ) () ) () ) () ) () ) ()
+
+ej :: IO ()
+ej = let encoded = mencode testModule in
+         do LC8.writeFile "ej.py" encoded
+            newM <- generate $ cModule testModule
+            let nencoded = mencode newM
+            LC8.writeFile "nej.py" nencoded     
