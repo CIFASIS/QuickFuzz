@@ -78,327 +78,321 @@ type MPy = Module ()
 {-$(devArbitrary ''MPy)-}
 
 instance Arbitrary a => Arbitrary (Ident a) where --easy to read instance
-      arbitrary = sized go_arvR where
-            --go_arvR n_arvS = Ident <$> liftM identifierFix (resize n_arvS arbitrary) <*> resize n_arvS arbitrary  
-              go_arvR n_arvS = Ident <$> randomId <*> resize n_arvS arbitrary  
+      arbitrary = sized go where
+            --go n = Ident <$> liftM identifierFix (resize n arbitrary) <*> resize n arbitrary  
+              go n = Ident <$> randomId <*> resize n arbitrary  
 instance Arbitrary a => Arbitrary (Slice a) where
-      arbitrary
-        = sized go_arvT where
-            go_arvT n_arvU = oneof [SliceProper <$> resize n_arvU arbitrary
-                                                <*> resize n_arvU arbitrary
-                                                <*> resize n_arvU arbitrary
-                                                <*> resize n_arvU arbitrary,
-                                    SliceExpr <$> resize n_arvU arbitrary <*> resize n_arvU arbitrary,
-                                    SliceEllipsis <$> resize n_arvU arbitrary]
+      arbitrary = sized go where
+            go n = oneof [SliceProper <$> resize n arbitrary
+                                      <*> resize n arbitrary
+                                      <*> resize n arbitrary
+                                      <*> resize n arbitrary,
+                          SliceExpr <$> resize n arbitrary <*> resize n arbitrary,
+                          SliceEllipsis <$> resize n arbitrary]
 instance Arbitrary a => Arbitrary (Op a) where
-      arbitrary = sized go_arvV where
-            go_arvV n_arvW = oneof [And <$> resize n_arvW arbitrary,
-                                    Or <$> resize n_arvW arbitrary,
-                                    Not <$> resize n_arvW arbitrary,
-                                    Exponent <$> resize n_arvW arbitrary,
-                                    LessThan <$> resize n_arvW arbitrary,
-                                    GreaterThan <$> resize n_arvW arbitrary,
-                                    Equality <$> resize n_arvW arbitrary,
-                                    GreaterThanEquals <$> resize n_arvW arbitrary,
-                                    LessThanEquals <$> resize n_arvW arbitrary,
-                                    NotEquals <$> resize n_arvW arbitrary,
-                                    NotEqualsV2 <$> resize n_arvW arbitrary,
-                                    In <$> resize n_arvW arbitrary,
-                                    Is <$> resize n_arvW arbitrary,
-                                    IsNot <$> resize n_arvW arbitrary,
-                                    NotIn <$> resize n_arvW arbitrary,
-                                    BinaryOr <$> resize n_arvW arbitrary,
-                                    Xor <$> resize n_arvW arbitrary,
-                                    BinaryAnd <$> resize n_arvW arbitrary,
-                                    ShiftLeft <$> resize n_arvW arbitrary,
-                                    ShiftRight <$> resize n_arvW arbitrary,
-                                    Multiply <$> resize n_arvW arbitrary,
-                                    Plus <$> resize n_arvW arbitrary,
-                                    Minus <$> resize n_arvW arbitrary,
-                                    Divide <$> resize n_arvW arbitrary,
-                                    FloorDivide <$> resize n_arvW arbitrary,
-                                    Invert <$> resize n_arvW arbitrary,
-                                    Modulo <$> resize n_arvW arbitrary]
+      arbitrary = sized go where
+            go n = oneof [And <$> resize n arbitrary,
+                          Or <$> resize n arbitrary,
+                          Not <$> resize n arbitrary,
+                          Exponent <$> resize n arbitrary,
+                          LessThan <$> resize n arbitrary,
+                          GreaterThan <$> resize n arbitrary,
+                          Equality <$> resize n arbitrary,
+                          GreaterThanEquals <$> resize n arbitrary,
+                          LessThanEquals <$> resize n arbitrary,
+                          NotEquals <$> resize n arbitrary,
+                          NotEqualsV2 <$> resize n arbitrary,
+                          In <$> resize n arbitrary,
+                          Is <$> resize n arbitrary,
+                          IsNot <$> resize n arbitrary,
+                          NotIn <$> resize n arbitrary,
+                          BinaryOr <$> resize n arbitrary,
+                          Xor <$> resize n arbitrary,
+                          BinaryAnd <$> resize n arbitrary,
+                          ShiftLeft <$> resize n arbitrary,
+                          ShiftRight <$> resize n arbitrary,
+                          Multiply <$> resize n arbitrary,
+                          Plus <$> resize n arbitrary,
+                          Minus <$> resize n arbitrary,
+                          Divide <$> resize n arbitrary,
+                          FloorDivide <$> resize n arbitrary,
+                          Invert <$> resize n arbitrary,
+                          Modulo <$> resize n arbitrary]
 instance Arbitrary a => Arbitrary (ParamTuple a) where
-      arbitrary = sized go_arvX where
-            go_arvX n_arvY
-              | (n_arvY <= 1) = ParamTupleName <$> resize n_arvY arbitrary <*> resize n_arvY arbitrary
-              | otherwise = frequency [(2, ParamTupleName <$> resize n_arvY arbitrary
-                                                          <*> resize n_arvY arbitrary),
-                                       (1, ParamTuple <$> (listOf $ (resize (n_arvY `div` 10) arbitrary))
-                                                      <*> resize n_arvY arbitrary)]
+      arbitrary = sized go where
+            go n | (n <= 1) = ParamTupleName <$> resize n arbitrary <*> resize n arbitrary
+                 | otherwise = frequency [(2, ParamTupleName <$> resize n arbitrary
+                                                             <*> resize n arbitrary),
+                                          (1, ParamTuple <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                         <*> resize n arbitrary)]
 instance Arbitrary a => Arbitrary (Parameter a) where
-      arbitrary = sized go_arvZ where
-            go_arvZ n_arw0 = oneof [Param <$> resize n_arw0 arbitrary <*> resize n_arw0 arbitrary
-                                          <*> resize n_arw0 arbitrary <*> resize n_arw0 arbitrary,
-                                    VarArgsPos <$> resize n_arw0 arbitrary <*> resize n_arw0 arbitrary
-                                               <*> resize n_arw0 arbitrary,
-                                    VarArgsKeyword <$> resize n_arw0 arbitrary <*> resize n_arw0 arbitrary
-                                                   <*> resize n_arw0 arbitrary,
-                                    EndPositional <$> resize n_arw0 arbitrary,
-                                    UnPackTuple <$> resize n_arw0 arbitrary <*> resize n_arw0 arbitrary
-                                                <*> resize n_arw0 arbitrary]
+      arbitrary = sized go where
+            go n = oneof [Param <$> resize n arbitrary <*> resize n arbitrary
+                                <*> resize n arbitrary <*> resize n arbitrary,
+                          VarArgsPos <$> resize n arbitrary <*> resize n arbitrary
+                                     <*> resize n arbitrary,
+                          VarArgsKeyword <$> resize n arbitrary <*> resize n arbitrary
+                                         <*> resize n arbitrary,
+                          EndPositional <$> resize n arbitrary,
+                          UnPackTuple <$> resize n arbitrary <*> resize n arbitrary
+                                      <*> resize n arbitrary]
 instance Arbitrary a => Arbitrary (YieldArg a) where
-      arbitrary = sized go_arw1 where
-            go_arw1 n_arw2 = oneof [YieldFrom <$> resize n_arw2 arbitrary <*> resize n_arw2 arbitrary,
-                                    YieldExpr <$> resize n_arw2 arbitrary]
+      arbitrary = sized go where
+            go n = oneof [YieldFrom <$> resize n arbitrary <*> resize n arbitrary,
+                          YieldExpr <$> resize n arbitrary]
 instance Arbitrary a => Arbitrary (DictMappingPair a) where
-      arbitrary = sized go_arw3 where
-            go_arw3 n_arw4 = DictMappingPair <$> resize n_arw4 arbitrary <*> resize n_arw4 arbitrary
+      arbitrary = sized go where
+            go n = DictMappingPair <$> resize n arbitrary <*> resize n arbitrary
 instance Arbitrary a => Arbitrary (ComprehensionExpr a) where
-      arbitrary = sized go_arw5 where
-            go_arw5 n_arw6 = oneof [ComprehensionExpr <$> resize n_arw6 arbitrary,
-                                    ComprehensionDict <$> resize n_arw6 arbitrary]
+      arbitrary = sized go where
+            go n = oneof [ComprehensionExpr <$> resize n arbitrary,
+                          ComprehensionDict <$> resize n arbitrary]
 instance Arbitrary a => Arbitrary (CompIf a) where
-      arbitrary = sized go_arw7 where
-            go_arw7 n_arw8 = CompIf <$> resize n_arw8 arbitrary <*> resize n_arw8 arbitrary
-                                    <*> resize n_arw8 arbitrary
+      arbitrary = sized go where
+            go n = CompIf <$> resize n arbitrary <*> resize n arbitrary
+                          <*> resize n arbitrary
 instance Arbitrary a => Arbitrary (CompIter a) where
-      arbitrary = sized go_arw9 where
-            go_arw9 n_arwa = oneof [IterFor <$> resize n_arwa arbitrary <*> resize n_arwa arbitrary,
-                                    IterIf <$> resize n_arwa arbitrary <*> resize n_arwa arbitrary]
+      arbitrary = sized go where
+            go n = oneof [IterFor <$> resize n arbitrary <*> resize n arbitrary,
+                          IterIf <$> resize n arbitrary <*> resize n arbitrary]
 instance Arbitrary a => Arbitrary (CompFor a) where
-      arbitrary = sized go_arwb where
-            go_arwb n_arwc = CompFor <$> (listOf $ (resize (n_arwc `div` 10) arbitrary))
-                                     <*> resize n_arwc arbitrary <*> resize n_arwc arbitrary
-                                     <*> resize n_arwc arbitrary
+      arbitrary = sized go where
+            go n = CompFor <$> (listOf $ (resize (n `div` 10) arbitrary))
+                           <*> resize n arbitrary <*> resize n arbitrary
+                           <*> resize n arbitrary
 instance Arbitrary a => Arbitrary (Comprehension a) where
-      arbitrary = sized go_arwd where
-            go_arwd n_arwe = Comprehension <$> resize n_arwe arbitrary <*> resize n_arwe arbitrary
-                                           <*> resize n_arwe arbitrary
+      arbitrary = sized go where
+            go n = Comprehension <$> resize n arbitrary <*> resize n arbitrary
+                                 <*> resize n arbitrary
 instance Arbitrary a => Arbitrary (Expr a) where
-      arbitrary = sized go_arwf where
-            go_arwf n_arwg
-              | (n_arwg <= 1)
-              = oneof
-                  [Var <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary,
-                   Int <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary
-                       <*> resize n_arwg arbitrary,
-                   LongInt <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary
-                       <*> resize n_arwg arbitrary,
-                   Float <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary
-                         <*> resize n_arwg arbitrary,
-                   Imaginary <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary
-                             <*> resize n_arwg arbitrary,
-                   Bool <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary,
-                   None <$> resize n_arwg arbitrary,
-                   Ellipsis <$> resize n_arwg arbitrary,
-                   ByteStrings <$> (listOf $ (resize (n_arwg `div` 10) arbitrary))
-                               <*> resize n_arwg arbitrary,
-                   Strings <$> (listOf $ (resize (n_arwg `div` 10) arbitrary))
-                           <*> resize n_arwg arbitrary,
-                   UnicodeStrings <$> (listOf $ (resize (n_arwg `div` 10) arbitrary))
-                                  <*> resize n_arwg arbitrary,
-                   Yield <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary,
-                   {-Generator <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary,-}
-                   {-ListComp <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary,-}
-                   Dictionary <$> (listOf $ (resize (n_arwg `div` 10) arbitrary))
-                              <*> resize n_arwg arbitrary{-,
-                   DictComp <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary,
-                   SetComp <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary-}]
-              | otherwise
-              = frequency [(2, Var <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary),
-                           (2, Int <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary
-                                   <*> resize n_arwg arbitrary),
-                           (2, LongInt <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary
-                                       <*> resize n_arwg arbitrary),
-                           (2, Float <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary
-                                     <*> resize n_arwg arbitrary),
-                           (2, Imaginary <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary
-                                         <*> resize n_arwg arbitrary),
-                           (2, Bool <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary),
-                           (2, None <$> resize n_arwg arbitrary),
-                           (2, Ellipsis <$> resize n_arwg arbitrary),
-                           (2, ByteStrings <$> (listOf $ (resize (n_arwg `div` 10) arbitrary))
-                                           <*> resize n_arwg arbitrary),
-                           (2, Strings <$> (listOf $ (resize (n_arwg `div` 10) arbitrary))
-                                       <*> resize n_arwg arbitrary),
-                           (2, UnicodeStrings <$> (listOf $ (resize (n_arwg `div` 10) arbitrary))
-                                              <*> resize n_arwg arbitrary),
-                           (1, Call <$> go_arwf (n_arwg - 1)
-                                    <*> (listOf $ (resize (n_arwg `div` 10) arbitrary))
-                                    <*> resize n_arwg arbitrary),
-                           (1, Subscript <$> go_arwf (n_arwg `div` 2) <*> go_arwf (n_arwg `div` 2)
-                                         <*> resize n_arwg arbitrary),
-                           (1, SlicedExpr <$> go_arwf (n_arwg - 1)
-                                          <*> (listOf $ (resize (n_arwg `div` 10) arbitrary)) 
-                                          <*> resize n_arwg arbitrary),
-                           (1, CondExpr <$> go_arwf (n_arwg `div` 3) <*> go_arwf (n_arwg `div` 3) 
-                                        <*> go_arwf (n_arwg `div` 3) <*> resize n_arwg arbitrary),
-                           (1, BinaryOp <$> resize n_arwg arbitrary <*> go_arwf (n_arwg `div` 2)
-                                        <*> go_arwf (n_arwg `div` 2) <*> resize n_arwg arbitrary),
-                           (1, UnaryOp <$> resize n_arwg arbitrary <*> go_arwf (n_arwg - 1) 
-                                       <*> resize n_arwg arbitrary),
-                           (1, Dot <$> go_arwf (n_arwg - 1) <*> resize n_arwg arbitrary 
-                                   <*> resize n_arwg arbitrary),
-                           (1, Lambda <$> (listOf $ (resize (n_arwg `div` 10) arbitrary))
-                                      <*> go_arwf (n_arwg - 1) <*> resize n_arwg arbitrary),
-                           (1, Tuple <$> (listOf $ (resize (n_arwg `div` 10) arbitrary)) 
-                                     <*> resize n_arwg arbitrary),
-                           (2, Yield <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary),
-                           {-(2, Generator <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary),-}
-                           {-(2, ListComp <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary),-}
-                           (1, List <$> (listOf $ (resize (n_arwg `div` 10) arbitrary)) 
-                                    <*> resize n_arwg arbitrary),
-                           (2, Dictionary <$> (listOf $ (resize (n_arwg `div` 10) arbitrary))
-                                          <*> resize n_arwg arbitrary),
-                           {-(2, DictComp <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary),-}
-                           (1, Set <$> (listOf $ (resize (n_arwg `div` 10) arbitrary))
-                                   <*> resize n_arwg arbitrary),
-                           {-(2, SetComp <$> resize n_arwg arbitrary <*> resize n_arwg arbitrary),-}
-                           (1, Starred <$> go_arwf (n_arwg - 1) <*> resize n_arwg arbitrary), 
-                           (1, Paren <$> go_arwf (n_arwg - 1) <*> resize n_arwg arbitrary),
-                           (1, StringConversion <$> go_arwf (n_arwg - 1) <*> resize n_arwg arbitrary)]
+      arbitrary = sized go where
+            go n | (n <= 1) = oneof
+                                [Var <$> resize n arbitrary <*> resize n arbitrary,
+                                 Int <$> resize n arbitrary <*> resize n arbitrary
+                                     <*> resize n arbitrary,
+                                 LongInt <$> resize n arbitrary <*> resize n arbitrary
+                                     <*> resize n arbitrary,
+                                 Float <$> resize n arbitrary <*> resize n arbitrary
+                                       <*> resize n arbitrary,
+                                 Imaginary <$> resize n arbitrary <*> resize n arbitrary
+                                           <*> resize n arbitrary,
+                                 Bool <$> resize n arbitrary <*> resize n arbitrary,
+                                 None <$> resize n arbitrary,
+                                 Ellipsis <$> resize n arbitrary,
+                                 ByteStrings <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                             <*> resize n arbitrary,
+                                 Strings <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                         <*> resize n arbitrary,
+                                 UnicodeStrings <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                <*> resize n arbitrary,
+                                 Yield <$> resize n arbitrary <*> resize n arbitrary,
+                                 {-Generator <$> resize n arbitrary <*> resize n arbitrary,-}
+                                 {-ListComp <$> resize n arbitrary <*> resize n arbitrary,-}
+                                 Dictionary <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                            <*> resize n arbitrary{-,
+                                 DictComp <$> resize n arbitrary <*> resize n arbitrary,
+                                 SetComp <$> resize n arbitrary <*> resize n arbitrary-}]
+              | otherwise = frequency [(2, Var <$> resize n arbitrary <*> resize n arbitrary),
+                                       (2, Int <$> resize n arbitrary <*> resize n arbitrary
+                                               <*> resize n arbitrary),
+                                       (2, LongInt <$> resize n arbitrary <*> resize n arbitrary
+                                                   <*> resize n arbitrary),
+                                       (2, Float <$> resize n arbitrary <*> resize n arbitrary
+                                                 <*> resize n arbitrary),
+                                       (2, Imaginary <$> resize n arbitrary <*> resize n arbitrary
+                                                     <*> resize n arbitrary),
+                                       (2, Bool <$> resize n arbitrary <*> resize n arbitrary),
+                                       (2, None <$> resize n arbitrary),
+                                       (2, Ellipsis <$> resize n arbitrary),
+                                       (2, ByteStrings <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                       <*> resize n arbitrary),
+                                       (2, Strings <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                   <*> resize n arbitrary),
+                                       (2, UnicodeStrings <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                          <*> resize n arbitrary),
+                                       (1, Call <$> go (n - 1)
+                                                <*> (listOf $ (resize (n `div` 10) arbitrary))
+                                                <*> resize n arbitrary),
+                                       (1, Subscript <$> go (n `div` 2) <*> go (n `div` 2)
+                                                     <*> resize n arbitrary),
+                                       (1, SlicedExpr <$> go (n - 1)
+                                                      <*> (listOf $ (resize (n `div` 10) arbitrary)) 
+                                                      <*> resize n arbitrary),
+                                       (1, CondExpr <$> go (n `div` 3) <*> go (n `div` 3) 
+                                                    <*> go (n `div` 3) <*> resize n arbitrary),
+                                       (1, BinaryOp <$> resize n arbitrary <*> go (n `div` 2)
+                                                    <*> go (n `div` 2) <*> resize n arbitrary),
+                                       (1, UnaryOp <$> resize n arbitrary <*> go (n - 1) 
+                                                   <*> resize n arbitrary),
+                                       (1, Dot <$> go (n - 1) <*> resize n arbitrary 
+                                               <*> resize n arbitrary),
+                                       (1, Lambda <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                  <*> go (n - 1) <*> resize n arbitrary),
+                                       (1, Tuple <$> (listOf $ (resize (n `div` 10) arbitrary)) 
+                                                 <*> resize n arbitrary),
+                                       (2, Yield <$> resize n arbitrary <*> resize n arbitrary),
+                                       {-(2, Generator <$> resize n arbitrary <*> resize n arbitrary),-}
+                                       {-(2, ListComp <$> resize n arbitrary <*> resize n arbitrary),-}
+                                       (1, List <$> (listOf $ (resize (n `div` 10) arbitrary)) 
+                                                <*> resize n arbitrary),
+                                       (2, Dictionary <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                      <*> resize n arbitrary),
+                                       {-(2, DictComp <$> resize n arbitrary <*> resize n arbitrary),-}
+                                       (1, Set <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                               <*> resize n arbitrary),
+                                       {-(2, SetComp <$> resize n arbitrary <*> resize n arbitrary),-}
+                                       (1, Starred <$> go (n - 1) <*> resize n arbitrary), 
+                                       (1, Paren <$> go (n - 1) <*> resize n arbitrary),
+                                       (1, StringConversion <$> go (n - 1) <*> resize n arbitrary)]
 instance Arbitrary a => Arbitrary (Argument a) where
-      arbitrary = sized go_arwh where
-            go_arwh n_arwi = oneof [ArgExpr <$> resize n_arwi arbitrary <*> resize n_arwi arbitrary,
-                                    ArgVarArgsPos <$> resize n_arwi arbitrary <*> resize n_arwi arbitrary,
-                                    ArgVarArgsKeyword <$> resize n_arwi arbitrary <*> resize n_arwi arbitrary,
-                                    ArgKeyword <$> resize n_arwi arbitrary <*> resize n_arwi arbitrary
-                                               <*> resize n_arwi arbitrary]
+      arbitrary = sized go where
+            go n = oneof [ArgExpr <$> resize n arbitrary <*> resize n arbitrary,
+                          ArgVarArgsPos <$> resize n arbitrary <*> resize n arbitrary,
+                          ArgVarArgsKeyword <$> resize n arbitrary <*> resize n arbitrary,
+                          ArgKeyword <$> resize n arbitrary <*> resize n arbitrary
+                                     <*> resize n arbitrary]
 instance Arbitrary a => Arbitrary (AssignOp a) where
-      arbitrary = sized go_arwj where
-            go_arwj n_arwk = oneof [PlusAssign <$> resize n_arwk arbitrary,
-                                    MinusAssign <$> resize n_arwk arbitrary,
-                                    MultAssign <$> resize n_arwk arbitrary,
-                                    DivAssign <$> resize n_arwk arbitrary,
-                                    ModAssign <$> resize n_arwk arbitrary,
-                                    PowAssign <$> resize n_arwk arbitrary,
-                                    BinAndAssign <$> resize n_arwk arbitrary,
-                                    BinOrAssign <$> resize n_arwk arbitrary,
-                                    BinXorAssign <$> resize n_arwk arbitrary,
-                                    LeftShiftAssign <$> resize n_arwk arbitrary,
-                                    RightShiftAssign <$> resize n_arwk arbitrary,
-                                    FloorDivAssign <$> resize n_arwk arbitrary]
+      arbitrary = sized go where
+            go n = oneof [PlusAssign <$> resize n arbitrary,
+                          MinusAssign <$> resize n arbitrary,
+                          MultAssign <$> resize n arbitrary,
+                          DivAssign <$> resize n arbitrary,
+                          ModAssign <$> resize n arbitrary,
+                          PowAssign <$> resize n arbitrary,
+                          BinAndAssign <$> resize n arbitrary,
+                          BinOrAssign <$> resize n arbitrary,
+                          BinXorAssign <$> resize n arbitrary,
+                          LeftShiftAssign <$> resize n arbitrary,
+                          RightShiftAssign <$> resize n arbitrary,
+                          FloorDivAssign <$> resize n arbitrary]
 instance Arbitrary a => Arbitrary (Decorator a) where
-      arbitrary = sized go_arwl where
-            go_arwl n_arwm = Decorator <$> resize n_arwm arbitrary
-                                       <*> (listOf $ (resize (n_arwm `div` 10) arbitrary))
-                                       <*> resize n_arwm arbitrary
+      arbitrary = sized go where
+            go n = Decorator <$> resize n arbitrary
+                             <*> (listOf $ (resize (n `div` 10) arbitrary))
+                             <*> resize n arbitrary
 instance Arbitrary a => Arbitrary (ExceptClause a) where
-      arbitrary = sized go_arwn where
-            go_arwn n_arwo = ExceptClause <$> resize n_arwo arbitrary <*> resize n_arwo arbitrary
+      arbitrary = sized go where
+            go n = ExceptClause <$> resize n arbitrary <*> resize n arbitrary
 instance Arbitrary a => Arbitrary (FromItem a) where
-      arbitrary = sized go_arwp where
-            go_arwp n_arwq = FromItem <$> resize n_arwq arbitrary <*> resize n_arwq arbitrary
-                                      <*> resize n_arwq arbitrary
+      arbitrary = sized go where
+            go n = FromItem <$> resize n arbitrary <*> resize n arbitrary
+                            <*> resize n arbitrary
 instance Arbitrary a => Arbitrary (FromItems a) where
-      arbitrary = sized go_arwr where
-            go_arwr n_arws = oneof [ImportEverything <$> resize n_arws arbitrary,
-                                    FromItems <$> (listOf $ (resize (n_arws `div` 10) arbitrary))
-                                              <*> resize n_arws arbitrary]
+      arbitrary = sized go where
+            go n = oneof [ImportEverything <$> resize n arbitrary,
+                          FromItems <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                    <*> resize n arbitrary]
 instance Arbitrary a => Arbitrary (ImportItem a) where
-      arbitrary = sized go_arwt where
-            go_arwt n_arwu = ImportItem <$> resize n_arwu arbitrary <*> resize n_arwu arbitrary
-                                        <*> resize n_arwu arbitrary
+      arbitrary = sized go where
+            go n = ImportItem <$> resize n arbitrary <*> resize n arbitrary
+                              <*> resize n arbitrary
 instance Arbitrary a => Arbitrary (ImportRelative a) where
-      arbitrary = sized go_arwv where
-            go_arwv n_arww = ImportRelative <$> resize n_arww arbitrary <*> resize n_arww arbitrary
-                                            <*> resize n_arww arbitrary
+      arbitrary = sized go where
+            go n = ImportRelative <$> resize n arbitrary <*> resize n arbitrary
+                                  <*> resize n arbitrary
 instance Arbitrary a => Arbitrary (RaiseExpr a) where
-      arbitrary = sized go_arwx where
-            go_arwx n_arwy = oneof [RaiseV3 <$> resize n_arwy arbitrary,
-                                    RaiseV2 <$> resize n_arwy arbitrary]
+      arbitrary = sized go where
+            go n = oneof [RaiseV3 <$> resize n arbitrary,
+                          RaiseV2 <$> resize n arbitrary]
 instance Arbitrary a => Arbitrary (Statement a) where
-      arbitrary = sized go_arwz where
-            go_arwz n_arwA
-              | (n_arwA <= 1) = oneof [Import <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                              <*> resize n_arwA arbitrary,
-                                       FromImport <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                                  <*> resize n_arwA arbitrary,
-                                       While <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                             <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary,
-                                       For <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                           <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                           <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary,
-                                       Fun <$> resize n_arwA arbitrary <*> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                           <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                           <*> resize n_arwA arbitrary,
-                                       Class <$> resize n_arwA arbitrary
-                                             <*> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                             <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary,
-                                       Conditional <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                   <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary,
-                                       Assign <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                              <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary,
-                                       AugmentedAssign <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                                       <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary,
-                                       Return <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary,
-                                       Try <$> resize n_arwA arbitrary <*> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                           <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                           <*> resize n_arwA arbitrary,
-                                       Raise <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary,
-                                       With <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                            <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary,
-                                       Pass <$> resize n_arwA arbitrary,
-                                       Break <$> resize n_arwA arbitrary,
-                                       Continue <$> resize n_arwA arbitrary,
-                                       Delete <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                              <*> resize n_arwA arbitrary,
-                                       StmtExpr <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary,
-                                       Global <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                              <*> resize n_arwA arbitrary,
-                                       NonLocal <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                <*> resize n_arwA arbitrary,
-                                       Assert <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                              <*> resize n_arwA arbitrary,
-                                       Print <$> resize n_arwA arbitrary <*> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                             <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary,
-                                       Exec <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                            <*> resize n_arwA arbitrary]
-              | otherwise = frequency [(2, Import <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                  <*> resize n_arwA arbitrary),
-                                       (2, FromImport <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                                      <*> resize n_arwA arbitrary),
-                                       (2, While <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                                 <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary),
-                                       (2, For <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                               <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                               <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary),
-                                       (2, Fun <$> resize n_arwA arbitrary
-                                               <*> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                               <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                               <*> resize n_arwA arbitrary),
-                                       (2, Class <$> resize n_arwA arbitrary
-                                                 <*> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                 <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary),
-                                       (2, Conditional <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                       <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary),
-                                       (2, Assign <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                  <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary),
-                                       (2, AugmentedAssign <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                                           <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary),
-                                       (1, Decorated <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                     <*> go_arwz (n_arwA - 1) <*> resize n_arwA arbitrary),
-                                       (2, Return <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary),
-                                       (2, Try <$> resize n_arwA arbitrary
-                                               <*> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                               <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                               <*> resize n_arwA arbitrary),
-                                       (2, Raise <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary),
-                                       (2, With <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary),
-                                       (2, Pass <$> resize n_arwA arbitrary),
-                                       (2, Break <$> resize n_arwA arbitrary),
-                                       (2, Continue <$> resize n_arwA arbitrary),
-                                       (2, Delete <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                  <*> resize n_arwA arbitrary),
-                                       (2, StmtExpr <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary),
-                                       (2, Global <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                  <*> resize n_arwA arbitrary),
-                                       (2, NonLocal <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                    <*> resize n_arwA arbitrary),
-                                       (2, Assert <$> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                  <*> resize n_arwA arbitrary),
-                                       (2, Print <$> resize n_arwA arbitrary
-                                                 <*> (listOf $ (resize (n_arwA `div` 10) arbitrary))
-                                                 <*> resize n_arwA arbitrary <*> resize n_arwA arbitrary),
-                                       (2, Exec <$> resize n_arwA arbitrary <*> resize n_arwA arbitrary
-                                                <*> resize n_arwA arbitrary)]
+      arbitrary = sized go where
+            go n | (n <= 1) = oneof [Import <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                            <*> resize n arbitrary,
+                                     FromImport <$> resize n arbitrary <*> resize n arbitrary
+                                                <*> resize n arbitrary,
+                                     While <$> resize n arbitrary <*> resize n arbitrary
+                                           <*> resize n arbitrary <*> resize n arbitrary,
+                                     For <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                         <*> resize n arbitrary <*> resize n arbitrary
+                                         <*> resize n arbitrary <*> resize n arbitrary,
+                                     Fun <$> resize n arbitrary <*> (listOf $ (resize (n `div` 10) arbitrary))
+                                         <*> resize n arbitrary <*> resize n arbitrary
+                                         <*> resize n arbitrary,
+                                     Class <$> resize n arbitrary
+                                           <*> (listOf $ (resize (n `div` 10) arbitrary))
+                                           <*> resize n arbitrary <*> resize n arbitrary,
+                                     Conditional <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                 <*> resize n arbitrary <*> resize n arbitrary,
+                                     Assign <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                            <*> resize n arbitrary <*> resize n arbitrary,
+                                     AugmentedAssign <$> resize n arbitrary <*> resize n arbitrary
+                                                     <*> resize n arbitrary <*> resize n arbitrary,
+                                     Return <$> resize n arbitrary <*> resize n arbitrary,
+                                     Try <$> resize n arbitrary <*> (listOf $ (resize (n `div` 10) arbitrary))
+                                         <*> resize n arbitrary <*> resize n arbitrary
+                                         <*> resize n arbitrary,
+                                     Raise <$> resize n arbitrary <*> resize n arbitrary,
+                                     With <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                          <*> resize n arbitrary <*> resize n arbitrary,
+                                     Pass <$> resize n arbitrary,
+                                     Break <$> resize n arbitrary,
+                                     Continue <$> resize n arbitrary,
+                                     Delete <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                            <*> resize n arbitrary,
+                                     StmtExpr <$> resize n arbitrary <*> resize n arbitrary,
+                                     Global <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                            <*> resize n arbitrary,
+                                     NonLocal <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                              <*> resize n arbitrary,
+                                     Assert <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                            <*> resize n arbitrary,
+                                     Print <$> resize n arbitrary <*> (listOf $ (resize (n `div` 10) arbitrary))
+                                           <*> resize n arbitrary <*> resize n arbitrary,
+                                     Exec <$> resize n arbitrary <*> resize n arbitrary
+                                          <*> resize n arbitrary]
+              | otherwise = frequency [(2, Import <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                  <*> resize n arbitrary),
+                                       (2, FromImport <$> resize n arbitrary <*> resize n arbitrary
+                                                      <*> resize n arbitrary),
+                                       (2, While <$> resize n arbitrary <*> resize n arbitrary
+                                                 <*> resize n arbitrary <*> resize n arbitrary),
+                                       (2, For <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                               <*> resize n arbitrary <*> resize n arbitrary
+                                               <*> resize n arbitrary <*> resize n arbitrary),
+                                       (2, Fun <$> resize n arbitrary
+                                               <*> (listOf $ (resize (n `div` 10) arbitrary))
+                                               <*> resize n arbitrary <*> resize n arbitrary
+                                               <*> resize n arbitrary),
+                                       (2, Class <$> resize n arbitrary
+                                                 <*> (listOf $ (resize (n `div` 10) arbitrary))
+                                                 <*> resize n arbitrary <*> resize n arbitrary),
+                                       (2, Conditional <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                       <*> resize n arbitrary <*> resize n arbitrary),
+                                       (2, Assign <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                  <*> resize n arbitrary <*> resize n arbitrary),
+                                       (2, AugmentedAssign <$> resize n arbitrary <*> resize n arbitrary
+                                                           <*> resize n arbitrary <*> resize n arbitrary),
+                                       (1, Decorated <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                     <*> go (n - 1) <*> resize n arbitrary),
+                                       (2, Return <$> resize n arbitrary <*> resize n arbitrary),
+                                       (2, Try <$> resize n arbitrary
+                                               <*> (listOf $ (resize (n `div` 10) arbitrary))
+                                               <*> resize n arbitrary <*> resize n arbitrary
+                                               <*> resize n arbitrary),
+                                       (2, Raise <$> resize n arbitrary <*> resize n arbitrary),
+                                       (2, With <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                <*> resize n arbitrary <*> resize n arbitrary),
+                                       (2, Pass <$> resize n arbitrary),
+                                       (2, Break <$> resize n arbitrary),
+                                       (2, Continue <$> resize n arbitrary),
+                                       (2, Delete <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                  <*> resize n arbitrary),
+                                       (2, StmtExpr <$> resize n arbitrary <*> resize n arbitrary),
+                                       (2, Global <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                  <*> resize n arbitrary),
+                                       (2, NonLocal <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                    <*> resize n arbitrary),
+                                       (2, Assert <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                                  <*> resize n arbitrary),
+                                       (2, Print <$> resize n arbitrary
+                                                 <*> (listOf $ (resize (n `div` 10) arbitrary))
+                                                 <*> resize n arbitrary <*> resize n arbitrary),
+                                       (2, Exec <$> resize n arbitrary <*> resize n arbitrary
+                                                <*> resize n arbitrary)]
 instance Arbitrary a => Arbitrary (Handler a) where
-      arbitrary = sized go_arwB where
-            go_arwB n_arwC = Handler <$> resize n_arwC arbitrary <*> resize n_arwC arbitrary
-                                     <*> resize n_arwC arbitrary
+      arbitrary = sized go where
+            go n = Handler <$> resize n arbitrary <*> resize n arbitrary
+                           <*> resize n arbitrary
 
 ----------------------------------------------
 ----------Manually set up names-----------
@@ -431,8 +425,8 @@ genId ids = sized aux where
                aux n = Ident <$> elements ids <*> resize n arbitrary
 
 instance (Arbitrary a, Eq a) => Arbitrary (Module a) where
-      {-arbitrary = sized go_arwD where
-            go_arwD n_arwE = Module <$> (listOf $ (resize (n_arwE `div` 10) arbitrary))-}
+      {-arbitrary = sized go where
+            go n_arwE = Module <$> (listOf $ (resize (n_arwE `div` 10) arbitrary))-}
   arbitrary = arbMod >>= cModule --we coherent now
 
 arbMaybe :: Gen a -> Gen (Maybe a)
@@ -497,15 +491,26 @@ arbComp = sized aux where
             aux n = Comprehension <$> (resize n arbCompExp) <*> (resize n arbCompFor)
                                   <*> resize n arbitrary
 
+gInt :: Arbitrary a => Bool -> Gen(Expr a)
+gInt b = do i <- arbitrary
+            a <- arbitrary
+            if b then return (Int i (show i) a)
+                 else return (LongInt i (show i) a)
+
+gFloat :: Arbitrary a => Bool -> Gen(Expr a)
+gFloat b = do i <- arbitrary
+              a <- arbitrary
+              if b then return (Float i (show i) a)
+                   else return (Imaginary i (show i) a)
       
 --literal now shows number, needs fix to display the correct one
 arbExpr :: Arbitrary a => Gen(Expr a) 
 arbExpr = sized aux where
             aux n | (n <= 1) = oneof [Var <$> (resize n $ (custToGen IdVar)) <*> resize n arbitrary,
-                                      Int <$> int <*> intLit <*> resize n arbitrary,
-                                      LongInt <$> int <*> intLit <*> resize n arbitrary,
-                                      Float <$> float <*> flLit <*> resize n arbitrary,
-                                      Imaginary <$> float <*> flLit <*> resize n arbitrary,
+                                      gInt True,
+                                      gInt False,
+                                      gFloat True,
+                                      gFloat False,
                                       Bool <$> resize n arbitrary <*> resize n arbitrary,
                                       None <$> resize n arbitrary,
                                       Ellipsis <$> resize n arbitrary,
@@ -523,11 +528,11 @@ arbExpr = sized aux where
                                       DictComp <$> (resize n arbComp) <*> resize n arbitrary,
                                       SetComp <$> (resize n arbComp) <*> resize n arbitrary-}]
               | otherwise
-              = frequency [(2, Var <$> (resize n $ (custToGen IdVar)) <*> resize n arbitrary),
-                           (2, Int <$> int <*> intLit <*> resize n arbitrary),
-                           (2, LongInt <$> int <*> intLit <*> resize n arbitrary),
-                           (2, Float <$> float <*> flLit <*> resize n arbitrary),
-                           (2, Imaginary <$> float <*> flLit <*> resize n arbitrary),
+              = frequency [(1, Var <$> (resize n $ (custToGen IdVar)) <*> resize n arbitrary),
+                           (1, gInt True),
+                           (2, gInt False),
+                           (2, gFloat True),
+                           (2, gFloat False),
                            (2, Bool <$> resize n arbitrary <*> resize n arbitrary),
                            (2, None <$> resize n arbitrary),
                            (2, Ellipsis <$> resize n arbitrary),
@@ -547,9 +552,9 @@ arbExpr = sized aux where
                                           <*> resize n arbitrary),
                            (1, CondExpr <$> aux (n `div` 3) <*> aux (n `div` 3) 
                                         <*> aux (n `div` 3) <*> resize n arbitrary),
-                           (2, BinaryOp <$> resize n arbitrary <*> aux (n `div` 2)
+                           (1, BinaryOp <$> resize n arbitrary <*> aux (n `div` 2)
                                         <*> aux (n `div` 2) <*> resize n arbitrary),
-                           (2, UnaryOp <$> resize n arbitrary <*> aux (n - 1) 
+                           (1, UnaryOp <$> resize n arbitrary <*> aux (n - 1) 
                                        <*> resize n arbitrary),
                            (1, Dot <$> aux (n - 1) <*> resize n arbitrary --revise
                                    <*> resize n arbitrary),
@@ -571,14 +576,6 @@ arbExpr = sized aux where
                            (1, Starred <$> aux (n - 1) <*> resize n arbitrary), 
                            (1, Paren <$> aux (n - 1) <*> resize n arbitrary),
                            (1, StringConversion <$> aux (n - 1) <*> resize n arbitrary)]
-                where  
-                  int = (resize n (arbitrary :: Gen Integer)) 
-                  intLit = do i <- int
-                              return (show i)   
-                  float = (resize n (arbitrary :: Gen Double)) 
-                  flLit = do f <- float
-                             return (show f) 
-
 
 arbArg :: Arbitrary a => Gen (Argument a)
 arbArg = sized aux where
@@ -652,8 +649,8 @@ arbStmt = sized aux where
                                            Class <$> resize n (custToGen IdClass)
                                                  <*> (listOf $ (resize (n `div` 10) arbArg))
                                                  <*> (listOf (resize (n `div` 10) arbStmt)) <*> resize n arbitrary,
-                                           Conditional <$> (listOf $ (resize (n `div` 10) $ liftM2 (,) arbExpr (listOf (resize (n `div` 10) arbStmt))))
-                                                       <*> resize n arbitrary <*> resize n arbitrary,
+                                           {-Conditional <$> (listOf $ (resize (n `div` 10) $ liftM2 (,) arbExpr (listOf (resize (n `div` 10) arbStmt))))
+                                                       <*> resize n arbitrary <*> resize n arbitrary,-}
                                            Assign <$> lOfOneVar--(listOf $ (resize (n `div` 10) arbExpr))
                                                   <*> (resize n arbExpr) <*> resize n arbitrary,
                                            AugmentedAssign <$> oneVar --(resize n arbExpr)
@@ -690,14 +687,14 @@ arbStmt = sized aux where
                                                (2, For <$> lOfOneVar --(listOf $ (resize (n `div` 10) arbExpr))
                                                        <*> (resize n arbExpr) <*> (listOf (resize (n `div` 10) arbStmt))
                                                        <*> (listOf (resize (n `div` 10) arbStmt)) <*> resize n arbitrary),
-                                               (2, Fun <$> resize n (custToGen IdFunc) <*> (listOf $ (resize (n `div` 10) arbParam))
+                                               (20, Fun <$> resize n (custToGen IdFunc) <*> (listOf $ (resize (n `div` 10) arbParam))
                                                        <*> (resize n $ arbMaybe arbExpr) <*> (listOf (resize (n `div` 10) arbStmt))
                                                        <*> resize n arbitrary),
                                                (2, Class <$> resize n (custToGen IdClass) --class names?
                                                          <*> (listOf $ (resize (n `div` 10) arbArg))
                                                          <*> (listOf (resize (n `div` 10) arbStmt)) <*> resize n arbitrary),
-                                               (2, Conditional <$> (listOf $ (resize (n `div` 10) $ liftM2 (,) arbExpr (listOf (resize (n `div` 10) arbStmt))))
-                                                               <*> resize n arbitrary <*> resize n arbitrary),
+                                               {-(2, Conditional <$> (listOf $ (resize (n `div` 10) $ liftM2 (,) arbExpr (listOf (resize (n `div` 10) arbStmt))))
+                                                               <*> resize n arbitrary <*> resize n arbitrary),-}
                                                (2, Assign <$> lOfOneVar--(listOf $ (resize (n `div` 10) arbExpr))
                                                           <*> (resize n arbExpr) <*> resize n arbitrary),
                                                (2, AugmentedAssign <$> oneVar--(resize n arbExpr)
@@ -808,14 +805,14 @@ cStmt (While cond body welse a) = do ccond <- cExpr cond
 cStmt (For [targ] gen body felse a) = let targ_id = var_ident targ in
                                           do st <- get
                                              case elem targ_id (gvars st) of --can't be global, generate another var
-                                                True -> let vars = head $ lvars st in
-                                                          do new_targ <- lift $ createVar vars
-                                                             pushScope [var_ident new_targ]
-                                                             cgen <- cExpr gen
-                                                             cbody <- lStmt body
-                                                             cfelse <- lStmt felse
-                                                             return (For [new_targ] gen body felse a)
-                                                False -> case elem targ_id (head $ lvars st) of --if it0s local, good
+                                                True -> do new_id <- lift $ genId vars
+                                                           new_targ <- lift $ createVar [new_id]
+                                                           pushScope [var_ident new_targ]
+                                                           cgen <- cExpr gen
+                                                           cbody <- lStmt body
+                                                           cfelse <- lStmt felse
+                                                           return (For [new_targ] gen body felse a)
+                                                False -> case elem targ_id (head $ lvars st) of --if it's local, good
                                                             True -> do cgen <- cExpr gen
                                                                        cbody <- lStmt body 
                                                                        cfelse <- lStmt felse
@@ -862,7 +859,7 @@ cStmt (AugmentedAssign to op ev a) = let to_id = var_ident to in
                                                                         cev <- cExpr ev 
                                                                         return (AugmentedAssign v op cev a)
 cStmt (Decorated decs fun a) = do st <- get
-                                  cfun <- cStmt fun --ignore decorators for now
+                                  cfun <- cStmt fun
                                   put st
                                   return (Decorated decs cfun a)
 cStmt r@(Return ret a) = case ret of
@@ -877,7 +874,7 @@ cStmt (Try body exp telse fin a) = do cbody <- lStmt body
                                       cfin <- lStmt fin
                                       return (Try cbody cexp ctelse cfin a)
 cStmt r@(Raise expr a) = return r
-cStmt (With cont body a) = do cbody <- lStmt body --ignore cont for now
+cStmt (With cont body a) = do cbody <- lStmt body 
                               return (With cont cbody a)
 --we should delete var from scope, but we leave in order to not break conditionals
 cStmt d@(Delete [expr] a) = let expr_id = var_ident expr in 
@@ -890,7 +887,7 @@ cStmt d@(Delete [expr] a) = let expr_id = var_ident expr in
 cStmt (StmtExpr expr a) = do cexpr <- cExpr expr
                              return (StmtExpr cexpr a)
 cStmt g@(Global idlist a) = pushGvars idlist >> return g
-cStmt n@(NonLocal idlist a) = return n --revise
+cStmt n@(NonLocal idlist a) = return n
 cStmt (Assert exprl a) = do st <- get
                             cexpr <- lExpr exprl
                             put st
@@ -900,7 +897,7 @@ cStmt (Print c exprl t a) = do st <- get
                                put st                          
                                return (Print c cexpr t a)
 cStmt (Exec expr env a) = do st <- get
-                             cexpr <- cExpr expr --revise environments
+                             cexpr <- cExpr expr
                              put st
                              return (Exec cexpr env a)
 cStmt s = return s
@@ -915,14 +912,14 @@ cExpr v@(Var id a) = do st <- get
                            True -> return v
                            False -> case elem id (head $ lvars st) of
                                         True -> return v
-                                        False -> let pool = (gvars st) ++ (head $ lvars st) in --generate from what we have (todo - or asssign a constant)
+                                        False -> let pool = (gvars st) ++ (head $ lvars st) in --generate from what we have (todo - or assign a constant)
                                                    do newv <- lift $ createVar pool
                                                       return newv
-cExpr c@(Call fun args a) = return c --revise
-cExpr (Subscript subs expr a) = do csubs <- cExpr subs --revise
+cExpr c@(Call fun args a) = return c 
+cExpr (Subscript subs expr a) = do csubs <- cExpr subs
                                    cexpr <- cExpr expr
                                    return (Subscript csubs cexpr a)
-cExpr (SlicedExpr sle sls a) = do csle <- cExpr sle --revise
+cExpr (SlicedExpr sle sls a) = do csle <- cExpr sle 
                                   return (SlicedExpr csle sls a)
 cExpr (CondExpr true cond false a) = do ccond <- cExpr cond
                                         ctrue <- cExpr true
@@ -951,7 +948,6 @@ cExpr (Paren expr a) = do cexpr <- cExpr expr
 cExpr (StringConversion expr a) = do cexpr <- cExpr expr
                                      return (StringConversion cexpr a)
 cExpr x = return x
-
 
 --Handler
 lHand :: (Arbitrary a, Eq a) => [Handler a] -> VState a [Handler a]
