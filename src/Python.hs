@@ -51,36 +51,42 @@ isValidContinue c = isValidStart c || validContinue c
                             _                    -> False
 
 --Generation of easy to read identifiers
+class Fixable a where
+  fixUp :: a -> Gen a
+
+instance Arbitrary a => Fixable (Ident a) where
+  fixUp = readableFix --return . identifierFix
+
 start :: [Char]
 start = ['a'..'z'] ++ ['A'..'Z'] ++ ['_']
 
 cont :: [Char]
 cont = start ++ ['0'..'9']
 
-randomId :: Gen String
-randomId = do s <- elements start
-              c <- shuffle cont
-              let id = s:(take 4 c)
-                  fid = if isReservedWord id then '_':id else id
-              return fid
+readableFix :: Arbitrary a => Ident a -> Gen (Ident a)
+readableFix id = do s <- elements start
+                    c <- shuffle cont
+                    let nid = s:(take 4 c)
+                        fid = if isReservedWord nid then '_':nid else nid
+                    return (id{ident_string = fid})
 
 --use this if you want an identifier to be made of any valid characters according to reference
-identifierFix :: String -> String
-identifierFix s = let fixStart c = if isValidStart c then c else '_'
-                      fixContinue c = if isValidContinue c then c else '_'
-                  in case s of
-                    ""      -> "_"
-                    (st:c)  -> let fixed = (fixStart st):(map fixContinue c)
-                               in if isReservedWord fixed then '_':fixed else fixed
+identifierFix :: Ident a -> Ident a
+identifierFix id = let s = ident_string id
+                       fixStart c = if isValidStart c then c else '_'
+                       fixContinue c = if isValidContinue c then c else '_'
+                   in case s of
+                     ""      -> id {ident_string = "_"}
+                     (st:c)  -> let fixed = (fixStart st):(map fixContinue c)
+                                in if isReservedWord fixed then id {ident_string = ('_':fixed)} else id {ident_string = fixed}
 
 type MPy = Module ()
 
 {-$(devArbitrary ''MPy)-}
 
 instance Arbitrary a => Arbitrary (Ident a) where --easy to read instance
-      arbitrary = sized go where
-            --go n = Ident <$> liftM identifierFix (resize n arbitrary) <*> resize n arbitrary  
-              go n = Ident <$> randomId <*> resize n arbitrary  
+      arbitrary = sized go >>= fixUp where
+            go n = Ident <$> resize n arbitrary <*> resize n arbitrary  
 instance Arbitrary a => Arbitrary (Slice a) where
       arbitrary = sized go where
             go n = oneof [SliceProper <$> resize n arbitrary
