@@ -861,9 +861,10 @@ cStmt (AugmentedAssign to op ev a) = let to_id = var_ident to in
                                                         True -> do cev <- cExpr ev
                                                                    return (AugmentedAssign to op cev a)
                                                         False -> let pool = (gvars st) ++ (head $ lvars st) in --doesn't exists, we generate one from what we have
-                                                                     do v <- lift $ createVar pool
-                                                                        cev <- cExpr ev 
-                                                                        return (AugmentedAssign v op cev a)
+                                                                     if null pool then return (Pass a) else --if pool is empty we erase the assign
+                                                                       do v <- lift $ createVar pool
+                                                                          cev <- cExpr ev 
+                                                                          return (AugmentedAssign v op cev a)
 cStmt (Decorated decs fun a) = do st <- get
                                   cfun <- cStmt fun
                                   put st
@@ -919,8 +920,11 @@ cExpr v@(Var id a) = do st <- get
                            False -> case elem id (head $ lvars st) of
                                         True -> return v
                                         False -> let pool = (gvars st) ++ (head $ lvars st) in --generate from what we have (todo - or assign a constant)
-                                                   do newv <- lift $ createVar pool
-                                                      return newv
+                                                   if null pool then 
+                                                     do c <- lift $ gInt True --if not in pool, we return an integer constant
+                                                        return c
+                                                   else do newv <- lift $ createVar pool
+                                                           return newv
 cExpr c@(Call fun args a) = return c 
 cExpr (Subscript subs expr a) = do csubs <- cExpr subs
                                    cexpr <- cExpr expr
