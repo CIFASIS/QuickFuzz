@@ -44,10 +44,10 @@ import Images
 
 data MSvgFile  = MSvgFile Document deriving Show
 
-instance  Arbitrary DT.Text where
-   arbitrary = do 
-     xs <- mgenName
-     oneof $ Prelude.map (return . T.pack) [xs]
+--instance  Arbitrary DT.Text where
+--   arbitrary = do 
+--     xs <- mgenName
+--     oneof $ Prelude.map (return . T.pack) [xs]
   
 instance Arbitrary String where
   arbitrary = mgenName

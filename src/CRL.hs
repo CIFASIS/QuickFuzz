@@ -1,19 +1,22 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
 
-module ASN1 where
+module CRL where
 
 import Test.QuickCheck
+--import Test.QuickCheck.Instances
 import DeriveArbitrary
+import Data.X509
 import Data.ASN1.Types
 import Data.ASN1.Encoding
 import Data.ASN1.BinaryEncoding
 
-import qualified Data.ByteString.Lazy.Char8 as LC8
+--import Time
+
+--import qualified Data.ByteString.Lazy.Char8 as LC8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as BS
-import Misc
 
-$(devArbitrary ''ASN1)
+$(devArbitrary ''CRL)
 
-mencode :: [ASN1] -> L.ByteString
-mencode x = L.fromStrict $ encodeASN1' DER x
+mencode :: CRL -> L.ByteString
+mencode x = L.fromStrict $ encodeASN1' DER (toASN1 x [])

@@ -39,17 +39,20 @@ import Data.Int( Int16, Int8 )
 
 $(devArbitrary ''DNSMessage)
 
-convertL8 :: LC8.ByteString -> B.ByteString
-convertL8 =  B.pack . (map IB.c2w) .  LC8.unpack --L8.pack . (Prelude.map IB.w2c) . B.unpack
+convertL8 :: LC8.ByteString -> L.ByteString
+convertL8 =  L.pack . (map IB.c2w) .  LC8.unpack --L8.pack . (Prelude.map IB.w2c) . B.unpack
 
-data MMessage = MM [DNSMessage] deriving ( Show )
+--data MMessage = MM [DNSMessage] deriving ( Show )
 
-instance Arbitrary MMessage where
-  arbitrary = do 
-      xs <- infiniteListOf (resize 10 (arbitrary))
-      return $ MM xs
+--instance Arbitrary MMessage where
+--  arbitrary = do 
+--      xs <- infiniteListOf (resize 10 (arbitrary))
+--      return $ MM xs
 
-mencode (MM x) = Prelude.map (convertL8 . encode) x
+--mencode (MM x) = Prelude.map (convertL8 . encode) x
+mencode = (convertL8 . encode)
+
+
 --mencode (MM x) = Prelude.map encode x
 {-
 tftpmain (MainArgs _ cmd filename prop maxSuccess maxSize outdir b) = let (prog, args) = (Prelude.head spl, Prelude.tail spl) in

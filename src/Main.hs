@@ -46,21 +46,22 @@ import qualified Regex
 
 import qualified Pandoc
 import qualified PS
-import qualified ASN1
+import qualified ICal
 #endif
 
 #ifdef PKI
 
 import qualified ASN1
 import qualified X509
+import qualified CRL
 
 #endif
 
 #ifdef NET
 
-import qualified URI
-import qualified Http
---import qualified Dns
+--import qualified URI
+--import qualified Http
+import qualified Dns
 
 #endif
 
@@ -153,6 +154,7 @@ dispatch arg = do
             "Docx"  -> Process.main (Pandoc.mencode_docx,undefined)  args b
             "Odt"  -> Process.main (Pandoc.mencode_odt,undefined)  args b
             "PS"  -> Process.main (PS.mencode,undefined)  args b
+            "ICal"  -> Process.main (ICal.mencode,undefined)  args b
 
 #endif
 
@@ -160,18 +162,21 @@ dispatch arg = do
 #ifdef PKI
             "ASN1"  -> Process.main (ASN1.mencode,undefined)  args b
             "X509"  -> Process.main (X509.mencode,undefined)  args b
+            "CRL"  -> Process.main (CRL.mencode,undefined)  args b
 
 #endif
 
 
 #ifdef NET
 
-            "HttpReq" -> Process.netmain Http.mencode_req args b
-            "HttpRes" -> Process.netmain Http.mencode_res args b
+            --"HttpReq" -> Process.netmain Http.mencode_req args b
+            --"HttpRes" -> Process.netmain Http.mencode_res args b
 
             --"Tftp" -> Tftp.main args b
-            --"Dns" -> Process.netmain Dns.mencode args b
-            "URI"   -> Process.main (URI.mencode,undefined,undefined) args b
+            "Dns"  -> Process.main (Dns.mencode,undefined)  args b
+                  -- -> Process.netmain Dns.mencode args b
+
+            --"URI"   -> Process.main (URI.mencode,undefined,undefined) args b
 #endif
 
 #ifdef MEDIA
