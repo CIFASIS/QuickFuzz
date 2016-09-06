@@ -13,7 +13,7 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 import Data.DeriveTH
 import DeriveArbitrary
 
-import Megadeth.DeriveShow
+import DeriveShow
 
 import Vector
 import ByteString

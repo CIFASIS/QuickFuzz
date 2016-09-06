@@ -14,7 +14,7 @@ import qualified Data.ByteString.Lazy as L
 import Data.DeriveTH
 import DeriveArbitrary
 
-import Megadeth.DeriveShow
+import DeriveShow
 
 type BmpFile  = (BmpPalette, Image PixelRGBA8)
 

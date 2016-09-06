@@ -19,7 +19,7 @@ import Data.DeriveTH
 import Data.Binary.Put( runPut )
 
 import DeriveArbitrary hiding (derive)
-import Megadeth.DeriveShow
+import DeriveShow
 
 import Vector
 import Images

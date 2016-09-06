@@ -16,7 +16,7 @@ import qualified Data.ByteString as B
 import Data.DeriveTH
 import DeriveArbitrary
 
-import Megadeth.DeriveShow
+import DeriveShow
 
 import ByteString
 import Images

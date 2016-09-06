@@ -13,7 +13,7 @@ import Codec.Picture.ColorQuant
 import Mutation
 import DeriveMutation
 
-import Megadeth.DeriveShow
+import DeriveShow
 
 import DeriveArbitrary hiding (derive)
 import ByteString
