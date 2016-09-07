@@ -64,8 +64,10 @@ str2prop
 
 str2prop "zzuf" = prop_ZzufExec
 str2prop "radamsa" = prop_RadamsaExec
---str2prop "check" = checkprop
+str2prop "valgrind" = prop_ValgrindExec
+str2prop "ltrace" = prop_LTraceExec
 str2prop "gen" = prop_Gen
+str2prop "env" = prop_EnvExec
 str2prop "exec" = prop_Exec
 str2prop "honggfuzz" = prop_HonggfuzzExec
 str2prop _ = prop_Exec
