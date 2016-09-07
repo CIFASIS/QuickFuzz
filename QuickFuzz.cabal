@@ -74,18 +74,19 @@ executable QuickFuzz
 
   other-extensions:    CPP, FlexibleContexts, TypeFamilies, TupleSections, ExistentialQuantification, BangPatterns, ScopedTypeVariables, TypeSynonymInstances, Rank2Types, FlexibleInstances, RankNTypes, MultiParamTypeClasses, GADTs, StandaloneDeriving, TypeOperators, GeneralizedNewtypeDeriving, FunctionalDependencies, OverloadedStrings
 
-  build-depends:      base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, quickcheck-unicode, mtl, random, ghc-prim, 
-                      process, deepseq, derive, unix, linear, template-haskell, directory, pretty, argparser, 
+  build-depends:      base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, quickcheck-unicode, mtl, random, ghc-prim,
+                      process, deepseq, derive, unix, linear, template-haskell, directory, pretty, argparser,
                       split, wl-pprint, text, parallel-io, monad-par,
                       abstract-par, megadeth
   if flag(codes)
-      build-depends:   HaXml, language-ecmascript, language-dot, language-css, language-python, language-glsl, json, uniplate
+      build-depends:   HaXml, language-ecmascript, language-dot, language-css, language-python, language-glsl, json, uniplate,
+                       language-lua, language-bash, shell-escape
 
   if flag(imgs)
       build-depends:  zlib, JuicyPixels, svg-tree, xml, AC-PPM
 
   if flag(archs)
-      build-depends:  zlib, tar, zip-archive, base16-bytestring 
+      build-depends:  zlib, tar, zip-archive, base16-bytestring
 
   if flag(docs)
       build-depends: pandoc-types, pandoc, data-default, hps, hcg-minus, iCalendar

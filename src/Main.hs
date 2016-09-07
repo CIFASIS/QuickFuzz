@@ -39,6 +39,8 @@ import qualified Dot
 import qualified JSON
 import qualified GLSL
 import qualified Regex
+import qualified Lua
+import qualified Sh
 
 #endif
 
@@ -86,7 +88,7 @@ import System.Console.ArgParser
 import System.Random
 import Args
 import Data.Maybe
-import System.Directory 
+import System.Directory
 import System.Exit
 import Control.Monad
 import Data.List.Split
@@ -107,7 +109,7 @@ dispatch :: MainArgs -> IO ()
 dispatch arg = do
         args <- fillArgs arg
         let b = findPar arg
-        safetyChecks arg 
+        safetyChecks arg
         case findFileType arg of
 
 #ifdef IMGS
@@ -145,7 +147,8 @@ dispatch arg = do
             "JSON"   -> Process.main (JSON.mencode,undefined) args b
             "GLSL"   -> Process.main (GLSL.mencode,undefined) args b
             "Regex" -> Process.main (Regex.mencode,undefined)  args b
-            --"Sh"   -> Sh.main args b
+            "Lua"   -> Process.main (Lua.mencode,undefined)  args b
+            "Sh"   -> Process.main (Sh.mencode,undefined) args b
 
 #endif
 
@@ -204,7 +207,7 @@ safetyChecks args = do
     --let act = findAct args
     --actx <- findExecutable act
     --unless (isJust actx) (die $ "The action \"" ++ act ++ "\" cannot be done.")
-        
+
 main = do
     interface <- cli
     runApp interface dispatch
