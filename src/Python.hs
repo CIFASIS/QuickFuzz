@@ -22,7 +22,10 @@ import Control.Monad.Trans
 import Control.Monad.Trans.State
 
 instance Arbitrary String where
-   arbitrary = mgenName2
+   arbitrary = genName
+
+
+{-
 
 --Possibly incomplete
 isReservedWord :: String -> Bool
@@ -55,6 +58,8 @@ isValidContinue c = isValidStart c || validContinue c
                             ConnectorPunctuation -> True
                             _                    -> False
 
+
+
 --Generation of easy to read identifiers
 class ReadableIds a where
   fixUp :: a -> Gen a
@@ -84,6 +89,7 @@ identifierFix id = let s = ident_string id
                      ""      -> id {ident_string = "_"}
                      (st:c)  -> let fixed = (fixStart st):(map fixContinue c)
                                 in if isReservedWord fixed then id {ident_string = ('_':fixed)} else id {ident_string = fixed}
+-}
 
 type MPy = Module ()
 
@@ -96,7 +102,7 @@ instance Arbitrary MPy where
                  go n = Module <$> (listOf $ (resize (n `div` 10) arbitrary))
 
 instance {-# OVERLAPPING #-} Arbitrary a => Arbitrary (Ident a) where --easy to read instance
-     arbitrary = sized go >>= fixUp where
+     arbitrary = sized go {->>= fixUp-} where
            go n = Ident <$> resize n arbitrary <*> resize n arbitrary
 
 gInt :: Arbitrary a => Bool -> Gen(Expr a)
@@ -334,12 +340,3 @@ instance (Arbitrary a, Eq a, Show a) => F.Fixable (Ident a) (Module a) where
     gg = \e -> case e of
                Module xs -> do cxs <- coh xs;
                                return (Module cxs)
-
-testModule :: MPy
-testModule = Module [stmt1, stmt2, stmt3, stmt4]
-
-stmt1, stmt2, stmt3, stmt4 :: Statement ()
-stmt1 = Assign [Var (Ident "a" () ) () ] (Var (Ident "aa" () ) () ) ()
-stmt2 = Assign [Var (Ident "b" () ) () ] (Var (Ident "bb" () ) () ) ()
-stmt3 = Assign [Var (Ident "c" () ) () ] (Var (Ident "cc" () ) () ) ()
-stmt4 = Assign [Var (Ident "d" () ) () ] (BinaryOp (Plus () ) (Var (Ident "x" () ) () ) (BinaryOp (Plus () ) (Var (Ident "y" () ) () ) (BinaryOp (Plus () ) (Var (Ident "z" () ) () ) (Var (Ident "x" () ) () ) () ) () ) () ) ()

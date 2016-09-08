@@ -23,7 +23,7 @@ import Strings
 type MJs =  JavaScript ()
 
 instance Arbitrary String where
-   arbitrary = mgenName2
+   arbitrary = genName
 
 --(generate $ (arbitrary :: Gen (JavaScript ()))) >>= (\x -> putStr $ (show . prettyPrint) x)
 
@@ -72,13 +72,6 @@ $(mkGranCoh ''Id 'VarRef 'VarDecl ''JavaScript)
 
 instance (Arbitrary a, Eq a, Show a) => Fixable (Id a) a where
  coh = return
-
-tJS :: MJs
-tJS = Script ()
-        [VarDeclStmt () [(VarDecl () (Id () "x") (Just (VarRef () (Id () "j"))))],
-         VarDeclStmt () [(VarDecl () (Id () "y") (Just (VarRef () (Id () "x"))))],
-         VarDeclStmt () [(VarDecl () (Id () "z") (Just (VarRef () (Id () "p"))))],
-         VarDeclStmt () [(VarDecl () (Id () "u") (Just (VarRef () (Id () "t"))))]]
 
 mencode :: MJs -> L.ByteString
 mencode x = L8.pack $ show $ prettyPrint x

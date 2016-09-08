@@ -27,7 +27,7 @@ import Strings
 type Sh = Command
 
 instance Arbitrary String where
-   arbitrary = mgenName2
+   arbitrary = genName
 
 instance Arbitrary SE.Bash where
    arbitrary = do
@@ -77,10 +77,6 @@ instance Arbitrary Sh where
             go n
               = Command <$> resize (max 0 (n - 1)) arbitrary
                 <*> (listOf $ (resize (n `div` 10) arbitrary))
-
-tC = Command (SimpleCommand [Assign (Parameter "x" Nothing) Equals (RValue [ParamSubst (Bare (Parameter "xx" Nothing))]),
-                             Assign (Parameter "y" Nothing) Equals (RValue [ParamSubst (Bare (Parameter "yy" Nothing))]),
-                             Assign (Parameter "z" Nothing) Equals (RValue [ParamSubst (Bare (Parameter "zz" Nothing))])  ] [])  []
 
 $(devArbitrary ''Sh)
 
