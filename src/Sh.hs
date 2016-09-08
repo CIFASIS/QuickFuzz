@@ -64,19 +64,17 @@ genVar :: [Parameter] -> Gen Span
 genVar xs = do n <- elements xs
                return (ParamSubst (Bare n))
 
-$(mkGranCoh ''Parameter 'ParamSubst 'Assign ''Command)
+$(mkGranFix ''Parameter 'ParamSubst 'Assign ''Command)
 
 instance (Arbitrary a, Eq a, Show a) => Fixable Parameter a where
-  coh = return
+  fix = return
 
 instance Arbitrary Sh where
       arbitrary
         = do a <- sized go
-             evalStateT (coh a) initV
-          where
-            go n
-              = Command <$> resize (max 0 (n - 1)) arbitrary
-                <*> (listOf $ (resize (n `div` 10) arbitrary))
+             evalStateT (fix a) initV
+          where go n = Command <$> resize (max 0 (n - 1)) arbitrary
+                               <*> (listOf $ (resize (n `div` 10) arbitrary))
 
 $(devArbitrary ''Sh)
 

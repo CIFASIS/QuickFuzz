@@ -23,10 +23,7 @@ import Control.Monad.Trans.State
 
 instance Arbitrary String where
    arbitrary = genName
-
-
 {-
-
 --Possibly incomplete
 isReservedWord :: String -> Bool
 isReservedWord w = elem w rwords
@@ -58,8 +55,6 @@ isValidContinue c = isValidStart c || validContinue c
                             ConnectorPunctuation -> True
                             _                    -> False
 
-
-
 --Generation of easy to read identifiers
 class ReadableIds a where
   fixUp :: a -> Gen a
@@ -90,14 +85,13 @@ identifierFix id = let s = ident_string id
                      (st:c)  -> let fixed = (fixStart st):(map fixContinue c)
                                 in if isReservedWord fixed then id {ident_string = ('_':fixed)} else id {ident_string = fixed}
 -}
-
 type MPy = Module ()
 
 initV = StV []
 
 instance Arbitrary MPy where
   arbitrary = do a <- sized go
-                 evalStateT (coh a) (initV :: StV (Ident ()))
+                 evalStateT (fix a) (initV :: StV (Ident ()))
               where
                  go n = Module <$> (listOf $ (resize (n `div` 10) arbitrary))
 
@@ -330,13 +324,13 @@ genVar :: Arbitrary a => [Ident a] -> Gen (Expr a)
 genVar xs = Var <$> elements xs <*> arbitrary
 
 instance F.Fixable (Ident a) a where
-  coh = return
+  fix = return
 
-$(mkGranCoh ''Ident 'Var 'Assign ''Module)
+$(mkGranFix ''Ident 'Var 'Assign ''Module)
 
 instance (Arbitrary a, Eq a, Show a) => F.Fixable (Ident a) (Module a) where
-  coh = gg where
+  fix = gg where
     gg :: Module a -> VState (Ident a) (Module a)
     gg = \e -> case e of
-               Module xs -> do cxs <- coh xs;
+               Module xs -> do cxs <- fix xs;
                                return (Module cxs)

@@ -25,8 +25,6 @@ type MJs =  JavaScript ()
 instance Arbitrary String where
    arbitrary = genName
 
---(generate $ (arbitrary :: Gen (JavaScript ()))) >>= (\x -> putStr $ (show . prettyPrint) x)
-
 getVId (VarRef a vid) = vid
 
 getAId (VarDecl a vid e) = vid
@@ -61,17 +59,16 @@ fStat x = return x
 
 instance Arbitrary MJs where
   arbitrary = do a <- sized go
-                 evalStateT (coh a) (initV :: StV (Id ()))
+                 evalStateT (fix a) (initV :: StV (Id ()))
               where
                  go n = Script Prelude.<$> resize (max 0 (n - 1)) arbitrary
                                        <*> (listOf $ (resize (n `div` 10) arbitrary))
 
-
 $(devArbitrary ''MJs)
-$(mkGranCoh ''Id 'VarRef 'VarDecl ''JavaScript)
+$(mkGranFix ''Id 'VarRef 'VarDecl ''JavaScript)
 
 instance (Arbitrary a, Eq a, Show a) => Fixable (Id a) a where
- coh = return
+ fix = return
 
 mencode :: MJs -> L.ByteString
 mencode x = L8.pack $ show $ prettyPrint x

@@ -18,38 +18,38 @@ data StV a = StV {vars :: [a]} deriving Show
 type VState a b = StateT (StV a) Gen b
 
 class Fixable a b where
-  coh :: b -> VState a b
+  fix :: b -> VState a b
 
 instance Fixable a b => Fixable a [b] where
-  coh = mapM coh
+  fix = mapM fix
 
 instance Fixable a b => Fixable a (Maybe b) where
-    coh (Nothing) = return Nothing
-    coh (Just a) = do ca <- coh a
+    fix (Nothing) = return Nothing
+    fix (Just a) = do ca <- fix a
                       return $ Just ca
 
 instance (Fixable a b, Fixable a c) => Fixable a (b,c) where
-    coh (x,y) = do cx <- coh x
-                   cy <- coh y
+    fix (x,y) = do cx <- fix x
+                   cy <- fix y
                    return (cx, cy)
 
 instance Fixable a Char where
- coh = return
+ fix = return
 
 instance Fixable a Double where
- coh = return
+ fix = return
 
 instance Fixable a Bool where
- coh = return
+ fix = return
 
 instance Fixable a Integer where
- coh = return
+ fix = return
 
 instance Fixable a Int where
-  coh = return
+  fix = return
 
 instance Fixable a a where
- coh = return
+ fix = return
 
 getStuff :: Con -> (Name, Int)
 getStuff (NormalC n xs) = (n, length xs)
@@ -113,16 +113,16 @@ mkMatch v a (n, m) = if n == v then --Var
 
 mkDoB :: Name -> Q (Name, Stmt)
 mkDoB x = do cx <- newName "cx"
-             let cohN = mkName "coh"
-             return $ (cx, BindS (VarP cx) (AppE (VarE cohN) (VarE x)))  --cx <- coh x
+             let fixN = mkName "fix"
+             return $ (cx, BindS (VarP cx) (AppE (VarE fixN) (VarE x)))  --cx <- fix x
 
-mkCohBody matches = let e = mkName "e" in
+mkFixBody matches = let e = mkName "e" in
                       lamE [varP e] (caseE (varE e) matches)
 
-mkGranCoh i v ka t = do
-	prevDev t (const $ return False) >>= mapM (mkCoh i v ka) >>= (return . concat)
+mkGranFix i v ka t = do
+	prevDev t (const $ return False) >>= mapM (mkFix i v ka) >>= (return . concat)
 
-mkCoh i v a t = do ti <- reify t
+mkFix i v a t = do ti <- reify t
                    case ti of
                       TyConI (DataD _ _ params tcons _) -> do
                         let cstuff = map getStuff tcons
@@ -139,24 +139,24 @@ mkCoh i v a t = do ti <- reify t
                             let pvars = map varT plist
                             if null tvars then
                               if null ivars then [d| instance Fixable $(conT i) $(conT t) where
-                                                            coh = gg where
+                                                            fix = gg where
                                                                   gg :: $(conT t) -> VState $(conT i) $(conT t)
-                                                                  gg = $(mkCohBody matches) |]
+                                                                  gg = $(mkFixBody matches) |]
                               else [d| instance Fixable $(foldl appT (conT i) pvars) $(conT t) where
-                                              coh = gg where
+                                              fix = gg where
                                                     gg :: $(conT t) -> VState $(foldl appT (conT i) pvars) $(conT t)
-                                                    gg = $(mkCohBody matches) |]
+                                                    gg = $(mkFixBody matches) |]
                             else
                               if null ivars then [d| instance $(foldl appT (tupleT (3*np)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars) ++(map (appT (conT ''Show)) pvars)))
                                                             => Fixable $(conT i) $(foldl appT (conT t) pvars)  where
-                                                                      coh = gg where
+                                                                      fix = gg where
                                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(conT i) $(foldl appT (conT t) pvars)
-                                                                            gg = $(mkCohBody matches) |]
+                                                                            gg = $(mkFixBody matches) |]
                               else [d| instance $(foldl appT (tupleT (3*np)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
                                           => Fixable $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)  where
-                                                      coh = gg where
+                                                      fix = gg where
                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)
-                                                            gg = $(mkCohBody matches) |]
+                                                            gg = $(mkFixBody matches) |]
                           TyConI (NewtypeD _ _ ip _ _) -> do
                             let ivars = map (varT . getParName) ip
                             let nip = max np (length ip)
@@ -164,22 +164,22 @@ mkCoh i v a t = do ti <- reify t
                             let pvars = map varT plist
                             if null tvars then
                               if null ivars then [d| instance Fixable $(conT i) $(conT t) where
-                                                            coh = gg where
+                                                            fix = gg where
                                                                   gg :: $(conT t) -> VState $(conT i) $(conT t)
-                                                                  gg = $(mkCohBody matches) |]
+                                                                  gg = $(mkFixBody matches) |]
                               else [d| instance Fixable $(foldl appT (conT i) pvars) $(conT t) where
-                                              coh = gg where
+                                              fix = gg where
                                                     gg :: $(conT t) -> VState $(foldl appT (conT i) pvars) $(conT t)
-                                                    gg = $(mkCohBody matches) |]
+                                                    gg = $(mkFixBody matches) |]
                             else
                               if null ivars then [d| instance $(foldl appT (tupleT (3*np)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
                                                             => Fixable $(conT i) $(foldl appT (conT t) pvars)  where
-                                                                      coh = gg where
+                                                                      fix = gg where
                                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(conT i) $(foldl appT (conT t) pvars)
-                                                                            gg = $(mkCohBody matches) |]
+                                                                            gg = $(mkFixBody matches) |]
                               else [d| instance $(foldl appT (tupleT (3*np)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
                                           => Fixable $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)  where
-                                                      coh = gg where
+                                                      fix = gg where
                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)
-                                                            gg = $(mkCohBody matches) |]
+                                                            gg = $(mkFixBody matches) |]
                       _ -> return []
