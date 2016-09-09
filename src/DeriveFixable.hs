@@ -13,6 +13,7 @@ import Megadeth.Prim
 import Control.Monad.Trans
 import Control.Monad.Trans.State
 
+--The state is composed of identifiers
 data StV a = StV {vars :: [a]} deriving Show
 
 type VState a b = StateT (StV a) Gen b
@@ -20,37 +21,39 @@ type VState a b = StateT (StV a) Gen b
 class Fixable a b where
   fix :: b -> VState a b
 
+--Common instances
 instance Fixable a b => Fixable a [b] where
   fix = mapM fix
 
 instance Fixable a b => Fixable a (Maybe b) where
-    fix (Nothing) = return Nothing
-    fix (Just a) = do ca <- fix a
-                      return $ Just ca
+  fix (Nothing) = return Nothing
+  fix (Just a) = do ca <- fix a
+                    return $ Just ca
 
 instance (Fixable a b, Fixable a c) => Fixable a (b,c) where
-    fix (x,y) = do cx <- fix x
-                   cy <- fix y
-                   return (cx, cy)
+  fix (x,y) = do cx <- fix x
+                 cy <- fix y
+                 return (cx, cy)
 
 instance Fixable a Char where
- fix = return
+  fix = return
 
 instance Fixable a Double where
- fix = return
+  fix = return
 
 instance Fixable a Bool where
- fix = return
+  fix = return
 
 instance Fixable a Integer where
- fix = return
+  fix = return
 
 instance Fixable a Int where
   fix = return
 
 instance Fixable a a where
- fix = return
+  fix = return
 
+--Extract name and number of arguments from a constructor
 getStuff :: Con -> (Name, Int)
 getStuff (NormalC n xs) = (n, length xs)
 getStuff (RecC n xs) = (n, length xs)
@@ -60,68 +63,86 @@ getParName :: TyVarBndr -> Name
 getParName (PlainTV n) = n
 getParName (KindedTV n _) = n
 
-mkMatch :: Name -> Name -> (Name, Int) -> Q Match
-mkMatch v a (n, m) = if n == v then --Var
+--Takes some constructor and checks if it's either an assign or a variable. If that's the case then it makes the appropiate match;
+--if not, it creates a trivial match to fix recursively.
+mkMatch :: [Name] -> [Name] -> (Name, Int) -> Q Match
+mkMatch v a (n, m) = let stName = mkName "st"
+                         idName = mkName "vid"
+                         vp = mkName "vp"
+                         getvid = mkName "getVId"
+                         getName = mkName "get"
+                         printStN = mkName "printSt"
+                         vars = mkName "vars"
+                         liftName = mkName "lift"
+                         gencons = mkName "genCons"
+                         genvar = mkName "genVar"
+                         rName = mkName "return"
+                         pushName = mkName "pushId"
+                         ap = mkName "ap"
+                         getaid = mkName "getAId" in
+                     if elem n v then --Variable
                        do xlist <- replicateM m (newName "x")
                           let pats = map varP xlist
-                          let stName = mkName "st"
-                          let idName = mkName "vid"
-                          let vp = mkName "vp"
-                          b <- [| let $(varP idName) = $(appE (varE (mkName "getVId")) (varE vp)) in
-                                     do $(varP stName) <- $(varE (mkName "get"))
-                                        traceM $ $(varE (mkName "printSt")) $(varE stName)
-                                        case elem $(varE idName) ($(appE (varE (mkName "vars")) (varE stName))) of
+                          --Extract id, check if it's in the state. If it's not, replace it with one from
+                          --the state, or if the state is empty, put some other expression (maybe a constant)
+                          b <- [| let $(varP idName) = $(appE (varE getvid) (varE vp)) in
+                                     do $(varP stName) <- $(varE getName)
+                                        --traceM $ $(varE printStN) $(varE stName)  --uncomment this for debugging
+                                        case elem $(varE idName) ($(appE (varE vars) (varE stName))) of
                                             True -> return $(varE vp)
-                                            False -> if null (($(appE (varE (mkName "vars")) (varE stName)))) then
-                                                       do c <- $(varE (mkName "lift")) $ $(varE (mkName "genCons"))
+                                            False -> if null (($(appE (varE vars) (varE stName)))) then
+                                                       do c <- $(varE liftName) $ $(varE gencons)
                                                           return c
-                                                     else do newv <- $(varE (mkName "lift")) $ ($(appE (varE (mkName "genVar")) (appE (varE (mkName "vars")) (varE (mkName "st")))))
+                                                     else do newv <- $(varE liftName) $ ($(appE (varE genvar) (appE (varE vars) (varE stName))))
                                                              return newv |]
                           match (asP vp (conP n pats)) (normalB (returnQ b)) []
-                     else if n == a then --Assign
+                     else if elem n a then --Assign
                        do xlist <- replicateM m (newName "x")
                           let pats = map varP xlist
+                          --Extract id, check if it's in the state. If it's not, add it.
                           cpairs <- mapM mkDoB (tail xlist)
                           let (cohs, binds) = (map fst cpairs, map snd cpairs)
                           let xvars = map VarE ((head xlist):cohs)
-                          let rName = mkName "return"
-                          let retBind = NoBindS (AppE (VarE rName) (foldl AppE (ConE n)  xvars))
+                          let retBind = NoBindS (AppE (VarE rName) (foldl AppE (ConE n) xvars))
                           let doBodyT = return $ DoE (binds++[retBind])
-                          let pushName = mkName "pushId"
-                          let idName = mkName "vid"
-                          let stName = mkName "st"
-                          let pushBind = NoBindS (AppE (VarE pushName) (VarE idName))
+                          let pushBind = NoBindS (AppE (VarE pushName) (VarE idName)) --push id to the state
                           let doBodyF = return $ DoE (binds++[pushBind,retBind])
-                          let ap = mkName "ap"
-                          b <- [| let $(varP idName) = $(appE (varE (mkName "getAId")) (varE ap)) in
-                                   do $(varP stName) <- $(varE (mkName "get"))
-                                      traceM $ $(varE (mkName "printSt")) $(varE stName)
-                                      case elem $(varE idName) ($(appE (varE (mkName "vars")) (varE stName))) of
+                          b <- [| let $(varP idName) = $(appE (varE getaid) (varE ap)) in
+                                   do $(varP stName) <- $(varE getName)
+                                      --traceM $ $(varE printStN) $(varE stName)  --uncomment this for debugging
+                                      case elem $(varE idName) ($(appE (varE vars) (varE stName))) of
                                           True -> $(doBodyT)
                                           False -> $(doBodyF) |]
                           match (asP ap (conP n pats)) (normalB (returnQ b)) []
                      else --Other constructors
                        do xlist <- replicateM m (newName "x")
                           let pats = map varP xlist
+                          --Just do a fix of the constructor arguments and return the fixed constructor
                           cpairs <- mapM mkDoB xlist
                           let (cohs, binds) = (map fst cpairs, map snd cpairs)
                           let xvars = map VarE cohs
-                          let rName = mkName "return"
-                          let retBind = NoBindS (AppE (VarE rName) (foldl AppE (ConE n)  xvars))
+                          let retBind = NoBindS (AppE (VarE rName) (foldl AppE (ConE n) xvars))
                           let doBody = DoE (binds++[retBind])
                           match (conP n pats) (normalB (returnQ doBody)) []
 
+--Generates an expression of the form cx <- fix x
 mkDoB :: Name -> Q (Name, Stmt)
 mkDoB x = do cx <- newName "cx"
              let fixN = mkName "fix"
-             return $ (cx, BindS (VarP cx) (AppE (VarE fixN) (VarE x)))  --cx <- fix x
+             return $ (cx, BindS (VarP cx) (AppE (VarE fixN) (VarE x)))
 
+--Given a list of matches (built with mkMatch), generate a function body.
+mkFixBody :: [Q Match] -> Q Exp
 mkFixBody matches = let e = mkName "e" in
                       lamE [varP e] (caseE (varE e) matches)
 
-mkGranFix i v ka t = do
-	prevDev t (const $ return False) >>= mapM (mkFix i v ka) >>= (return . concat)
+--Uses Megadeth to make every Fixable instance needed
+mkGranFix :: Name -> [Name] -> [Name] -> Name -> Q [Dec]
+mkGranFix i v ka t = prevDev t (const $ return False) >>= mapM (mkFix i v ka) >>= (return . concat)
 
+--Creates a Fixable instance for a type, needs information to know which constructors represent
+-- the identifiers, assignments and variables
+mkFix :: Name -> [Name] -> [Name] -> Name -> Q [Dec]
 mkFix i v a t = do ti <- reify t
                    case ti of
                       TyConI (DataD _ _ params tcons _) -> do
@@ -182,4 +203,5 @@ mkFix i v a t = do ti <- reify t
                                                       fix = gg where
                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)
                                                             gg = $(mkFixBody matches) |]
+                      --newtype case?
                       _ -> return []

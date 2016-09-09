@@ -29,7 +29,7 @@ type MLUA = Block
 getVId (PrefixExp (PEVar v)) = luaVar v
 getVId _ = Name $ pack ""
 
-getAId (Assign [v] e) = luaVar v
+getAId (Assign [v] _) = luaVar v
 getAId _ = Name $ pack ""
 
 luaVar (VarName n) = n
@@ -62,7 +62,7 @@ genVar :: [Name] -> Gen Exp
 genVar xs = do n <- elements xs
                return (PrefixExp (PEVar (VarName n)))
 
-$(mkGranFix ''Name 'PrefixExp 'Assign ''Block)
+$(mkGranFix ''Name ['PrefixExp] ['Assign] ''Block)
 
 cBlock :: MLUA -> Gen MLUA
 cBlock (Block stats m) = do cstat <- evalStateT (fix stats) initV

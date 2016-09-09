@@ -70,7 +70,7 @@ cont = start ++ ['0'..'9']
 
 readableFix :: Arbitrary a => Ident a -> Gen (Ident a)
 readableFix id = do s <- elements start
-                    c <- shuffle cont
+                    c <- shuffle conta
                     let nid = s:(take 2 c)
                         fid = if isReservedWord nid then '_':nid else nid
                     return (id{ident_string = fid})
@@ -203,7 +203,7 @@ instance {-# OVERLAPPING #-} Arbitrary a => Arbitrary (Statement a) where
                                                <*> resize n arbitrary,
                                     While <$> resize n arbitrary <*> resize n arbitrary
                                           <*> resize n arbitrary <*> resize n arbitrary,
-                                    For <$> (listOf $ (resize (n `div` 10) arbitrary))
+                                    For <$> lOfOneVar --(listOf $ (resize (n `div` 10) arbitrary))
                                         <*> resize n arbitrary <*> resize n arbitrary
                                         <*> resize n arbitrary <*> resize n arbitrary,
                                     Fun <$> resize n arbitrary <*> (listOf $ (resize (n `div` 10) arbitrary))
@@ -299,10 +299,11 @@ mencode x = LC8.pack $ prettyText x
 --------------------------
 ----Coherent variables----
 --------------------------
-getVId (Var i a) = i
+getVId (Var i _) = i
 getVId _ = Ident "" undefined
 
-getAId (Assign [v] e a) = getVId v
+getAId (Assign [v] _ _) = getVId v
+getAId (For [v] _ _ _ _) = getVId v
 getAId _ = Ident "" undefined
 
 printSt (StV v) = "\nstate: " ++ (concat $ map (\(Ident i _) -> show i) v) ++ "\n"
@@ -326,7 +327,7 @@ genVar xs = Var <$> elements xs <*> arbitrary
 instance F.Fixable (Ident a) a where
   fix = return
 
-$(mkGranFix ''Ident 'Var 'Assign ''Module)
+$(mkGranFix ''Ident ['Var] ['Assign, 'For] ''Module)
 
 instance (Arbitrary a, Eq a, Show a) => F.Fixable (Ident a) (Module a) where
   fix = gg where

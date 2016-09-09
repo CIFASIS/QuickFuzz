@@ -64,7 +64,7 @@ genVar :: [Parameter] -> Gen Span
 genVar xs = do n <- elements xs
                return (ParamSubst (Bare n))
 
-$(mkGranFix ''Parameter 'ParamSubst 'Assign ''Command)
+$(mkGranFix ''Parameter ['ParamSubst] ['Assign] ''Command)
 
 instance (Arbitrary a, Eq a, Show a) => Fixable Parameter a where
   fix = return
