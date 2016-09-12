@@ -1,0 +1,22 @@
+dependencies:
+  cache_directories:
+    - "~/.stack"
+    - ".stack-work"
+  pre:
+    - curl -L https://github.com/commercialhaskell/stack/releases/download/v1.0.4/stack-1.0.4-linux-x86_64.tar.gz | tar zx -C /tmp
+    - sudo mv /tmp/stack-1.0.4-linux-x86_64/stack /usr/bin
+    - sudo apt-get install zlib1g-dev libgmp-dev
+  override:
+    - stack setup
+    - rm -rf $(stack path --dist-dir) $(stack path --local-install-root)
+    #- stack install hlint packdeps cabal-install
+    - stack install --flag QuickFuzz:imgs \
+                    --flag QuickFuzz:archs \
+                    --flag QuickFuzz:docs \
+                    --flag QuickFuzz:codes \
+                    --flag QuickFuzz:media \
+                    --flag QuickFuzz:pki
+
+test:
+  override:
+    - stack test
