@@ -43,6 +43,10 @@ Because *QuickFuzz* generates a lot of dependencies that may not be necessary to
 For instance, to compile only with image generation (Bmp, Gif, Png, Ico, ..):
 
     $ stack install --flag QuickFuzz:imgs
+    
+Because of a Stack issue, you must install `alex` manually before enabling the `codes` flag:
+
+    $ stack install alex
 
 ### Cabal Installation
 
