@@ -141,7 +141,7 @@ mkGranFix :: Name -> [Name] -> [Name] -> Name -> Q [Dec]
 mkGranFix i v ka t = prevDev t (const $ return False) >>= mapM (mkFix i v ka) >>= (return . concat)
 
 --Creates a Fixable instance for a type, needs information to know which constructors represent
--- the identifiers, assignments and variables
+-- the identifiers, variables and assignments
 mkFix :: Name -> [Name] -> [Name] -> Name -> Q [Dec]
 mkFix i v a t = do ti <- reify t
                    case ti of
@@ -179,6 +179,31 @@ mkFix i v a t = do ti <- reify t
                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)
                                                             gg = $(mkFixBody matches) |]
                           TyConI (NewtypeD _ _ ip _ _) -> do
+                            let ivars = map (varT . getParName) ip
+                            let nip = max np (length ip)
+                            plist <- replicateM nip (newName "x")
+                            let pvars = map varT plist
+                            if null tvars then
+                              if null ivars then [d| instance Fixable $(conT i) $(conT t) where
+                                                            fix = gg where
+                                                                  gg :: $(conT t) -> VState $(conT i) $(conT t)
+                                                                  gg = $(mkFixBody matches) |]
+                              else [d| instance Fixable $(foldl appT (conT i) pvars) $(conT t) where
+                                              fix = gg where
+                                                    gg :: $(conT t) -> VState $(foldl appT (conT i) pvars) $(conT t)
+                                                    gg = $(mkFixBody matches) |]
+                            else
+                              if null ivars then [d| instance $(foldl appT (tupleT (3*np)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
+                                                            => Fixable $(conT i) $(foldl appT (conT t) pvars)  where
+                                                                      fix = gg where
+                                                                            gg :: $(foldl appT (conT t) pvars) -> VState $(conT i) $(foldl appT (conT t) pvars)
+                                                                            gg = $(mkFixBody matches) |]
+                              else [d| instance $(foldl appT (tupleT (3*np)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
+                                          => Fixable $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)  where
+                                                      fix = gg where
+                                                            gg :: $(foldl appT (conT t) pvars) -> VState $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)
+                                                            gg = $(mkFixBody matches) |]
+                          TyConI (TySynD _ ip _) -> do
                             let ivars = map (varT . getParName) ip
                             let nip = max np (length ip)
                             plist <- replicateM nip (newName "x")
