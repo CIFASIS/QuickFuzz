@@ -1,0 +1,40 @@
+machine:
+  environment:
+    PATH: $PATH:/home/ubuntu/.local/bin
+
+dependencies:
+  cache_directories:
+    - "~/.stack"
+    - "~/.cabal"
+  pre:
+    - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 575159689BEFB442
+    - echo 'deb http://download.fpcomplete.com/ubuntu trusty main'|sudo tee /etc/apt/sources.list.d/fpco.list
+    - sudo apt-get update && sudo apt-get install stack -y
+    - sudo apt-get install zlib1g-dev libgmp-dev 
+    - sudo apt-get install zzuf
+    - git clone https://github.com/CIFASIS/radamsa; cd radamsa; git pull; make install DESTDIR=$HOME/.local PREFIX=""
+    - sudo apt-get install binutils-dev libunwind8-dev
+    - git clone https://github.com/CIFASIS/honggfuzz; cd honggfuzz; make; cp ./honggfuzz $HOME/.local/bin
+  override:
+    - stack setup
+    - rm -rf $(stack path --dist-dir) $(stack path --local-install-root)
+    - stack build --fast --only-dependencies --flag QuickFuzz:imgs
+    - stack build --fast --only-dependencies --flag QuickFuzz:pki
+    - stack build --fast --only-dependencies --flag QuickFuzz:media
+    - stack build --fast --only-dependencies --flag QuickFuzz:docs
+    - stack build --fast --only-dependencies --flag QuickFuzz:archs
+    - stack install alex # https://github.com/commercialhaskell/stack/issues/595
+    - stack build --fast --only-dependencies --flag QuickFuzz:codes
+    - stack build --fast --flag QuickFuzz:imgs --flag QuickFuzz:codes --flag QuickFuzz:pki --flag QuickFuzz:media --flag QuickFuzz:docs --flag QuickFuzz:archs
+
+test:
+  pre:
+    - sudo apt-get install giflib-tools
+    - stack install hlint
+  override:
+    - hlint --report src; exit 0
+    - stack install --fast --flag QuickFuzz:imgs
+    - QuickFuzz Gif "/usr/bin/giffix @@" -a zzuf -t 25 -s 10
+  post:
+   - mkdir -p $CIRCLE_ARTIFACTS/lint/
+   - cp report.html $CIRCLE_ARTIFACTS/lint/report.html
