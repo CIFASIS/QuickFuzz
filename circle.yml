@@ -5,6 +5,7 @@ machine:
 dependencies:
   cache_directories:
     - "~/.stack"
+    - "~/.cabal"
   pre:
     - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 575159689BEFB442
     - echo 'deb http://download.fpcomplete.com/ubuntu trusty main'|sudo tee /etc/apt/sources.list.d/fpco.list
@@ -31,11 +32,9 @@ test:
     - sudo apt-get install giflib-tools
     - stack install hlint
   override:
-    - mdkir -p $CIRCLE_ARTIFACTS/lint/
-    - (exit 0); hlint --report 
+    - hlint --report src; exit 0
     - stack install --fast --flag QuickFuzz:imgs
     - QuickFuzz Gif "/usr/bin/giffix @@" -a zzuf -t 25 -s 10
-    # - stack test
- post:
+  post:
    - mkdir -p $CIRCLE_ARTIFACTS/lint/
    - cp report.html $CIRCLE_ARTIFACTS/lint/report.html
