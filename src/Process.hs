@@ -62,15 +62,15 @@ str2prop
     -> t
     -> Property
 
-str2prop "zzuf" = prop_ZzufExec
-str2prop "radamsa" = prop_RadamsaExec
-str2prop "valgrind" = prop_ValgrindExec
-str2prop "ltrace" = prop_LTraceExec
-str2prop "gen" = prop_Gen
-str2prop "env" = prop_EnvExec
-str2prop "exec" = prop_Exec
-str2prop "honggfuzz" = prop_HonggfuzzExec
-str2prop _ = prop_Exec
+str2prop "zzuf" = propZzufExec
+str2prop "radamsa" = propRadamsaExec
+str2prop "valgrind" = propValgrindExec
+str2prop "ltrace" = propLTraceExec
+str2prop "gen" = propGen
+str2prop "env" = propEnvExec
+str2prop "exec" = propExec
+str2prop "honggfuzz" = propHonggfuzzExec
+str2prop _ = propExec
 
 
 reduce filename
@@ -78,18 +78,18 @@ reduce filename
        outdir 
        r@(Failure {}) = do
                          x <- BSL.readFile (outdir ++ "/last")
-                         r <- quickCheckResult (forAllShrink (return x) shrink $ prop_Red filename (prog,args) id outdir)
+                         r <- quickCheckResult (forAllShrink (return x) shrink $ propRed filename (prog,args) id outdir)
                          print r
                          return r
 
    
 reduce _ _ _ r = return r
 
-process_custom :: Show a
+processCustom :: Show a
     => Gen a -> ((a -> BSL.ByteString),(BS.ByteString -> a)) 
     -> Bool -> FilePath -> String -> String -> Int
     -> Int -> FilePath -> FilePath -> IO Result 
-process_custom gen (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
+processCustom gen (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
 
         let spl = splitOn " " cmd
             (prog, args) = (Prelude.head spl, Prelude.tail spl)
@@ -108,7 +108,7 @@ process :: (Mutation a, Show a, Arbitrary a)
 process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
 
     let (prog, args) = (Prelude.head spl, Prelude.tail spl)
-    in process_custom arbitrary (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds
+    in processCustom arbitrary (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds
     where spl = splitOn " " cmd 
 
        {- (case prop of
