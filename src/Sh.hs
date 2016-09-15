@@ -30,22 +30,20 @@ instance Arbitrary String where
    arbitrary = genName
 
 instance Arbitrary SE.Bash where
-   arbitrary = do
-                --l <- listOf (arbitrary :: Gen Word8)
-                return $ SE.escape $ BS.pack []
+   arbitrary = return $ SE.escape $ BS.pack []
 
 instance Arbitrary Parameter where
-   arbitrary = Parameter <$> arbitrary <*> (return Nothing)
+   arbitrary = Parameter <$> arbitrary <*> return Nothing
 
 getVId (ParamSubst (Bare p)) = p
-getVId _ = (Parameter "" Nothing)
+getVId _ = Parameter "" Nothing
 
 getAId (Assign p _ _) = p
 
-initV :: StV (Parameter)
+initV :: StV Parameter
 initV = StV []
 
-printSt (StV v) = "\nstate: " ++ (concat $ map (\(Parameter i _) -> show i) v) ++ "\n"
+printSt (StV v) = "\nstate: " ++ concat<map (\(Parameter i _) -> show i) v) ++ "\n"
 
 popId :: Parameter -> VState Parameter ()
 popId i = do st <- get
@@ -53,7 +51,7 @@ popId i = do st <- get
 
 pushId :: Parameter -> VState Parameter ()
 pushId i = do st <- get
-              put $ st {vars = i:(vars st)}
+              put $ st {vars = i : vars st}
 
 genCons :: Gen Span
 genCons = resize 1 arbitrary{-do i <- arbitrary
@@ -74,7 +72,7 @@ instance Arbitrary Sh where
         = do a <- sized go
              evalStateT (fix a) initV
           where go n = Command <$> resize (max 0 (n - 1)) arbitrary
-                               <*> (listOf $ (resize (n `div` 10) arbitrary))
+                               <*> listOf $ (resize (n `div` 10) arbitrary)
 
 $(devArbitrary ''Sh)
 

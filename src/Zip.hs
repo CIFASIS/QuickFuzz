@@ -24,4 +24,6 @@ $(devArbitrary ''MArchive)
 
 mencode :: MArchive -> L.ByteString
 mencode (Archive0 x) = encode x
-mencode (Archive1 xs) = encode $ foldr addEntryToArchive emptyArchive (map (\(x,y,z) -> toEntry x y z) xs) 
+mencode (Archive1 xs) = encode $ foldr (addEntryToArchive . (\ (x, y, z) -> toEntry x y z))
+                                   emptyArchive
+                                   xs

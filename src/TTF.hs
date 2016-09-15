@@ -22,7 +22,7 @@ import Control.Monad.State
 $(devArbitrary ''Op)
 
 tab = [
-        Table "cmap" (cmapTable (cmapFormat0 0 (take 262 $ repeat 0))),
+        Table "cmap" (cmapTable (cmapFormat0 0 (replicate 262 0))),
         Table "glyf" (glyph 0 0 10 10 [0,1,2] (return ()) [3,3,3] [3,4,5] [6,7,8]),
         Table "hhea" (hhea 0 0 0 1 0 0 0 0 0 1),
         Table "hmtx" (hmtx (hmtxEntry 0 0)),
@@ -37,7 +37,7 @@ type MTTFIns = String
 type MTTFFont = [(MTTFIns, [Op])]
 
 instance Arbitrary MTTFIns where
-   arbitrary = oneof $ (map return ["post", "name", "maxp", "loca", "hmtx", "hhea", "glyf", "cmap", "head", "fpgm"])
+   arbitrary = oneof $ map return ["post", "name", "maxp", "loca", "hmtx", "hhea", "glyf", "cmap", "head", "fpgm"]
 
 mkTable (str,xs) = Table str (ops xs) --where str = [c1,c2,c3,c4]
 
