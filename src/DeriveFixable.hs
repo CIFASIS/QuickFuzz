@@ -13,15 +13,16 @@ import Megadeth.Prim
 import Control.Monad.Trans
 import Control.Monad.Trans.State
 
---The state is composed of identifiers
+-- |The state is composed of identifiers.
 data StV a = StV {vars :: [a]} deriving Show
 
 type VState a b = StateT (StV a) Gen b
 
+-- |Fixable class
 class Fixable a b where
   fix :: b -> VState a b
 
---Common instances
+-- Common instances
 instance Fixable a b => Fixable a [b] where
   fix = mapM fix
 
@@ -53,18 +54,19 @@ instance Fixable a Int where
 instance Fixable a a where
   fix = return
 
---Extract name and number of arguments from a constructor
+-- |Extract name and number of arguments from a constructor
 getStuff :: Con -> (Name, Int)
 getStuff (NormalC n xs) = (n, length xs)
 getStuff (RecC n xs) = (n, length xs)
 getStuff _ = error "wrong constructor"
 
+-- |Extract name from some type variable
 getParName :: TyVarBndr -> Name
 getParName (PlainTV n) = n
 getParName (KindedTV n _) = n
 
---Takes some constructor and checks if it's either an assign or a variable. If that's the case then it makes the appropiate match;
---if not, it creates a trivial match to fix recursively.
+-- |Takes some constructor and checks if it's either an assign or a variable. If that's the case then it makes the appropiate match;
+-- if not, it creates a trivial match to fix recursively.
 mkMatch :: [Name] -> [Name] -> (Name, Int) -> Q Match
 mkMatch v a (n, m) = let stName = mkName "st"
                          idName = mkName "vid"
@@ -87,7 +89,7 @@ mkMatch v a (n, m) = let stName = mkName "st"
                           --the state, or if the state is empty, put some other expression (maybe a constant)
                           b <- [| let $(varP idName) = $(appE (varE getvid) (varE vp)) in
                                      do $(varP stName) <- $(varE getName)
-                                        --traceM $ $(varE printStN) $(varE stName)  --uncomment this for debugging
+                                        --traceM $ $(varE printStN) $(varE stName)  --uncomment this line for debugging
                                         case elem $(varE idName) ($(appE (varE vars) (varE stName))) of
                                             True -> return $(varE vp)
                                             False -> if null (($(appE (varE vars) (varE stName)))) then
@@ -109,7 +111,7 @@ mkMatch v a (n, m) = let stName = mkName "st"
                           let doBodyF = return $ DoE (binds++[pushBind,retBind])
                           b <- [| let $(varP idName) = $(appE (varE getaid) (varE ap)) in
                                    do $(varP stName) <- $(varE getName)
-                                      --traceM $ $(varE printStN) $(varE stName)  --uncomment this for debugging
+                                      --traceM $ $(varE printStN) $(varE stName)  --uncomment this line for debugging
                                       case elem $(varE idName) ($(appE (varE vars) (varE stName))) of
                                           True -> $(doBodyT)
                                           False -> $(doBodyF) |]
@@ -125,22 +127,22 @@ mkMatch v a (n, m) = let stName = mkName "st"
                           let doBody = DoE (binds++[retBind])
                           match (conP n pats) (normalB (returnQ doBody)) []
 
---Generates an expression of the form cx <- fix x
+-- |Generates an expression of the form cx <- fix x
 mkDoB :: Name -> Q (Name, Stmt)
 mkDoB x = do cx <- newName "cx"
              let fixN = mkName "fix"
              return $ (cx, BindS (VarP cx) (AppE (VarE fixN) (VarE x)))
 
---Given a list of matches (built with mkMatch), generate a function body.
+-- |Given a list of matches (built with mkMatch), generate a function body.
 mkFixBody :: [Q Match] -> Q Exp
 mkFixBody matches = let e = mkName "e" in
                       lamE [varP e] (caseE (varE e) matches)
 
---Uses Megadeth to make every Fixable instance needed
-mkGranFix :: Name -> [Name] -> [Name] -> Name -> Q [Dec]
-mkGranFix i v ka t = prevDev t (const $ return False) >>= mapM (mkFix i v ka) >>= (return . concat)
+-- |Uses Megadeth to make every Fixable instance needed
+devFixLang :: Name -> [Name] -> [Name] -> Name -> Q [Dec]
+devFixLang i v ka t = prevDev t (const $ return False) >>= mapM (mkFix i v ka) >>= (return . concat)
 
---Creates a Fixable instance for a type, needs information to know which constructors represent
+-- |Creates a Fixable instance for a type, needs information to know which constructors represent
 -- the identifiers, variables and assignments
 mkFix :: Name -> [Name] -> [Name] -> Name -> Q [Dec]
 mkFix i v a t = do ti <- reify t
@@ -168,12 +170,12 @@ mkFix i v a t = do ti <- reify t
                                                     gg :: $(conT t) -> VState $(foldl appT (conT i) pvars) $(conT t)
                                                     gg = $(mkFixBody matches) |]
                             else
-                              if null ivars then [d| instance $(foldl appT (tupleT (3*np)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars) ++(map (appT (conT ''Show)) pvars)))
+                              if null ivars then [d| instance $(foldl appT (tupleT (3*nip)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars) ++(map (appT (conT ''Show)) pvars)))
                                                             => Fixable $(conT i) $(foldl appT (conT t) pvars)  where
                                                                       fix = gg where
                                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(conT i) $(foldl appT (conT t) pvars)
                                                                             gg = $(mkFixBody matches) |]
-                              else [d| instance $(foldl appT (tupleT (3*np)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
+                              else [d| instance $(foldl appT (tupleT (3*nip)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
                                           => Fixable $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)  where
                                                       fix = gg where
                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)
@@ -193,12 +195,12 @@ mkFix i v a t = do ti <- reify t
                                                     gg :: $(conT t) -> VState $(foldl appT (conT i) pvars) $(conT t)
                                                     gg = $(mkFixBody matches) |]
                             else
-                              if null ivars then [d| instance $(foldl appT (tupleT (3*np)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
+                              if null ivars then [d| instance $(foldl appT (tupleT (3*nip)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
                                                             => Fixable $(conT i) $(foldl appT (conT t) pvars)  where
                                                                       fix = gg where
                                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(conT i) $(foldl appT (conT t) pvars)
                                                                             gg = $(mkFixBody matches) |]
-                              else [d| instance $(foldl appT (tupleT (3*np)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
+                              else [d| instance $(foldl appT (tupleT (3*nip)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
                                           => Fixable $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)  where
                                                       fix = gg where
                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)
@@ -218,12 +220,12 @@ mkFix i v a t = do ti <- reify t
                                                     gg :: $(conT t) -> VState $(foldl appT (conT i) pvars) $(conT t)
                                                     gg = $(mkFixBody matches) |]
                             else
-                              if null ivars then [d| instance $(foldl appT (tupleT (3*np)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
+                              if null ivars then [d| instance $(foldl appT (tupleT (3*nip)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
                                                             => Fixable $(conT i) $(foldl appT (conT t) pvars)  where
                                                                       fix = gg where
                                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(conT i) $(foldl appT (conT t) pvars)
                                                                             gg = $(mkFixBody matches) |]
-                              else [d| instance $(foldl appT (tupleT (3*np)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
+                              else [d| instance $(foldl appT (tupleT (3*nip)) ((map (appT (conT ''Arbitrary)) pvars)++(map (appT (conT ''Eq)) pvars)++(map (appT (conT ''Show)) pvars)))
                                           => Fixable $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)  where
                                                       fix = gg where
                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)

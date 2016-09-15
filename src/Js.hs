@@ -65,7 +65,7 @@ instance Arbitrary MJs where
                                        <*> (listOf $ (resize (n `div` 10) arbitrary))
 
 $(devArbitrary ''MJs)
-$(mkGranFix ''Id ['VarRef] ['VarDecl] ''JavaScript)
+$(devFixLang ''Id ['VarRef] ['VarDecl] ''JavaScript)
 
 instance (Arbitrary a, Eq a, Show a) => Fixable (Id a) a where
  fix = return

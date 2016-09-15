@@ -136,14 +136,10 @@ instance {-# OVERLAPPING #-} Arbitrary a => Arbitrary (Expr a) where
                                 DictComp <$> resize n arbitrary <*> resize n arbitrary,
                                 SetComp <$> resize n arbitrary <*> resize n arbitrary-}]
              | otherwise = frequency [(2, Var <$> resize n arbitrary <*> resize n arbitrary),
-                                      (2, Int <$> resize n arbitrary <*> resize n arbitrary
-                                              <*> resize n arbitrary),
-                                      (2, LongInt <$> resize n arbitrary <*> resize n arbitrary
-                                                  <*> resize n arbitrary),
-                                      (2, Float <$> resize n arbitrary <*> resize n arbitrary
-                                                <*> resize n arbitrary),
-                                      (2, Imaginary <$> resize n arbitrary <*> resize n arbitrary
-                                                    <*> resize n arbitrary),
+                                      (2, gInt True),
+                                      (2, gInt False),
+                                      (2, gFloat True),
+                                      (2, gFloat False),
                                       (2, Bool <$> resize n arbitrary <*> resize n arbitrary),
                                       (2, None <$> resize n arbitrary),
                                       (2, Ellipsis <$> resize n arbitrary),
@@ -327,7 +323,7 @@ genVar xs = Var <$> elements xs <*> arbitrary
 instance F.Fixable (Ident a) a where
   fix = return
 
-$(mkGranFix ''Ident ['Var] ['Assign, 'For] ''Module)
+$(devFixLang ''Ident ['Var] ['Assign, 'For] ''Module)
 
 instance (Arbitrary a, Eq a, Show a) => F.Fixable (Ident a) (Module a) where
   fix = gg where

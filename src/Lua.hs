@@ -62,7 +62,7 @@ genVar :: [Name] -> Gen Exp
 genVar xs = do n <- elements xs
                return (PrefixExp (PEVar (VarName n)))
 
-$(mkGranFix ''Name ['PrefixExp] ['Assign] ''Block)
+$(devFixLang ''Name ['PrefixExp] ['Assign] ''Block)
 
 cBlock :: MLUA -> Gen MLUA
 cBlock (Block stats m) = do cstat <- evalStateT (fix stats) initV
