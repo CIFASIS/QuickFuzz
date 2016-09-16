@@ -12,7 +12,12 @@ import Data.DeriveTH
 import DeriveArbitrary
 import ByteString
 
-type MGzipFile  = (CompressParams,L.ByteString)
+--type MGzipFile  = (CompressParams,L.ByteString)
+
+data MGzipFile = { id1 :: Word8,
+		   id2 :: Word8,
+		   cm :: Word8,
+		    
 
 $(devArbitrary ''MGzipFile)
 
