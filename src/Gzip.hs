@@ -17,8 +17,11 @@ import ByteString
 data MGzipFile = { id1 :: Word8,
 		   id2 :: Word8,
 		   cm :: Word8,
-		    
-
+		   flg :: Flag,
+		   mtime :: Word8,
+		   xfl :: Word8,
+		   os :: Word8 
+		 }
 $(devArbitrary ''MGzipFile)
 
 mencode :: MGzipFile -> L.ByteString
