@@ -28,7 +28,7 @@ genName = listOf1 validChars :: Gen String
 sgenName :: Int -> Gen String
 sgenName 1 = do
         c <- chr <$> choose (97,122)
-        return $ [c]
+        return [c]
 sgenName n = do
         c <- chr <$> choose (97,122)
         n <- sgenName (max (n `div` 2) 1)

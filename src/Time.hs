@@ -11,7 +11,7 @@ import qualified Data.Time as Time
 import qualified Data.Time.Clock.TAI as Time
 
 instance Arbitrary Time.Day where
-    arbitrary = Time.ModifiedJulianDay <$> (2000 +) <$> arbitrary
+    arbitrary = Time.ModifiedJulianDay . (2000 +) <$> arbitrary
     shrink    = (Time.ModifiedJulianDay <$>) . shrink . Time.toModifiedJulianDay
 
 instance CoArbitrary Time.Day where
@@ -21,7 +21,7 @@ instance Function Time.Day where
     function = functionMap Time.toModifiedJulianDay Time.ModifiedJulianDay
 
 instance Arbitrary Time.UniversalTime where
-    arbitrary = Time.ModJulianDate <$> (2000 +) <$> arbitrary
+    arbitrary = Time.ModJulianDate . (2000 +) <$> arbitrary
     shrink    = (Time.ModJulianDate <$>) . shrink . Time.getModJulianDate
 
 instance CoArbitrary Time.UniversalTime where
@@ -71,7 +71,7 @@ instance Arbitrary Time.TimeZone where
         Time.TimeZone
          <$> choose (-12*60,14*60) -- utc offset (m)
          <*> arbitrary -- is summer time
-         <*> (sequence . replicate 4 $ choose ('A','Z'))
+         <*> (Control.Monad.replicateM 4 $ choose ('A','Z'))
     shrink tz@(Time.TimeZone minutes summerOnly name) =
         [ tz { Time.timeZoneMinutes    = m' } | m' <- shrink minutes    ] ++
         [ tz { Time.timeZoneSummerOnly = s' } | s' <- shrink summerOnly ] ++

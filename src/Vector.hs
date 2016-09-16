@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
+{-# LANGUAGE FlexibleInstances, IncoherentInstances #-}
 
 module Vector where
 
@@ -26,7 +26,7 @@ instance (VS.Storable a, Arbitrary a) => Arbitrary (VS.Vector a) where
 instance Arbitrary (V.Vector (VU.Vector Word8)) where
    arbitrary = do 
      l <- listOf (arbitrary :: Gen Word8)
-     x <- (arbitrary :: Gen Int)
+     x <- arbitrary :: Gen Int
      --return $ V.replicate (x `mod` 32) (VU.fromList l)
      return $ V.replicate x (VU.fromList l)
 

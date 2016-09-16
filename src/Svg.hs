@@ -67,7 +67,7 @@ mencode (MSvgFile d) = encodeMSvgFile d
 
 mdecode :: C8.ByteString -> MSvgFile
 mdecode x = 
-           case (parseSvgFile "." x) of --(B.pack  $ Prelude.map (ord . toEnum) (C.unpack x))) of
+           case parseSvgFile "." x of --(B.pack  $ Prelude.map (ord . toEnum) (C.unpack x))) of
              Just doc -> MSvgFile doc
              Nothing  -> error "SVG impossible to parse"
            --where x' = C8.unpack x 

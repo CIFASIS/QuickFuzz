@@ -97,7 +97,9 @@ rreport value filename outdir =
   do
      seed <- (randomIO :: IO Int)
      copyFile filename (outdir ++ "/red." ++ show seed ++ "." ++ filename)
- 
+
+execFuzzer fname filename pcmd seed outdir =
+  
 
 exec_honggfuzz filename (prog,args) seed outdir = 
    rawSystem "honggfuzz" (["-q", "-v", "-n", "2", "-N", "5", "-r", "0.00001", "-t","60", "-f", filename,  "-W", outdir, "--", prog] ++ args)
