@@ -4,7 +4,6 @@
 module DeriveArbitrary (
 --    module Megadeth.Prim,
 --    module Megadeth.DeriveArbitrary,
-    module Misc,
     module ByteString,
     module Vector,
     module ProbGen,
@@ -16,7 +15,6 @@ module DeriveArbitrary (
     ) where
 
 import Megadeth.Prim
-import Misc
 import ByteString
 import Vector 
 

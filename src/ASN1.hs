@@ -11,7 +11,6 @@ import Data.ASN1.BinaryEncoding
 import qualified Data.ByteString.Lazy.Char8 as LC8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as BS
-import Misc
 
 $(devArbitrary ''ASN1)
 
