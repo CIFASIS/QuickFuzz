@@ -37,6 +37,7 @@ extra-deps:
 - concurrent-extra-0.7.0.10
 - language-bash-0.6.1
 - shell-escape-0.2.0
+- zip-archive-0.3.0.5
 
 # Override default flag values for local packages and extra-deps
 flags:
