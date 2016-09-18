@@ -75,7 +75,7 @@ executable QuickFuzz
   other-extensions:    CPP, FlexibleContexts, TypeFamilies, TupleSections, ExistentialQuantification, BangPatterns, ScopedTypeVariables, TypeSynonymInstances, Rank2Types, FlexibleInstances, RankNTypes, MultiParamTypeClasses, GADTs, StandaloneDeriving, TypeOperators, GeneralizedNewtypeDeriving, FunctionalDependencies, OverloadedStrings
 
   build-depends:      base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, quickcheck-unicode, mtl, random, ghc-prim,
-                      process, deepseq, derive, unix, linear, template-haskell, directory, pretty, argparser,
+                      process, process-extras, deepseq, derive, unix, linear, template-haskell, directory, pretty, argparser,
                       split, wl-pprint, text, parallel-io, monad-par,
                       abstract-par, megadeth
   if flag(codes)

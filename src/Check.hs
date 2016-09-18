@@ -12,6 +12,8 @@ import Control.Monad
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as LC8
+import qualified System.Process.ByteString.Lazy as LP
+
 import Data.Maybe
 
 import System.Random
@@ -59,6 +61,23 @@ write x filename =  Control.Exception.catch (L.writeFile filename x) handler
 
 exec :: Cmd -> IO ExitCode
 exec (prog, args) = rawSystem prog args
+
+mcatch x = Control.Exception.catch ( return (Just x)) dec_handler
+
+
+execfromStdin :: Cmd                      -- ^ The command line
+              -> L.ByteString             -- ^ Data to pass into the command's std_in
+              -> IO (Maybe L.ByteString)
+
+execfromStdin (cmd,args) input =  
+  do
+    x <- mcatch input
+    case x of
+      Nothing -> return Nothing 
+      Just y ->      do 
+                     (_, output, _) <- LP.readProcessWithExitCode cmd args y
+                     return $ Just output
+
 
 save filename outdir = 
   do
@@ -148,24 +167,26 @@ prop_HonggfuzzExec filename pcmd encode outdir x =
              )
          
 
-exec_zzuf infile outfile = 
-  system $ "zzuf  -r 0.004:0.000001 -s" ++ show seed ++ " < " ++ infile ++ " > " ++ outfile
-    where seed = unsafePerformIO (randomIO :: IO Int)
+exec_zzuf seed = execfromStdin ("zzuf", ["-r", "0.004:0.000001", "-s", show seed])
 
 prop_ZzufExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
 prop_ZzufExec filename pcmd encode outdir x = 
          monadicIO $ do
-         let tmp_filename = ".qf." ++ filename
-
-         run $ write (encode x) tmp_filename
-         run $ exec_zzuf tmp_filename filename
-         ret <- run $ exec pcmd
-         case not (has_failed ret) of
-           False -> (do 
-                        run $ freport x tmp_filename filename outdir
+         seed <- run $ (randomIO :: IO Int)
+         x <- run $ exec_zzuf seed (encode x) 
+         if (isNothing x) 
+            then assert True
+         else (
+           do 
+           run $ write (fromJust x) filename
+           ret <- run $ exec pcmd
+           case not (has_failed ret) of
+              False -> (do 
+                        run $ report x filename outdir
                         assert False
                )
-           _     -> assert True
+              _             -> assert True
+           )
 
 
 
@@ -203,23 +224,26 @@ prop_ValgrindExec filename pcmd encode outdir x =
                         assert False)
  
 
-exec_radamsa infile outfile =
- rawSystem "radamsa" [infile, "-o", outfile]
+exec_radamsa = execfromStdin ("radamsa", [])
+--rawSystem "radamsa" [infile, "-o", outfile]
 
 prop_RadamsaExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
 prop_RadamsaExec filename pcmd encode outdir x = 
          noShrinking $ monadicIO $ do
-         let tmp_filename = ".qf." ++ filename
-
-         run $ write (encode x) tmp_filename
-         run $ exec_radamsa tmp_filename filename
-         ret <- run $ exec pcmd
-         case not (has_failed ret) of
-             False -> (do 
-                        run $ freport x tmp_filename filename outdir
-                        assert False)
-             _     -> (assert True) 
-           
+         x <- run $ exec_radamsa (encode x)
+         if (isNothing x) 
+            then assert True
+         else (
+           do 
+           run $ write (fromJust x) filename
+           ret <- run $ exec pcmd
+           case not (has_failed ret) of
+              False -> (do 
+                        run $ report x filename outdir
+                        assert False
+               )
+              _             -> assert True
+           )
 
 prop_Exec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
 prop_Exec filename pcmd encode outdir x = 
