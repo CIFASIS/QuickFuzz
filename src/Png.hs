@@ -32,7 +32,7 @@ fromRight (Left x) = error x
 
 
 $(devArbitrary ''PngRawImage)
-$(devMutationRec ''PngRawImage)
+$(devMutation ''PngRawImage)
 
 instance Show PngRawImage where
    show x = "(no show)"

@@ -108,8 +108,29 @@ process :: (Mutation a, Show a, Arbitrary a)
 process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds =
 
     let (prog, args) = (Prelude.head spl, Prelude.tail spl)
-    in process_custom arbitrary (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds
-    where spl = splitOn " " cmd 
+    in 
+      if prop /= "mutate" then (
+        process_custom arbitrary (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds
+      ) else (
+        if seeds /= "" then (
+             do
+                 fs <- listDirectory seeds
+                 xs <- mapM makeRelativeToCurrentDirectory fs
+                 --mapM_ print fs
+                 xs <- withCurrentDirectory seeds (mapM (decodeFile mdecode) xs)
+                 xs <- return $ Prelude.filter isJust xs
+                 xs <- return $ Prelude.map fromJust xs
+
+                 --mapM_ print xs
+                 --xs <- return $ map mdecode xs
+                 quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ prop_MutateGen filename (prog,args) mencode outdir xs))
+                 --undefined )
+            else (error "You should specifiy a directory with seeds!")
+        )
+    
+    where spl = splitOn " " cmd
+
+
 
        {- (case prop of
         "mut" ->

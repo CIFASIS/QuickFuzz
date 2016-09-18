@@ -34,6 +34,7 @@ instance Arbitrary String where
 data MXml = MXml (Document Posn) deriving Show
 
 $(devArbitrary ''MXml)
+$(devMutation ''MXml)
 
 --mgen :: [Int] -> Gen MXml
 --mgen = customGen_Xml_MXml
@@ -55,6 +56,6 @@ mencode x = unsafePerformIO (
 --mhandler1 :: SomeException -> IO (Maybe (Document Posn))
 --mhandler1 x = return $ Nothing
  
---mdecode :: C8.ByteString -> (Document Posn)
---mdecode xml =  xmlParse "" (C8.unpack xml) 
+mdecode :: C8.ByteString -> MXml
+mdecode xml =  MXml $ xmlParse "" (C8.unpack xml) 
               -- unsafePerformIO $ catch ( evaluate $ Just $ xmlParse "" (C8.unpack xml)) mhandler1

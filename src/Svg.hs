@@ -59,6 +59,7 @@ instance Arbitrary RPoint where
      return $ V2 a1 a2
 
 $(devArbitrary ''MSvgFile)
+-- $(devMutation ''MSvgFile)
 
 encodeMSvgFile = LC8.pack . ppcTopElement prettyConfigPP . xmlOfDocument
    

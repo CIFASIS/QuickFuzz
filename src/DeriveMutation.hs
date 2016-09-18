@@ -28,7 +28,7 @@ instance {-#OVERLAPS#-} Mutation a => Mutation [a] where
     mutt x = frequency $ [(20,mapM mutt x), (1, return x)]
 
 instance {-#OVERLAPS#-} Arbitrary a => Mutation a where
-    mutt a = frequency $ [ (5, return a), (1,arbitrary)]
+    mutt a = frequency $ [ (20, return a), (1,arbitrary)]
 
 howm :: Con -> (Name, Int)
 howm (NormalC n xs) = (n,length xs)
@@ -82,19 +82,19 @@ ifsymHeadOf n = do
         _ -> return n
         
 
-devMutationRec :: Name -> Q [Dec]
-devMutationRec t = do
+devMutation :: Name -> Q [Dec]
+devMutation t = do
     deps <- prevDev t (\_ -> return False)
     nosym <- mapM ifsymHeadOf deps
     let deps' = nub $ filter (not . hasArbIns) nosym  -- Get rid of all type syn ?
     -- Just ignore typesym later... We hope that prevDev get all dependencies
     -- all right, if not, we always have Arb => Mutation
     --dps <- filterM isMutInsName deps' -- Arbitrary => Mutation :(
-    ds <- mapM ((flip devMutation) Nothing) deps'
+    ds <- mapM ((flip devMutation') Nothing) deps'
     return $ concat ds
 
-devMutation :: Name -> Maybe Name -> Q [Dec]
-devMutation name customGen = do
+devMutation' :: Name -> Maybe Name -> Q [Dec]
+devMutation' name customGen = do
     def <- reify name
     case def of -- We need constructors...
         TyConI (TySynD _ _ ty) -> return [] -- devMutation (headOf ty) Nothing

@@ -139,7 +139,7 @@ dispatch arg = do
 #ifdef CODES
 
             "Dot"  -> Process.main (Dot.mencode,undefined)  args b
-            "Xml"  -> Process.main (Xml.mencode,undefined)  args b
+            "Xml"  -> Process.main (Xml.mencode,Xml.mdecode)  args b
             "Html" -> Process.main (Html.mencode,undefined)  args b
             "Js"   -> Process.main (Js.mencode,undefined)  args b
             "Py"   -> Process.main (Python.mencode,undefined)  args b

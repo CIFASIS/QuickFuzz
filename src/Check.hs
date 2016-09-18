@@ -47,12 +47,6 @@ getFileSize path = do
     stat <- getFileStatus path
     return (fileSize stat)
 
---bhandler :: SomeException -> IO L.ByteString
---bhandler x = return (LC8.pack "") --Prelude.putStrLn (show x)--return ()
-
-
---quickhandler x = Nothing
-
 type Cmd = (FilePath,[String])
 
 has_failed :: ExitCode -> Bool
@@ -98,6 +92,44 @@ rreport value filename outdir =
      seed <- (randomIO :: IO Int)
      copyFile filename (outdir ++ "/red." ++ show seed ++ "." ++ filename)
  
+
+prop_MutateGen :: (Mutation a, Show a, Arbitrary a) => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> [a] -> a -> Property
+
+prop_MutateGen filename pcmd encode outdir vals x = 
+         noShrinking $ monadicIO $ do
+         r <- run (randomIO :: IO Int)
+         idx <- run $ return (r `mod` (Prelude.length vals))
+         --run $ print "Mutating.."
+
+         x <- run $ return $ vals !! idx
+         --run $ print "Reading.."
+
+         y <- run $ generate $ resize 100 $ mutt $ x
+
+         --run $ print ((show x) == (show y))
+         run $ write (encode y) filename
+         size <- run $ getFileSize filename
+
+
+         if size == 0 --((show x) == (show y))
+ 
+            then assert True
+         else (
+           do
+            ret <- run $ exec pcmd
+            case not (has_failed ret) of
+              False -> (do 
+                        run $ report x filename outdir
+                        assert False
+               )
+              _             -> assert True
+             
+             {-run $ write (encode y) filename
+             run $ save filename outdir
+             assert True-}
+             )
+ 
+
 
 exec_honggfuzz filename (prog,args) seed outdir = 
    rawSystem "honggfuzz" (["-q", "-v", "-n", "2", "-N", "5", "-r", "0.00001", "-t","60", "-f", filename,  "-W", outdir, "--", prog] ++ args)
