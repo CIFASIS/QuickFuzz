@@ -25,7 +25,7 @@ import Data.List.Split
 import Data.Maybe
 -- Gen
 import Language.Haskell.TH
-import Language.Haskell.TH.Syntax
+import Language.Haskell.TH.Syntax as TH
 import Test.QuickCheck
 import GHC.Exts
 import GHC.Types
@@ -43,7 +43,7 @@ import Data.List
 #endif
 
 -- | Build the arbitrary function with makeArbs
-chooseExpQ :: Name -> Name -> Name -> Integer -> Type -> ExpQ
+chooseExpQ :: Name -> Name -> Name -> Integer -> TH.Type -> ExpQ
 chooseExpQ g n t bf (AppT ListT ty) = [| listOf $ resize ($(varE  n) `div` 10) arbitrary |]
 chooseExpQ g n t bf ty | headOf ty /= t = [| resize (max 0 ($(varE n) - 1)) arbitrary |]
 chooseExpQ g n t bf ty =
