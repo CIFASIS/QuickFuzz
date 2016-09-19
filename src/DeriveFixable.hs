@@ -1,4 +1,5 @@
 {-# Language TemplateHaskell, ConstraintKinds, FlexibleInstances, FlexibleContexts, IncoherentInstances, MultiParamTypeClasses #-}
+{-# Language CPP #-}
 
 module DeriveFixable where
 
@@ -12,6 +13,12 @@ import Debug.Trace
 import Megadeth.Prim
 import Control.Monad.Trans
 import Control.Monad.Trans.State
+
+#if MIN_VERSION_template_haskell(2,11,0)
+#    define TH211MBKIND _maybe_kind
+#else
+#    define TH211MBKIND
+#endif
 
 -- |The state is composed of identifiers.
 data StV a = StV {vars :: [a]} deriving Show
@@ -147,7 +154,7 @@ devFixLang i v ka t = prevDev t (const $ return False) >>= mapM (mkFix i v ka) >
 mkFix :: Name -> [Name] -> [Name] -> Name -> Q [Dec]
 mkFix i v a t = do ti <- reify t
                    case ti of
-                      TyConI (DataD _ _ params tcons _) -> do
+                      TyConI (DataD _ _ params TH211MBKIND tcons _) -> do
                         let cstuff = map getStuff tcons
                         let names = map fst cstuff
                         let matches = map (mkMatch v a) cstuff
@@ -155,7 +162,7 @@ mkFix i v a t = do ti <- reify t
                         let tvars = map (varT . getParName) params
                         ii <- reify i
                         case ii of
-                          TyConI (DataD _ _ ip _ _) -> do
+                          TyConI (DataD _ _ ip TH211MBKIND _ _) -> do
                             let ivars = map (varT . getParName) ip
                             let nip = max np (length ip)
                             plist <- replicateM nip (newName "x")
@@ -180,7 +187,7 @@ mkFix i v a t = do ti <- reify t
                                                       fix = gg where
                                                             gg :: $(foldl appT (conT t) pvars) -> VState $(foldl appT (conT i) pvars) $(foldl appT (conT t) pvars)
                                                             gg = $(mkFixBody matches) |]
-                          TyConI (NewtypeD _ _ ip _ _) -> do
+                          TyConI (NewtypeD _ _ ip TH211MBKIND _ _) -> do
                             let ivars = map (varT . getParName) ip
                             let nip = max np (length ip)
                             plist <- replicateM nip (newName "x")

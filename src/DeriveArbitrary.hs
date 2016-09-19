@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE CPP #-}
 module DeriveArbitrary (
 --    module Megadeth.Prim,
 --    module Megadeth.DeriveArbitrary,
@@ -34,6 +35,12 @@ import Control.Monad
 import Control.Arrow
 import Control.Applicative
 import Data.List
+
+#if MIN_VERSION_template_haskell(2,11,0)
+#    define TH211MBKIND _maybe_kind
+#else
+#    define TH211MBKIND
+#endif
 
 -- | Build the arbitrary function with makeArbs
 chooseExpQ :: Name -> Name -> Name -> Integer -> Type -> ExpQ
@@ -76,7 +83,7 @@ deriveArbitrary t = do
     inf <- reify t
     runIO $ print $ "Deriving:" ++ show inf
     case inf of
-        TyConI (DataD _ _ params constructors _) -> do
+        TyConI (DataD _ _ params TH211MBKIND constructors _) -> do
               let ns  = map varT $ paramNames params
                   scons = map (simpleConView t) constructors
                   fcs = filter ((==0) . bf) scons
@@ -107,7 +114,7 @@ deriveArbitrary t = do
                 [d| instance Arbitrary $(applyTo (conT t) ns) where
                                arbitrary = sized go
                                  where go n = $(gos 'go 'n)|]
-        TyConI (NewtypeD _ _ params con _) -> do 
+        TyConI (NewtypeD _ _ params TH211MBKIND con _) -> do
             let ns = map varT $ paramNames params
                 scon = simpleConView t con
             if not $ null ns then
@@ -277,7 +284,7 @@ customG name = do
                 ConT n -> return $ Left $ "Already derived?" ++ show n
                 d -> return $ Left $ "Not ready for " ++ show d
                 
-        TyConI (DataD _ _ params constructors _) ->
+        TyConI (DataD _ _ params TH211MBKIND constructors _) ->
             let fnm = mkName "prob_gen" -- "customGen_" ++ (map (\x -> if x == '.' then '_' else
                                                                 --x) $ showName name)
                 ns = map varT $ paramNames params

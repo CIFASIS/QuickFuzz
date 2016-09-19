@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns#-}
 {-# LANGUAGE FlexibleInstances,UndecidableInstances#-}
+{-# LANGUAGE CPP #-}
 module DeriveMutation where
 
 import Language.Haskell.TH
@@ -15,6 +16,13 @@ import Control.Applicative
 import Data.List
 
 import Megadeth.Prim
+
+#if MIN_VERSION_template_haskell(2,11,0)
+#    define TH211MBKIND _maybe_kind
+#else
+#    define TH211MBKIND
+#endif
+
 --import Mutation
 --
 -- | Mutation Class
@@ -98,7 +106,7 @@ devMutation' name customGen = do
     def <- reify name
     case def of -- We need constructors...
         TyConI (TySynD _ _ ty) -> return [] -- devMutation (headOf ty) Nothing
-        TyConI (DataD _ _ params constructors _) -> do
+        TyConI (DataD _ _ params TH211MBKIND constructors _) -> do
             let fnm = mkName $ "mutt" -- ++ (showName name) 
             let f = funD fnm $ foldl (\ p c ->
                      let 
