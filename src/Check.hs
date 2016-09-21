@@ -7,7 +7,6 @@ import Test.QuickCheck.Monadic (assert, monadicIO, run, PropertyM (..) )
 
 import qualified Parallel as P
 
-import Control.Exception (catch)
 import Control.Monad
 
 import qualified Data.ByteString.Lazy as L
@@ -20,10 +19,9 @@ import System.Random
 import System.Process
 import System.Posix
 import System.Posix.Env
-import System.Exit
 import System.Directory
 import System.IO.Unsafe
-import System.Timeout
+
 
 import Data.Char (chr)
 import Data.ByteString.Char8 as L8
@@ -38,6 +36,7 @@ import Control.Concurrent.Thread.Delay
 
 #endif
 
+import CommandExec
 import Exceptions
 import Mutation
 
@@ -49,35 +48,7 @@ getFileSize path = do
     stat <- getFileStatus path
     return (fileSize stat)
 
-type Cmd = (FilePath,[String])
-
-has_failed :: ExitCode -> Bool
-has_failed (ExitFailure n) =
-    (n < 0 || (n > 128 && n < 143))
-has_failed ExitSuccess = False
-
-write :: L.ByteString -> FilePath -> IO ()
-write x filename =  Control.Exception.catch (L.writeFile filename x) handler
-
-exec :: Cmd -> IO ExitCode
-exec (prog, args) = rawSystem prog args
-
-mcatch x = Control.Exception.catch ( return (Just x)) dec_handler
-
-
-execfromStdin :: Cmd                      -- ^ The command line
-              -> L.ByteString             -- ^ Data to pass into the command's std_in
-              -> IO (Maybe L.ByteString)
-
-execfromStdin (cmd,args) input =  
-  do
-    x <- mcatch input
-    case x of
-      Nothing -> return Nothing 
-      Just y ->      do 
-                     (_, output, _) <- LP.readProcessWithExitCode cmd args y
-                     return $ Just output
-
+-- Special hooks
 
 save filename outdir = 
   do
@@ -112,8 +83,9 @@ rreport value filename outdir =
      copyFile filename (outdir ++ "/red." ++ show seed ++ "." ++ filename)
  
 
-prop_MutateGen :: (Mutation a, Show a, Arbitrary a) => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> [a] -> a -> Property
+-- Properties
 
+prop_MutateGen :: (Mutation a, Show a, Arbitrary a) => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> [a] -> a -> Property
 prop_MutateGen filename pcmd encode outdir vals x = 
          noShrinking $ monadicIO $ do
          r <- run (randomIO :: IO Int)
@@ -167,7 +139,7 @@ prop_HonggfuzzExec filename pcmd encode outdir x =
              )
          
 
-exec_zzuf seed = execfromStdin ("zzuf", ["-r", "0.004:0.000001", "-s", show seed])
+exec_zzuf seed = execFromStdinToBuffer ("zzuf", ["-r", "0.004:0.000001", "-s", show seed])
 
 prop_ZzufExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
 prop_ZzufExec filename pcmd encode outdir x = 
@@ -224,7 +196,7 @@ prop_ValgrindExec filename pcmd encode outdir x =
                         assert False)
  
 
-exec_radamsa = execfromStdin ("radamsa", [])
+exec_radamsa = execFromStdinToBuffer ("radamsa", [])
 --rawSystem "radamsa" [infile, "-o", outfile]
 
 prop_RadamsaExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property

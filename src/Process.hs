@@ -6,13 +6,13 @@ import Args
 import Mutation
 import Test.QuickCheck
 import Check
+import CommandExec
 import Data.List.Split
 import Data.Maybe
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString as BS
 import ByteString
 
---import System.FilePath
 import System.Directory hiding (listDirectory, withCurrentDirectory)
 
 #ifdef NET
