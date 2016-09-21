@@ -79,7 +79,7 @@ zzuf[s=88548751,r=0.004:1e-06]: signal 11 (SIGSEGV)
 +++ OK, passed 25 tests.
 </code></pre>
 
-<p>It looks like we re-discovered several files to trigger <a href="https://bugzilla.redhat.com/show_bug.cgi?id=1290785">CVE-2015-7555</a> in a few seconds! QuickFuzz can also print the structure of the generated file that triggered a crash in Haskell syntax or abort. For instance:</p>
+<p>It looks like we re-discovered several files to trigger <a href="https://bugzilla.redhat.com/show_bug.cgi?id=1290785">CVE-2015-7555</a> in a few seconds! QuickFuzz can also print the structure of the generated file that triggered a crash in Haskell syntax. For instance:</p>
 
 <pre><code>GifFile {
          gifHeader = GifHeader {gifVersion = GIF87a, gifScreenDescriptor = LogicalScreenDescriptor {screenWidth = 1, screenHeight = 0, backgroundIndex = 1, hasGlobalMap = True, colorResolution = 0, isColorTableSorted = True, colorTableSize = 1}, gifGlobalMap = }, 
