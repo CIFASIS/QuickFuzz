@@ -7,7 +7,7 @@ import System.Process
 import System.Posix
 import System.Posix.Env
 import System.Exit
-
+import System.IO
 import Exceptions
 
 type Cmd = (FilePath,[String])
@@ -42,7 +42,7 @@ execfromStdin (cmd,args) input =
     x <- mcatch input
     case x of
       Nothing -> return ExitSuccess 
-      Just y ->      do 
+      Just y ->      do
                      (code, _, _) <- LP.readProcessWithExitCode cmd args y
                      return $ code
 

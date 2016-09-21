@@ -142,6 +142,22 @@ prop_HonggfuzzExec filename pcmd encode outdir x =
 exec_zzuf seed = execFromStdinToBuffer ("zzuf", ["-r", "0.004:0.000001", "-s", show seed])
 
 prop_ZzufExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+prop_ZzufExec [] pcmd encode outdir x = 
+         monadicIO $ do
+         seed <- run $ (randomIO :: IO Int)
+         x <- run $ exec_zzuf seed (encode x) 
+         if (isNothing x) 
+            then assert True
+         else (
+           do 
+           ret <- run $ execfromStdin pcmd (fromJust x)
+           case not (has_failed ret) of
+              False -> (do 
+                        run $ report x "stdin" outdir
+                        assert False
+               )
+              _             -> assert True
+           )
 prop_ZzufExec filename pcmd encode outdir x = 
          monadicIO $ do
          seed <- run $ (randomIO :: IO Int)
@@ -200,6 +216,21 @@ exec_radamsa = execFromStdinToBuffer ("radamsa", [])
 --rawSystem "radamsa" [infile, "-o", outfile]
 
 prop_RadamsaExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+prop_RadamsaExec [] pcmd encode outdir x = 
+         noShrinking $ monadicIO $ do
+         x <- run $ exec_radamsa (encode x)
+         if (isNothing x) 
+            then assert True
+         else (
+           do 
+           ret <- run $ execfromStdin pcmd (fromJust x)
+           case not (has_failed ret) of
+              False -> (do 
+                        run $ report x "stdin" outdir
+                        assert False
+               )
+              _             -> assert True
+           )
 prop_RadamsaExec filename pcmd encode outdir x = 
          noShrinking $ monadicIO $ do
          x <- run $ exec_radamsa (encode x)
@@ -218,6 +249,16 @@ prop_RadamsaExec filename pcmd encode outdir x =
            )
 
 prop_Exec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+prop_Exec [] pcmd encode outdir x = 
+         monadicIO $ do
+         ret <- run $ execfromStdin pcmd (encode x)
+         case not (has_failed ret) of
+            False -> (do 
+                    run $ report x "stdin" outdir
+                    assert False
+             )
+            _             -> assert True
+
 prop_Exec filename pcmd encode outdir x = 
          monadicIO $ do
          run $ write (encode x) filename

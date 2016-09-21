@@ -1,12 +1,14 @@
 module Args where
 
 import System.Console.ArgParser
+import Data.List.Split
+import Data.List
 import Data.Char
 
 data MainArgs = MainArgs
                         {findFileType :: String
                         ,findCmds     :: String
-                        ,findFileName ::  String
+                        ,findFileName :: String
                         ,findAct      :: String
                         --,findCoefFile :: String
                         ,findNumTries :: Int
@@ -15,6 +17,7 @@ data MainArgs = MainArgs
                         ,findInDir   :: String
                        ,findPar      :: Bool}
     deriving(Show)
+
 
 parser :: ParserSpec MainArgs
 parser = MainArgs
@@ -37,20 +40,19 @@ cli =
     <$> mkApp parser
 
 
-splitCmd :: MainArgs -> (String, String, String)
-splitCmd args = ret False (findCmds args)
-    where   ret _ [] = ("", "", "")--error "Bad command" -- TODO
-            ret b (x:xs)    | x == '@' = if b then ([],[],xs) else ret True xs
-                            | b = let (ls,rs,rss) = ret b xs in (ls, x:rs,rss)
-                            | otherwise = let (ls,rs,rrs) = ret b xs in (x:ls,rs,rrs)
+splitCmd :: MainArgs -> Maybe (String, String)
+splitCmd args = if "@@" `isInfixOf` (findCmds args)
+                    then case splitOn "@@" (findCmds args) of
+                            [l,r] -> Just (l, r) 
+                            _ -> error "bad command"
+                    else Nothing
 
 formatFileName :: MainArgs -> String -> MainArgs
 formatFileName args filename = 
-    args {findFileName = (filename++ '.': (map toLower (findFileType args)))}
+    args {findFileName = (filename ++ '.': (map toLower (findFileType args)))}
 
 formatArgs :: MainArgs -> (String -> MainArgs)
-formatArgs args = 
-    let (hd,_,tl) = splitCmd args
-        filename = findFileName args
-    in
-    \x -> args {findCmds = hd ++ (x ++ filename) ++ tl, findFileName = (x ++ filename)}
+formatArgs args = case (splitCmd args, findFileName args) of
+                    (Just (l,r), name) -> \x -> args {findCmds = l ++ x ++ name ++ r}
+                    _   -> \x -> args {findFileName = ""}
+
