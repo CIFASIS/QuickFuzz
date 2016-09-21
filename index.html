@@ -35,7 +35,7 @@
 
 <ul>
 <li>QuickFuzz is now included in <a href="https://packages.gentoo.org/packages/app-forensics/quickfuzz">Gentoo</a>!</li>
-<li>An academic article on QuickFuzz will be presented on the Haskell Symposium 2016 (<a href="https://github.com/CIFASIS/QuickFuzz/releases/download/haskell16-draft/draft-haskell16.pdf">preprint</a>)!</li>
+<li>An academic article on QuickFuzz will be presented at the Haskell Symposium 2016 (<a href="https://github.com/CIFASIS/QuickFuzz/releases/download/haskell16-draft/draft-haskell16.pdf">preprint</a>)!</li>
 </ul>
 
 <h2>
@@ -79,7 +79,7 @@ zzuf[s=88548751,r=0.004:1e-06]: signal 11 (SIGSEGV)
 +++ OK, passed 25 tests.
 </code></pre>
 
-<p>It looks like we re-discovered several files to trigger <a href="https://bugzilla.redhat.com/show_bug.cgi?id=1290785">CVE-2015-7555</a> in a few seconds! QuickFuzz can also print the structure of the generated file that triggered a crash or abort in Haskell syntax. For instance:</p>
+<p>It looks like we re-discovered several files to trigger <a href="https://bugzilla.redhat.com/show_bug.cgi?id=1290785">CVE-2015-7555</a> in a few seconds! QuickFuzz can also print the structure of the generated file that triggered a crash in Haskell syntax or abort. For instance:</p>
 
 <pre><code>GifFile {
          gifHeader = GifHeader {gifVersion = GIF87a, gifScreenDescriptor = LogicalScreenDescriptor {screenWidth = 1, screenHeight = 0, backgroundIndex = 1, hasGlobalMap = True, colorResolution = 0, isColorTableSorted = True, colorTableSize = 1}, gifGlobalMap = }, 
@@ -162,7 +162,7 @@ zzuf[s=88548751,r=0.004:1e-06]: signal 11 (SIGSEGV)
 <li><a href="https://github.com/CIFASIS/QuickFuzz/releases/download/v0.1/QuickFuzz.x86_64">Linux x86_64</a></li>
 </ul>
 
-<p>Otherwise QuickFuzz can be <a href="https://github.com/CIFASIS/QuickFuzz#instalation">easy compiled</a> using <a href="http://docs.haskellstack.org/en/stable/README/#how-to-install">stack</a>.</p>
+<p>Otherwise QuickFuzz can be <a href="https://github.com/CIFASIS/QuickFuzz#instalation">easily compiled</a> using <a href="http://docs.haskellstack.org/en/stable/README/#how-to-install">stack</a>.</p>
 
 <h2>
 <a id="authors" class="anchor" href="#authors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors</h2>
@@ -197,7 +197,7 @@ zzuf[s=88548751,r=0.004:1e-06]: signal 11 (SIGSEGV)
 <ul>
 <li>
 <a href="https://github.com/ayberkt">ayberkt</a> and <a href="http://ninefx.com/">NineFx</a> for the bug reports and pull requests.</li>
-<li>A special thanks goes to all the developers from the packages who made possible QuickFuzz to generate several complex file-formats.</li>
+<li>Special thanks go to all the developers of the Hackage packages that make it possible for QuickFuzz to generate several complex file-formats.</li>
 </ul>
         </section>
 
