@@ -120,7 +120,6 @@ process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds 
                  xs <- withCurrentDirectory seeds (mapM (decodeFile mdecode) xs)
                  xs <- return $ Prelude.filter isJust xs
                  xs <- return $ Prelude.map fromJust xs
-
                  --mapM_ print xs
                  --xs <- return $ map mdecode xs
                  quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ prop_MutateGen filename (prog,args) mencode outdir xs))
@@ -132,27 +131,6 @@ process (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds 
 
 
 
-       {- (case prop of
-        "mut" ->
-            if seeds /= "" then (
-             do
-                 fs <- listDirectory seeds
-                 xs <- mapM makeRelativeToCurrentDirectory fs
-                 --mapM_ print fs
-                 xs <- withCurrentDirectory seeds (mapM (decodeFile mdecode) xs)
-                 xs <- return $ Prelude.filter isJust xs
-                 xs <- return $ Prelude.map fromJust xs
-
-                 --mapM_ print xs
-                 --xs <- return $ map mdecode xs
-                 quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ prop_Exec filename (prog,args) mencode outdir maxSize xs))
-            else (error "You should specifiy a directory with seeds!")
-        _     ->  --if coefs_filename == "" then 
-                 -- process_custom arbitrary (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds
-                 --else ( do coefs <- readCoefFileName coefs_filename
-                 --          process_custom (mgen coefs) (mencode,mdecode) par filename cmd prop maxSuccess maxSize outdir seeds ) 
-    
-    ) where spl = splitOn " " cmd  -}
 _main fs (MainArgs _ cmd filename prop maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop maxSuccess maxSize outdir seeds
 --_main fs (MainArgs _ cmd filename prop coefs_filename maxSuccess maxSize outdir seeds b) = process fs b filename cmd prop coefs_filename maxSuccess maxSize outdir seeds
 
