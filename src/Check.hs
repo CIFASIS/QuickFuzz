@@ -199,17 +199,6 @@ exec_valgrind (prog,args) outfile =
  rawSystem "/usr/bin/valgrind" (["--log-file="++ outfile, "--quiet", prog] ++ args)
 
 prop_ValgrindExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
---prop_ValgrindExec [] pcmd encode outdir x =
---         noShrinking $ monadicIO $ do
---         let rep_filename = filename ++ ".vreport.out"
---         run $ write (encode x) filename
---         run $ exec_valgrind pcmd rep_filename
---         size <- run $ getFileSize rep_filename
---         case size of
---             0     -> (assert True)
---             _     -> (do
---                        run $ vreport x rep_filename filename outdir
---                        assert False)
 prop_ValgrindExec filename pcmd encode outdir x =
          noShrinking $ monadicIO $ do
          let rep_filename = filename ++ ".vreport.out"

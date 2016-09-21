@@ -55,11 +55,4 @@ formatArgs :: MainArgs -> (String -> MainArgs)
 formatArgs args = case (splitCmd args, findFileName args) of
                     (Just (l,r), name) -> \x -> args {findCmds = l ++ x ++ name ++ r}
                     _   -> \x -> args {findFileName = ""}
-                
 
---formatArgs :: MainArgs -> (String -> MainArgs)
---formatArgs args = 
---    let (hd,tl) = splitCmd args
---        filename = findFileName args
---    in
---    \x -> args {findCmds = hd ++ (x ++ filename) ++ tl, findFileName = (x ++ filename)}
