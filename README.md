@@ -11,7 +11,11 @@ There is more information in its [website](http://QuickFuzz.org/).
 
 ## Students
 
-* Franco Costantini
+* Franco **Costantini**
+
+* Agustín **Mista**
+
+* Lucas **Salvatore**
 
 ## Former Members
 
