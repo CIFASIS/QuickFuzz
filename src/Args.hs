@@ -18,17 +18,6 @@ data MainArgs = MainArgs
                        ,findPar      :: Bool}
     deriving(Show)
 
-testArgs = MainArgs { findFileType = ""
-                    , findCmds     = "aaa @@ bbb"
-                    , findFileName = ""
-                    , findAct      = ""
-                    --,findCoefFile :: String
-                    , findNumTries = 0
-                    , findSize     = 0
-                    , findOutDir   = ""
-                    , findInDir    = ""
-                    , findPar      = False}
-                    
 
 parser :: ParserSpec MainArgs
 parser = MainArgs
