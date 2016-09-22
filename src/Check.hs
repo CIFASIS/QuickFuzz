@@ -60,6 +60,7 @@ report value filename outdir =
      seed <- (randomIO :: IO Int)
      LC8.writeFile (outdir ++ "/" ++ show seed ++ "." ++ filename ++ ".val") (LC8.pack (show value))
      copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
+     copyFile filename (outdir ++ "/last")
 
 vreport value report filename outdir =
   do
@@ -77,7 +78,7 @@ freport value orifilename filename outdir =
      copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
      copyFile filename (outdir ++ "/last")
 
-rreport value filename outdir =
+rreport filename outdir =
   do
      seed <- (randomIO :: IO Int)
      copyFile filename (outdir ++ "/red." ++ show seed ++ "." ++ filename)
@@ -145,16 +146,17 @@ prop_ZzufExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath ->
 prop_ZzufExec [] pcmd encode outdir x = 
          monadicIO $ do
          seed <- run $ (randomIO :: IO Int)
-         x <- run $ exec_zzuf seed (encode x) 
-         if (isNothing x) 
+         y <- run $ exec_zzuf seed (encode x) 
+         if (isNothing y) 
             then assert True
          else (
            do 
-           ret <- run $ execfromStdin pcmd (fromJust x)
+           ret <- run $ execfromStdin pcmd (fromJust y)
            case not (has_failed ret) of
-              False -> (do 
-                        run $ report x "stdin" outdir
-                        assert False
+              False -> (do
+                          run $ write (fromJust y) ("stdin." ++ show seed)
+                          run $ report x ("stdin." ++ show seed) outdir
+                          assert False
                )
               _             -> assert True
            )
@@ -218,32 +220,34 @@ exec_radamsa = execFromStdinToBuffer ("radamsa", [])
 prop_RadamsaExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
 prop_RadamsaExec [] pcmd encode outdir x = 
          noShrinking $ monadicIO $ do
-         x <- run $ exec_radamsa (encode x)
-         if (isNothing x) 
+         seed <- run $ (randomIO :: IO Int)
+         y <- run $ exec_radamsa (encode x)
+         if (isNothing y) 
             then assert True
          else (
            do 
-           ret <- run $ execfromStdin pcmd (fromJust x)
+           ret <- run $ execfromStdin pcmd (fromJust y)
            case not (has_failed ret) of
-              False -> (do 
-                        run $ report x "stdin" outdir
-                        assert False
+              False -> (do
+                          run $ write (fromJust y) ("stdin." ++ show seed)
+                          run $ report x ("stdin." ++ show seed) outdir
+                          assert False
                )
               _             -> assert True
            )
 prop_RadamsaExec filename pcmd encode outdir x = 
          noShrinking $ monadicIO $ do
-         x <- run $ exec_radamsa (encode x)
-         if (isNothing x) 
+         y <- run $ exec_radamsa (encode x)
+         if (isNothing y) 
             then assert True
          else (
            do 
-           run $ write (fromJust x) filename
+           run $ write (fromJust y) filename
            ret <- run $ exec pcmd
            case not (has_failed ret) of
               False -> (do 
                         run $ report x filename outdir
-                        assert False
+                        assert True
                )
               _             -> assert True
            )
@@ -251,11 +255,13 @@ prop_RadamsaExec filename pcmd encode outdir x =
 prop_Exec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
 prop_Exec [] pcmd encode outdir x = 
          monadicIO $ do
+         seed <- run $ (randomIO :: IO Int)
          ret <- run $ execfromStdin pcmd (encode x)
          case not (has_failed ret) of
-            False -> (do 
-                    run $ report x "stdin" outdir
-                    assert False
+            False -> (do
+                          run $ write (encode x) ("stdin." ++ show seed)
+                          run $ report x ("stdin." ++ show seed) outdir
+                          assert False
              )
             _             -> assert True
 
@@ -299,11 +305,24 @@ prop_Red filename pcmd encode outdir x =
          ret <- run $ exec pcmd
          case not (has_failed ret) of
               False -> (do 
-                        run $ rreport x filename outdir
+                        run $ rreport filename outdir
                         assert False
                )
               _             -> assert True
          
+prop_Red [] pcmd encode outdir x = 
+         monadicIO $ do
+         seed <- run $ (randomIO :: IO Int)
+         ret <- run $ execfromStdin pcmd (encode x)
+         case not (has_failed ret) of
+              False -> (do
+                          run $ write (encode x) ("stdin." ++ show seed)
+                          run $ rreport ("stdin." ++ show seed) outdir
+                          assert False
+               )
+              _             -> assert True
+         
+
 
 
 
