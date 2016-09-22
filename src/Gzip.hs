@@ -32,14 +32,18 @@ data MGzipFile = GZIP {
 
 data ExtraBlock = EB {
 		    xlen :: Word8,
-		    xlenExtra :: Word64, -- alguna manera de saber de cuantos bits es la maquina en haskell? Algun #ifdef. Aca supongo que es 64 bits
+		    xlenExtra :: [Word8],
 		    fileName :: String,
-		    fileComment :: Word64,
+		    fileComment :: [Word8],
 		    crc16 :: Word16,
-		    compressedBlocks :: Word64
+		    compressedBlocks :: [Word8]
 		  }
 		deriving(Show,Eq)				   
-
+putList :: [Word8] -> Put
+putList [w] = putWord8 w
+putList (w1:(w2:words)) = do putWord8 w1
+			     putWord8 w2
+			     putList words
 instance Binary MGzipFile where
 	put gzip = do putWord8 $ 31 -- id1
 		      putWord8 $ 139
@@ -49,13 +53,13 @@ instance Binary MGzipFile where
 		      putWord8 $ xfl gzip
 		      putWord8 $ os gzip --revisar
 		      when (sel3 $ unpackWord8LE $ flg gzip) $ do putWord8 $ xlen $ extras gzip
-							          putWord64le $ xlenExtra $ extras gzip
+							          putList $ xlenExtra $ extras gzip
 		      when (sel4 $ unpackWord8LE $ flg gzip) $ do putWord8 0 -- putWord fileName
-		      when (sel5 $ unpackWord8LE $ flg gzip) $ putWord64le $ fileComment $ extras gzip
+		      when (sel5 $ unpackWord8LE $ flg gzip) $ putList $ fileComment $ extras gzip
 		      when (sel2 $ unpackWord8LE $ flg gzip) $ do putWord16le $ crc16 $ extras gzip
-								  putWord64le $ compressedBlocks $ extras gzip
+								  putList $ compressedBlocks $ extras gzip
 		      putWord32le $ crc32 gzip
-		      putWord32le $ isize gzip		
+		      putWord32le $ isize gzip	
 	get = undefined
 
 tencode :: T.UTCTime -> Word32
