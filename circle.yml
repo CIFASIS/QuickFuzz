@@ -36,6 +36,8 @@ test:
     - stack install --fast --flag QuickFuzz:imgs
     - QuickFuzz Gif "/usr/bin/giffix @@" -a zzuf -t 10 -s 10
     - QuickFuzz Gif "/usr/bin/giffix @@" -a radamsa -t 10 -s 10
+    - QuickFuzz Gif "/usr/bin/giffix" -a zzuf -t 10 -s 10
+    - QuickFuzz Gif "/usr/bin/giffix" -a radamsa -t 10 -s 10
   post:
    - mkdir -p $CIRCLE_ARTIFACTS/lint/
    - cp report.html $CIRCLE_ARTIFACTS/lint/report.html
