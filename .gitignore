@@ -19,3 +19,4 @@ cabal.sandbox.config
 *.hp
 ./QuickFuzz
 report.html
+make.sh

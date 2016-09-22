@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances#-}
 
+
 module Gzip where
 
 --import Data.Binary( Binary(..), encode )
@@ -12,37 +13,53 @@ import Data.ByteString
 import Data.Binary.Put
 import Data.Binary
 import Data.Tuple.Select
+import Data.Time.Clock as T
+import Control.Monad
 
 
-curry8 :: ((a,b,c,d,e,f,g,h) -> i) -> a -> b -> c -> d -> e -> f -> g -> h -> i
-curry8 f x1 x2 x3 x4 x5 x6 x7 x8 = f (x1,x2,x3,x4,x5,x6,x7,x8)
-
-uncurry8 :: (a -> b -> c -> d -> e -> f -> g -> h -> i) -> (a,b,c,d,e,f,g,h) -> i
-uncurry8 f p = f (sel1 p) (sel2 p) (sel3 p) (sel4 p) (sel5 p) (sel6 p) (sel7 p) (sel8 p)
- 
 --type MGzipFile  = (CompressParams,L.ByteString)
-type Byte = (Bool,Bool,Bool,Bool,Bool,Bool,Bool,Bool) -- Se lee de izquierda a derecha, ejemplo, el 01000 es el 2
 data MGzipFile = GZIP { 
-		   cm :: Byte,
-		   flg :: Byte,
-		   mtime :: (Byte,Byte,Byte,Byte),
-		   xfl :: Byte,
-		   crc32 :: (Byte,Byte,Byte,Byte)
+		   cm :: Word8,
+		   flg :: Word8,
+		   --mtime :: T.UTCTime,
+		   xfl :: Word8,
+		   os :: Word8,
+		   extras :: ExtraBlock,
+		   crc32 :: Word32,
+		   isize :: Word32
 		 }
-		deriving(Show,Read,Eq)
+		deriving(Show,Eq)
+
+data ExtraBlock = EB {
+		    xlen :: Word8,
+		    xlenExtra :: Word64, -- alguna manera de saber de cuantos bits es la maquina en haskell? Algun #ifdef. Aca supongo que es 64 bits
+		    fileName :: String,
+		    fileComment :: Word64,
+		    crc16 :: Word16,
+		    compressedBlocks :: Word64
+		  }
+		deriving(Show,Eq)				   
 
 instance Binary MGzipFile where
 	put gzip = do putWord8 $ 31 -- id1
 		      putWord8 $ 139
-		      putWord8 $ uncurry8 packWord8BE (cm gzip)
-		      putWord8 $ uncurry8 packWord8BE (flg gzip)
-		      putWord8 $ uncurry8 packWord8BE (sel1 $ mtime gzip)
-		      putWord8 $ uncurry8 packWord8BE (sel2 $ mtime gzip)
-		      putWord8 $ uncurry8 packWord8BE (sel3 $ mtime gzip)
-		      putWord8 $ uncurry8 packWord8BE (sel4 $ mtime gzip)
-		      putWord8 $ uncurry8 packWord8BE (xfl gzip)
-		      putWord8 $ 3 --at the moment, in unix
+		      putWord8 $ cm gzip
+		      putWord8 $ flg gzip
+		      --putWord32le $ tencode $ mtime gzip -- revisar tencode
+		      putWord8 $ xfl gzip
+		      putWord8 $ os gzip --revisar
+		      when (sel3 $ unpackWord8LE $ flg gzip) $ do putWord8 $ xlen $ extras gzip
+							          putWord64le $ xlenExtra $ extras gzip
+		      when (sel4 $ unpackWord8LE $ flg gzip) $ do putWord8 0 -- putWord fileName
+		      when (sel5 $ unpackWord8LE $ flg gzip) $ putWord64le $ fileComment $ extras gzip
+		      when (sel2 $ unpackWord8LE $ flg gzip) $ do putWord16le $ crc16 $ extras gzip
+								  putWord64le $ compressedBlocks $ extras gzip
+		      putWord32le $ crc32 gzip
+		      putWord32le $ isize gzip		
 	get = undefined
+
+tencode :: T.UTCTime -> Word32
+tencode t = undefined
 
 mencode :: MGzipFile -> L.ByteString
 mencode gzip = undefined
