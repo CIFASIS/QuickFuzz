@@ -93,6 +93,8 @@ import System.Exit
 import Control.Monad
 import Data.List.Split
 
+import ModuleFinder
+
 fillArgs :: MainArgs -> IO (String -> MainArgs)
 fillArgs args =
     case findFileName args of
