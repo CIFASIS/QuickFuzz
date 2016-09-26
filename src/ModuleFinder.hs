@@ -1,9 +1,7 @@
 {-# LANGUAGE RankNTypes, ScopedTypeVariables, RecordWildCards, NamedFieldPuns, ConstraintKinds,  FlexibleContexts, DataKinds, KindSignatures, TypeOperators, ViewPatterns #-} 
 
-
 module ModuleFinder where
 
---import Safe
 import Control.Applicative
 import Control.Exception (SomeException(..))
 import Data.Char
@@ -12,41 +10,77 @@ import Data.Maybe
 import FastString
 import GHC
 import qualified GHC as G
---import Language.Haskell.GhcMod.Convert
---import Language.Haskell.GhcMod.Gap as Gap
---import Language.Haskell.GhcMod.Types
 import Language.Haskell.GhcMod.Monad
---import Language.Haskell.GhcMod.Logging
 import Name (getOccString)
---import Outputable
---import TyCon (isAlgTyCon)
---import Type (dropForAlls, splitFunTy_maybe, mkFunTy, isPredTy)
 import Exception (ExceptionMonad)
---import Prelude
-mport Language.Haskell.GhcMod hiding (test)
-import Language.Haskell.GhcMod.Exports 
+import Language.Haskell.GhcMod
 import Outputable
 import OccName
 import Name
+import Type
+import TypeRep
 
---finder mod = do (mres, log) <- runGhcModT defaultOptions $ test mod
---                case mres of
---                                  Left err -> putStrLn "Error"
---                                                    Right xs -> print (map printTuple xs)
---                                                               
---                                                               printTuple (name, _ ,_) = show name
---                                                               
---                                                               instance Show Name where
---                                                                   show = getOccString 
---                                                                   
---                                                                   
---                                                                   --main = do (Right res,_ ) <- runGhcModT defaultOptions $ test "Data.Maybe"
---                                                                   ----          print "ok"
---                                                                   --"""")))""))
-------------------------------------------------------------------
+type ExportedThing = (Name, Module, TyThing)
 
-test :: forall m. IOish m => String -> GhcModT m [(Name, Module, Maybe TyThing)] 
-test pkgmdl = goPkgModule `G.gcatch` (\(SomeException _) -> goHomeModule)
+type FunName = String
+type TypeName = String
+type ConsName = String
+
+data SimplyTyped = Fun FunName [TypeName] TypeName
+                 | Cons ConsName [TypeName] TypeName
+                   deriving (Show, Eq)
+
+
+transTyThing :: ExportedThing -> Maybe SimplyTyped
+transTyThing (n, m, AnId id) = transId id 
+transTyThing (n, m, ATyCon t) = transTyCon t
+transTyThing _ = error "unexpected TyThing constructor"
+
+
+transId id = case idType id of
+                ForAllTy v t -> Nothing
+                TyVarTy tv -> Nothing
+                FunTy k1 k2 -> undefined
+                TyConApp tc tl -> undefined
+
+transTyCon t = undefined 
+
+--testFinder mod = do mods <- exported mod
+--                    print $ map printTuple mods
+--
+--printTuple (name, mod, tyth) = (getOccString name, printTyThing tyth)
+--                                    where printTyThing :: TyThing -> String
+--                                          printTyThing (AnId id)    = printId id 
+--                                          printTyThing (AConLike cl) = "AConLike" 
+--                                          printTyThing (ATyCon t)    = "ATyCon" 
+--                                          printTyThing (ACoAxiom ca) = "ACoAxion" 
+--
+--showOut :: Outputable a => a -> String
+--showOut = showSDocUnsafe . ppr
+--
+--idToList (FunTy k1 k2) = showOut k1 : idToList k2
+--idToList (TyConApp tc ts) = [showOut tc] ++ map (concat . idToList) ts 
+--idToList (TyVarTy v) = [showOut v]
+--idToList (ForAllTy v ty) = [showOut v] ++ idToList ty 
+--
+--printId id = case  dropForAlls (idType id) of
+--                FunTy k1 k2 -> "FunTy: " ++ show (idToList (FunTy k1 k2))
+--                TyConApp tc ts -> "TyConApp " ++ show (idToList (TyConApp tc ts ))
+--                TyVarTy v -> "TyVarTy " ++ show (idToList (TyVarTy v))
+--                ForAllTy v ty -> "ForAllTy " ++  show (idToList (ForAllTy v ty)) 
+
+-------------------------------------------------------------------------------------
+exported :: String -> IO [ExportedThing]
+exported mod = do (mres, log) <- runGhcModT defaultOptions $ finder mod
+                  case mres of
+                    Left err -> error $ "Error calling ghc-mod: " ++ show err 
+                    Right xs -> return $ foldr filterMaybe [] xs
+                                    where filterMaybe (n,m,Just t) rest = (n,m,t) : rest 
+                                          filterMaybe _            rest = rest
+
+                                                                   
+finder :: forall m. IOish m => String -> GhcModT m [(Name, Module, Maybe TyThing)] 
+finder pkgmdl = goPkgModule `G.gcatch` (\(SomeException _) -> goHomeModule)
         where
            goPkgModule = do
              runGmPkgGhc $ do
