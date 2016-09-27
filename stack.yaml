@@ -37,6 +37,8 @@ extra-deps:
 - concurrent-extra-0.7.0.10
 - language-bash-0.6.1
 - shell-escape-0.2.0
+- process-extras-0.4.1.4
+- generic-deriving-1.10.0
 
 # Override default flag values for local packages and extra-deps
 flags:

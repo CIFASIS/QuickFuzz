@@ -11,7 +11,6 @@ import Control.Monad
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as LC8
-import qualified System.Process.ByteString.Lazy as LP
 
 import Data.Maybe
 
@@ -231,7 +230,7 @@ prop_RadamsaExec [] pcmd encode outdir x =
               False -> (do
                           run $ write (fromJust y) ("stdin." ++ show seed)
                           run $ report x ("stdin." ++ show seed) outdir
-                          assert False
+                          assert True
                )
               _             -> assert True
            )
@@ -247,7 +246,7 @@ prop_RadamsaExec filename pcmd encode outdir x =
            case not (has_failed ret) of
               False -> (do 
                         run $ report x filename outdir
-                        assert True
+                        assert False
                )
               _             -> assert True
            )
@@ -261,7 +260,7 @@ prop_Exec [] pcmd encode outdir x =
             False -> (do
                           run $ write (encode x) ("stdin." ++ show seed)
                           run $ report x ("stdin." ++ show seed) outdir
-                          assert False
+                          assert True
              )
             _             -> assert True
 
