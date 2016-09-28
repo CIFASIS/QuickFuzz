@@ -1,4 +1,6 @@
-{-# LANGUAGE RankNTypes, ScopedTypeVariables, RecordWildCards, NamedFieldPuns, ConstraintKinds,  FlexibleContexts, DataKinds, KindSignatures, TypeOperators, ViewPatterns #-} 
+{-# LANGUAGE RankNTypes, ScopedTypeVariables, RecordWildCards, 
+    NamedFieldPuns, ConstraintKinds, FlexibleContexts, 
+    DataKinds, KindSignatures, TypeOperators, ViewPatterns #-} 
 
 module ModuleFinder where
 
@@ -19,32 +21,82 @@ import OccName
 import Name
 import Type
 import TypeRep
+import TyCon
+import ConLike
+import DataCon
 
 type ExportedThing = (Name, Module, TyThing)
 
-type FunName = String
-type TypeName = String
-type ConsName = String
+--type FunName = String
+--type TypeName = String
+--type ConsName = String
+--
+--data SimplyTyped = Fun  FunName  [TypeName] TypeName
+--                 | Cons ConsName [TypeName] TypeName
+--                   deriving (Show, Eq)
+--
+--
+--transTyThing :: ExportedThing -> Maybe SimplyTyped
+--transTyThing (n, m, AnId id) = do (ts, rt) <- transId id
+--                                  return $ Fun (getOccString n) ts rt
+--transTyThing (n, m, ATyCon t) = do (ts, rt) <- transTyCon t
+--                                   return $ Cons (getOccString n) ts rt
+--transTyThing (n, m, AConLike cl) = do (ts, rt) <- transConLike cl
+--                                      return $ Cons (getOccString n) ts rt
+--transTyThing _ = Nothing
+--
+---- Translate Ids
+--transId id = case idType id of
+--    FunTy k1 k2 -> case k2 of
+--        TyConApp tc [] -> do 
+--            its <- transInterm k1
+--            return (its, getOccString $ getName tc)
+--        _ -> Nothing
+--    TyConApp tc tl -> case tl of
+--        [] -> return ([], getOccString $ getName tc)
+--        _  -> Nothing 
+--    TyVarTy tv -> Nothing
+--    ForAllTy v t -> Nothing
+--    _   -> error "broken kind invariant"
+--
+--
+--transInterm (TyConApp tc []) = Just [getOccString $ getName tc]
+--transInterm (FunTy k1 (TyConApp tc [])) = do its <- transInterm k1
+--                                             return $ its ++ [getOccString $ getName tc]
+--transInterm _ = Nothing
+--
+--
+--transTyConApp tc [] = Just ([], getOccString $ getName tc)
+--transTyConApp _  _  = Nothing
+--
+--
+---- Translate TyCons
+--transTyCon t = case tyConKind t of
+--    FunTy k1 k2 -> case k2 of
+--        TyConApp tc [] -> do
+--            its <- transInterm k1
+--            return (its, getOccString $ getName tc)
+--        _ -> Nothing
+--    TyConApp tc tl -> case tl of
+--        [] -> return ([], getOccString $ getName tc)
+--        _  -> Nothing
+--    TyVarTy tv -> Nothing 
+--    ForAllTy v t -> Nothing
+--    _ -> error "broken kind invariant"
+--
+---- Translate ConLikes
+--transConLike (RealDataCon dc) = 
+--    let (_,_,ts,rt) = dataConSig dc
+--    in case rt of
+--        TyConApp tc ts -> return (["--------"], getOccString $ getName tc)
+--        _ -> Nothing
+--
+---- Test
+--testSimplyTyped mod = do exps <- exported mod
+--                         mapM_ (\exp@(n,m,tt) -> print (getOccString n, transTyThing exp)) exps
+--
 
-data SimplyTyped = Fun FunName [TypeName] TypeName
-                 | Cons ConsName [TypeName] TypeName
-                   deriving (Show, Eq)
-
-
-transTyThing :: ExportedThing -> Maybe SimplyTyped
-transTyThing (n, m, AnId id) = transId id 
-transTyThing (n, m, ATyCon t) = transTyCon t
-transTyThing _ = error "unexpected TyThing constructor"
-
-
-transId id = case idType id of
-                ForAllTy v t -> Nothing
-                TyVarTy tv -> Nothing
-                FunTy k1 k2 -> undefined
-                TyConApp tc tl -> undefined
-
-transTyCon t = undefined 
-
+-------------------------------------------------------------------------------------
 --testFinder mod = do mods <- exported mod
 --                    print $ map printTuple mods
 --
@@ -55,8 +107,8 @@ transTyCon t = undefined
 --                                          printTyThing (ATyCon t)    = "ATyCon" 
 --                                          printTyThing (ACoAxiom ca) = "ACoAxion" 
 --
---showOut :: Outputable a => a -> String
---showOut = showSDocUnsafe . ppr
+showOut :: Outputable a => a -> String
+showOut = showSDocUnsafe . ppr
 --
 --idToList (FunTy k1 k2) = showOut k1 : idToList k2
 --idToList (TyConApp tc ts) = [showOut tc] ++ map (concat . idToList) ts 
@@ -70,6 +122,14 @@ transTyCon t = undefined
 --                ForAllTy v ty -> "ForAllTy " ++  show (idToList (ForAllTy v ty)) 
 
 -------------------------------------------------------------------------------------
+
+
+testExported :: String -> IO ()
+testExported mod = do exps <- exported mod
+                      print $ map printTuple exps
+                        where printTuple :: ExportedThing -> (String, String)
+                              printTuple (n,m,tt) = (getOccString n, showSDocUnsafe $ ppr tt)
+
 exported :: String -> IO [ExportedThing]
 exported mod = do (mres, log) <- runGhcModT defaultOptions $ finder mod
                   case mres of
