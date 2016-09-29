@@ -13,46 +13,30 @@ import qualified Data.ByteString.Lazy.Char8 as LC8
 import Data.DeriveTH
 import DeriveArbitrary
 
-import Vector
+import Strings
 import ByteString
 
 import Data.Char (chr)
 
-data Pep = Pep Int
-
-data Regex = Sym Char
-           | InRange [Char]
-           | NotInRange [Char]
+data Regex = Sym String
+           | InRange String
+           | NotInRange String
            | Alt Regex Regex
            | Seq Regex Regex
            | Rep Regex
            | Plus Regex
            | OrNothing Regex
-           | Tincho [Pep]
+           -- | Tincho [Pep]
 
-genchar = oneof $ map return ['a', 'b', 'c']
+--genchar = oneof $ map return ['a', 'b', 'c']
 
+instance {-# OVERLAPPING #-} Arbitrary String where
+   arbitrary = mgenName
 
 $(devArbitrary ''Regex)
 
-{-
-   instance Arbitrary Regex where
-       arbitrary = sized mk_regex
-   
-   mk_regex :: Int -> Gen Regex
-   mk_regex 0     = do
-                     x <- genchar
-                     xs <- listOf1 $ genchar
-                     oneof $ map return [Sym x, InRange xs, NotInRange xs]
-   
-   mk_regex n     = do
-                        s <- (mk_regex 0)
-                        r1 <- (mk_regex (n-1))
-                        r2 <- (mk_regex (n-1))
-                        frequency $ map (\(x,y) -> (x, return y)) [(1,s), (10,Alt r1 r2), (10,Seq r1 r2), (10,Rep r1), (10, Plus r1), (10, OrNothing r1)]
--}
 instance Show Regex where
-  show (Sym s)  =  [s]
+  show (Sym s)  =  s
   show (Alt p q)  =  "(" ++ (show p) ++ "|" ++ (show q) ++ ")"
   show (Seq p q) = (show p) ++ (show q)
   show (Rep r)    =  "(" ++ (show  r) ++ ")*"
