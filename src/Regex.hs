@@ -13,7 +13,6 @@ import qualified Data.ByteString.Lazy.Char8 as LC8
 import Data.DeriveTH
 import DeriveArbitrary
 
-import Strings
 import ByteString
 
 import Data.Char (chr)
@@ -26,12 +25,6 @@ data Regex = Sym String
            | Rep Regex
            | Plus Regex
            | OrNothing Regex
-           -- | Tincho [Pep]
-
---genchar = oneof $ map return ['a', 'b', 'c']
-
-instance {-# OVERLAPPING #-} Arbitrary String where
-   arbitrary = mgenName
 
 $(devArbitrary ''Regex)
 
