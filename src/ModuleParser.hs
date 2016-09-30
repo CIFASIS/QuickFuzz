@@ -8,7 +8,7 @@ import Language.Haskell.GhcMod
 import Language.Haskell.GhcMod.Browse
 import Language.Haskell.GhcMod.Monad
 
-import Language.Haskell.Exts as Ext
+import Language.Haskell.Exts as Ext hiding (Name)
 
 import Language.Haskell.TH
 import Language.Haskell.TH.Lib
@@ -16,19 +16,21 @@ import Language.Haskell.TH.Syntax
 
 import Text.Blaze.Html
 
-
-devADT :: String -> [(String, Ext.Type)] -> DecQ
-devADT nm funcs = do
-    let nm' = filter isAlphaNum nm
-        dName = [toUpper $ head nm'] ++ tail nm' ++ "Action"
-    cons <- mapM devCon funcs
-    return $ DataD [] (mkName dName) [] cons [] 
+mkConName n = mkName $ "Run_" ++ n
 
 
-devCon :: (String, Ext.Type) -> ConQ
-devCon (n, t) = do
+devADT :: Name -> [(String, Ext.Type)] -> DecQ
+devADT tname funcs = do
+    --let nm' = filter isAlphaNum nm
+    --    dName = [toUpper $ head nm'] ++ tail nm' ++ "Action"
+    cons <- mapM (devCon tname) funcs
+    return $ DataD [] tname [] cons [] 
+
+
+devCon :: Name -> (String, Ext.Type) -> ConQ
+devCon tname (n, t) = do
     args <- mapM devBangType $ init $ flattenType t 
-    return $ NormalC (mkName $ "Act_"++n) args  
+    return $ NormalC (mkConName n) args  
 
 devBangType :: Ext.Type -> StrictTypeQ
 devBangType t = strictType notStrict (transType t) 
@@ -82,7 +84,8 @@ testDevADT mod ts = do
     (res, _) <- getModuleExports mod
     let ty = fromParseResult (parseType ts)
         actions = filter (resultType ty . snd) res 
-    dec <- runQ $ devADT ts actions 
+    dec <- runQ $ (do tn <- newName "Action"
+                      devADT tn actions) 
     print $ ppr dec 
 
 testFilterRT mod ts = do
