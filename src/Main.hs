@@ -93,7 +93,7 @@ import System.Exit
 import Control.Monad
 import Data.List.Split
 
-import ModuleFinder
+import ModuleParser 
 
 fillArgs :: MainArgs -> IO (String -> MainArgs)
 fillArgs args =

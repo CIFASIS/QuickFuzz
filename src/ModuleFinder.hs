@@ -16,14 +16,6 @@ import Language.Haskell.GhcMod.Monad
 import Name (getOccString)
 import Exception (ExceptionMonad)
 import Language.Haskell.GhcMod
-import Outputable
-import OccName
-import Name
-import Type
-import TypeRep
-import TyCon
-import ConLike
-import DataCon
 
 type ExportedThing = (Name, Module, TyThing)
 
