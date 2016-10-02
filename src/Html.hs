@@ -16,16 +16,17 @@ import ByteString
 import Strings
 
 import Text.Blaze.Html5
+import Text.Blaze.Html.Renderer.String
 
---data MHtml = MHtml Html
 
-$(devMArbitrary "Text.Blaze.Html5" "Html")
+$(devMArbitrary "Text.Blaze.Html5" ''Html)
 
--- $(devShow ''Action_Html)
--- $(devArbitrary ''Action_Html)
+$(devArbitrary ''HtmlAction)
 
---instance Arbitrary String where
---   arbitrary = mgenName
+$(devShow ''HtmlAction)
 
---mencode :: MHtml -> L8.ByteString
---mencode (MHtml x) = L8.pack $ render $ htmlprint x
+instance Arbitrary String where
+   arbitrary = mgenName
+
+mencode :: HtmlAction -> L8.ByteString
+mencode x = L8.pack $ renderHtml $ performHtml x

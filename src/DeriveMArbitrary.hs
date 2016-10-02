@@ -7,113 +7,140 @@ import Language.Haskell.TH.Syntax
 
 import Language.Haskell.GhcMod
 import Language.Haskell.GhcMod.Browse
-import Language.Haskell.GhcMod.Monad
 
-import Language.Haskell.Exts as Ext hiding (Name)
-
-
-devMArbitrary :: String -> String -> Q [Dec]
-devMArbitrary mod tname = do
-    (res, _) <- runIO $ getModuleExports mod
-    let ty = fromParseResult (parseType tname)
-        actions =  filter (resultType ty . snd) res 
-        
-    adt <- runQ $ devADT tname actions 
-    run <- devRun tname actions
-    return $  [adt, run]
-
-
-devRun :: String -> [(String, Ext.Type)] -> DecQ
-devRun tname actions = do
-    clauses <- mapM devClause actions
-    return $ FunD (mkName $ "run_Action_" ++ tname) clauses
-
---   [FunD runHtmlAction_7 [Clause [ConP Html.Run_body [VarP inner_8]] (NormalB (AppE (VarE Text.Blaze.Html5.body) (AppE (VarE runHtmlAction_7) (VarE inner_8)))) []]]
-devClause :: (String, Ext.Type) -> ClauseQ
-devClause (n,t) = do
-    let cname = mkConName n
-        args = init $ flattenType t
-        vars = map (\n -> varP (mkName $ "v" ++ show n)) [1..(length args)]
-    pat <- conP cname vars 
-    clause [conP cname vars] (normalB (litE (IntegerL 1))) []
-    
-
-mkTypeName n = mkName $ "Action_" ++ n
-mkConName n = mkName $ "Run_" ++ n
-
-
-devADT :: String -> [(String, Ext.Type)] -> DecQ
-devADT tname funcs = do
-    --let nm' = filter isAlphaNum nm
-    --    dName = [toUpper $ head nm'] ++ tail nm' ++ "Action"
-    cons <- mapM (devCon tname) funcs
-    return $ DataD [] (mkTypeName tname) [] cons [] 
-
-
-devCon :: String -> (String, Ext.Type) -> ConQ
-devCon tname (n, t) = do
-    let ty = fromParseResult (parseType tname)
-        act_ty = fromParseResult (parseType $ "Action_" ++ tname)
-    args <- mapM devBangType $ map (replace ty act_ty) $ init $ flattenType t 
-    return $ NormalC (mkConName n) args  
-
-devBangType :: Ext.Type -> StrictTypeQ
-devBangType t = strictType notStrict (transType t) 
-
-replace :: Ext.Type -> Ext.Type -> Ext.Type -> Ext.Type
-replace ty act_ty t      | t == ty  = act_ty
-                         | otherwise  = undefined
-
-transType :: Ext.Type -> TypeQ
-transType (TyCon qname) = transTyCon qname
-transType _ = undefined
-
-
-transTyCon :: QName -> TypeQ
-transTyCon (UnQual (Ident id)) = conT (mkName id) 
-transTyCon _ = undefined
-
-
+import Language.Haskell.Meta.Parse
 
 -------------------------------------------------
 --             Module crawler                  --
 -------------------------------------------------
+type Declaration = (Name, [TyVarBndr], Cxt, [Type])
+
 opts = BrowseOpts { optBrowseOperators = True
                   , optBrowseDetailed  = True
-                  , optBrowseQualified = False
-                  }
+                  , optBrowseQualified = True }
 
-
-
-getModuleExports :: String -> IO ([(String, Ext.Type)], [String])
+getModuleExports :: String -> IO ([Declaration], [String])
 getModuleExports mod = do
     (res, log) <- runGhcModT defaultOptions $ browse opts mod
     case res of
-        Left err  -> return ([], [])
+        Left err  -> error $ "error browsing module:" ++ mod
         Right str -> return $ foldr parse ([],[]) $ lines str
-                        where parse str (ok, failed) = 
-                                 case Ext.parseDecl str of
-                                    ParseOk (TypeSig l [Ident n] t) -> ((n,t):ok, failed)
-                                    ParseOk (TypeSig l [Symbol n] t) -> ((n,t):ok, failed)
-                                    _ -> (ok, str:failed)
+                        
+parse str (ok, failed) = 
+    case parseExp str of
+        Right (SigE (VarE name) ty) -> ((flattenDec name ty):ok, failed)
+        _ -> (ok, str:failed)
+
+flattenDec :: Name -> Type -> Declaration
+flattenDec name (ForallT tvb cxt ty) = 
+    let (_, tvb', cxt', ty') = flattenDec name ty
+    in (name, tvb ++ tvb', cxt ++ cxt', ty')
+flattenDec name (AppT (AppT ArrowT l) r) = 
+    let (_, tvb', cxt', r') = flattenDec name r
+    in (name, tvb', cxt', [l] ++ r')
+flattenDec name t = (name, [], [], [t])
 
 
-resultType :: Ext.Type -> Ext.Type -> Bool
-resultType rt (TyFun t1 t2) = resultType rt t2
-resultType rt t = rt == t 
+-------------------------------------------------
+--  actions tree and perform code generation   --
+-------------------------------------------------
+devMArbitrary :: String -> Name -> Q [Dec]
+devMArbitrary mod tname = do
+    (decs, failed) <- runIO $ getModuleExports mod
+    let ty = nameToType tname
+        actions =  filter (\d -> resultType ty d && decidableArgs d) decs 
+    adt <- devADT tname actions
+    run <- devRun tname actions
+    return [adt, run]
 
 
 
-flattenType :: Ext.Type -> [Ext.Type]
-flattenType (TyFun t1 t2) = t1 : flattenType t2
-flattenType t = [t]
+devADT :: Name -> [Declaration] -> DecQ
+devADT tname funcs = dataD (cxt []) (mkTypeName tname) [] (map (devCon tname) funcs) [] 
 
-------------------------------------------------------------------------
+devCon :: Name -> Declaration -> ConQ
+devCon tname (n, tv, cxt, ty) = normalC (mkConName n) (map (devBangType tname) (init ty))
 
---testDevADT mod ts = do
---    (res, _) <- getModuleExports mod
---    let ty = fromParseResult (parseType ts)
---        actions = filter (resultType ty . snd) res 
---    dec <- runQ $ (do tn <- newName "Action"
---                      devADT tn actions) 
---    print $ ppr dec 
+devBangType :: Name -> Type -> StrictTypeQ
+devBangType tname t = strictType notStrict replaceFunction 
+    where replaceFunction | nameToType tname == t  = conT $ mkTypeName tname
+                          | otherwise              = return t
+                                    
+
+
+devRun :: Name -> [Declaration] -> DecQ
+devRun tname actions = funD (mkPerformName tname) (map (devClause tname) actions)
+
+devClause :: Name -> Declaration -> ClauseQ
+devClause tname d@(n,_,_,ts) = do
+    let cname = mkConName n
+        varsP = map (varP . mkVarName) [1..(length ts - 1)]  
+        varsE = map (varE . mkVarName) [1..(length ts - 1)]  
+    clause [conP cname varsP] (normalB (apply tname d varsE)) [] 
+
+apply :: Name -> Declaration -> [ExpQ] -> ExpQ
+apply tname (n,_,_,_) [] = varE n 
+apply tname (n,tvb,cxt,(t:ts)) (v:vs) = appE (apply tname (n,tvb,cxt,ts) vs) replaceAction 
+    where replaceAction | nameToType tname == t  = appE (varE (mkPerformName tname)) v
+                        | otherwise              = v
+
+
+nameToType name = either (error "error parsing type") id (parseType $ nameBase name)
+
+
+mkTypeName n = mkName $ nameBase n ++ "Action"
+mkConName n = mkName $ "Act_" ++ nameBase n
+mkPerformName n = mkName $ "perform" ++ nameBase n
+mkVarName n = mkName $ "v" ++ show n
+
+resultType :: Type -> Declaration -> Bool
+resultType rt (_,_,_,ty) = rt `compat` last ty
+
+compat :: Type -> Type -> Bool
+compat t (AppT l r)  = compat t l
+compat (ConT c) (ConT c') =  c == c'  
+compat _ _ = False
+
+decidableArgs :: Declaration -> Bool
+decidableArgs (_,_,_,ty) = all (not . hasVarT) ty
+
+hasVarT :: Type -> Bool
+hasVarT (VarT _) = True
+hasVarT (AppT l r) = hasVarT l || hasVarT r
+hasVarT (ConT _) = False
+hasVarT _ = False
+
+
+-------------------------------------------------
+--                   Tests                     --
+---------------------------------------------------
+--testParser :: String -> String -> IO ()
+--testParser mod ty  = do 
+--    (decs, failed) <- getModuleExports mod
+--    mapM_ print decs 
+--    putStrLn "----------------------------"
+--    let Right rt = parseType ty
+--    mapM_ print $ filter (resultType rt) decs
+--    putStrLn "----------------------------"
+--    mapM_ putStrLn failed
+--
+--testDevAdt :: String -> String -> IO ()
+--testDevAdt mod ts = do
+--    (decs, failed) <- getModuleExports mod
+--    let tname = mkName ts
+--        Right rt = parseType ts
+--        rtdecs = filter (resultType rt) decs
+--        rtdecs' = filter decidableArgs rtdecs
+--    adt <- runQ $ devADT tname rtdecs'
+--    print $ ppr adt
+--
+--
+--testDevRun :: String -> String -> IO ()
+--testDevRun mod ts = do
+--    (decs, failed) <- getModuleExports mod
+--    let tname = mkName ts
+--        Right rt = parseType ts
+--        rtdecs = filter (resultType rt) decs
+--        rtdecs' = filter decidableArgs rtdecs
+--    run <- runQ $ devRun tname rtdecs'
+--    print $ ppr run
