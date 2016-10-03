@@ -2,6 +2,8 @@
 
 module DeriveMArbitrary where
 
+import Control.Exception
+
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
 
@@ -21,9 +23,9 @@ opts = BrowseOpts { optBrowseOperators = True
 
 getModuleExports :: String -> IO ([Declaration], [String])
 getModuleExports mod = do
-    (res, log) <- runGhcModT defaultOptions $ browse opts mod
+    (res, log) <- handle (\e -> error (show (e :: SomeException))) $ runGhcModT defaultOptions $ browse opts mod
     case res of
-        Left err  -> error $ "error browsing module:" ++ mod
+        Left err  -> error $ "error browsing module: " ++ mod
         Right str -> return $ foldr parse ([],[]) $ lines str
                         
 parse str (ok, failed) = 
@@ -47,8 +49,7 @@ flattenDec name t = (name, [], [], [t])
 devMArbitrary :: String -> Name -> Q [Dec]
 devMArbitrary mod tname = do
     (decs, failed) <- runIO $ getModuleExports mod
-    let ty = nameToType tname
-        actions =  filter (\d -> resultType ty d && decidableArgs d) decs 
+    let actions = filter (\d -> resultType (toType tname) d && decidableArgs d) decs 
     adt <- devADT tname actions
     run <- devRun tname actions
     return [adt, run]
@@ -63,8 +64,8 @@ devCon tname (n, tv, cxt, ty) = normalC (mkConName n) (map (devBangType tname) (
 
 devBangType :: Name -> Type -> StrictTypeQ
 devBangType tname t = strictType notStrict replaceFunction 
-    where replaceFunction | nameToType tname == t  = conT $ mkTypeName tname
-                          | otherwise              = return t
+    where replaceFunction | toType tname == t  = conT $ mkTypeName tname
+                          | otherwise          = return t
                                     
 
 
@@ -81,12 +82,11 @@ devClause tname d@(n,_,_,ts) = do
 apply :: Name -> Declaration -> [ExpQ] -> ExpQ
 apply tname (n,_,_,_) [] = varE n 
 apply tname (n,tvb,cxt,(t:ts)) (v:vs) = appE (apply tname (n,tvb,cxt,ts) vs) replaceAction 
-    where replaceAction | nameToType tname == t  = appE (varE (mkPerformName tname)) v
-                        | otherwise              = v
+    where replaceAction | t == toType tname  = appE (varE (mkPerformName tname)) v
+                        | otherwise          = v
 
 
-nameToType name = either (error "error parsing type") id (parseType $ nameBase name)
-
+toType = ConT . mkName . nameBase 
 
 mkTypeName n = mkName $ nameBase n ++ "Action"
 mkConName n = mkName $ "Act_" ++ nameBase n
@@ -114,33 +114,33 @@ hasVarT _ = False
 -------------------------------------------------
 --                   Tests                     --
 ---------------------------------------------------
---testParser :: String -> String -> IO ()
---testParser mod ty  = do 
---    (decs, failed) <- getModuleExports mod
---    mapM_ print decs 
---    putStrLn "----------------------------"
---    let Right rt = parseType ty
---    mapM_ print $ filter (resultType rt) decs
---    putStrLn "----------------------------"
---    mapM_ putStrLn failed
---
---testDevAdt :: String -> String -> IO ()
---testDevAdt mod ts = do
---    (decs, failed) <- getModuleExports mod
---    let tname = mkName ts
---        Right rt = parseType ts
---        rtdecs = filter (resultType rt) decs
---        rtdecs' = filter decidableArgs rtdecs
---    adt <- runQ $ devADT tname rtdecs'
---    print $ ppr adt
---
---
---testDevRun :: String -> String -> IO ()
---testDevRun mod ts = do
---    (decs, failed) <- getModuleExports mod
---    let tname = mkName ts
---        Right rt = parseType ts
---        rtdecs = filter (resultType rt) decs
---        rtdecs' = filter decidableArgs rtdecs
---    run <- runQ $ devRun tname rtdecs'
---    print $ ppr run
+testParser :: String -> String -> IO ()
+testParser mod ty  = do 
+    (decs, failed) <- getModuleExports mod
+    mapM_ print decs 
+    putStrLn "----------------------------"
+    let Right rt = parseType ty
+    mapM_ print $ filter (resultType rt) decs
+    putStrLn "----------------------------"
+    mapM_ putStrLn failed
+
+testDevAdt :: String -> String -> IO ()
+testDevAdt mod ts = do
+    (decs, failed) <- getModuleExports mod
+    let tname = mkName ts
+        Right rt = parseType ts
+        rtdecs = filter (resultType rt) decs
+        rtdecs' = filter decidableArgs rtdecs
+    adt <- runQ $ devADT tname rtdecs'
+    print $ ppr adt
+
+
+testDevRun :: String -> String -> IO ()
+testDevRun mod ts = do
+    (decs, failed) <- getModuleExports mod
+    let tname = mkName ts
+        Right rt = parseType ts
+        rtdecs = filter (resultType rt) decs
+        rtdecs' = filter decidableArgs rtdecs
+    run <- runQ $ devRun tname rtdecs'
+    print $ ppr run

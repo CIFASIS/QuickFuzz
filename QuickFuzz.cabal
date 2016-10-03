@@ -77,7 +77,7 @@ executable QuickFuzz
   build-depends:      base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, quickcheck-unicode, mtl, random, ghc-prim,
                       process, process-extras, deepseq, derive, unix, linear, template-haskell, directory, pretty, argparser,
                       split, wl-pprint, text, parallel-io, monad-par,
-                      abstract-par, megadeth, ghc-mod, blaze-html, haskell-src-exts, haskell-src-meta   
+                      abstract-par, megadeth, ghc-mod, haskell-src-exts, haskell-src-meta, blaze-html, blaze-svg   
   if flag(codes)
       build-depends:   HaXml, language-ecmascript, language-dot, language-css, language-python, language-glsl, json, uniplate,
                        language-lua, language-bash, shell-escape
