@@ -55,30 +55,36 @@ devMArbitrary mod tname = do
     return [adt, run]
 
 
-
 devADT :: Name -> [Declaration] -> DecQ
 devADT tname funcs = dataD (cxt []) (mkTypeName tname) [] (map (devCon tname) funcs) [] 
 
 devCon :: Name -> Declaration -> ConQ
-devCon tname (n, tv, cxt, ty) = normalC (mkConName n) (map (devBangType tname) (init ty))
+devCon tname (n, tv, cxt, ty) = normalC (mkConName tname n) (map (devBangType tname) (init ty))
 
 devBangType :: Name -> Type -> StrictTypeQ
 devBangType tname t = strictType notStrict replaceFunction 
-    where replaceFunction | toType tname == t  = conT $ mkTypeName tname
+    where replaceFunction | toType tname == t  = appT listT (conT $ mkTypeName tname)
                           | otherwise          = return t
                                     
 
-
 devRun :: Name -> [Declaration] -> DecQ
-devRun tname actions = funD (mkPerformName tname) (map (devClause tname) actions)
+devRun tname actions = funD (mkPerformName tname) $ emptyClause : (map (devClause tname) actions)
+
+emptyClause = clause [listP []] (normalB [| return () |]) []
 
 devClause :: Name -> Declaration -> ClauseQ
-devClause tname d@(n,_,_,ts) = do
-    let cname = mkConName n
+devClause tname d@(n,_,_,ts) =
+    let cname = mkConName tname  n
         varsP = map (varP . mkVarName) [1..(length ts - 1)]  
-        varsE = map (varE . mkVarName) [1..(length ts - 1)]  
-    clause [conP cname varsP] (normalB (apply tname d varsE)) [] 
+        varsE = map (varE . mkVarName) [1..(length ts - 1)]
+        actionP = conP cname varsP
+        consMatch = infixP actionP (mkName ":") (varP $ mkVarMore tname)      
+        consBody = (normalB (uInfixE (apply tname d varsE) 
+                            (varE $ mkName ">>") 
+                            (appE (varE $ mkPerformName tname) (varE $ mkVarMore tname))))
+    in clause [consMatch] consBody []
 
+    
 apply :: Name -> Declaration -> [ExpQ] -> ExpQ
 apply tname (n,_,_,_) [] = varE n 
 apply tname (n,tvb,cxt,(t:ts)) (v:vs) = appE (apply tname (n,tvb,cxt,ts) vs) replaceAction 
@@ -86,12 +92,14 @@ apply tname (n,tvb,cxt,(t:ts)) (v:vs) = appE (apply tname (n,tvb,cxt,ts) vs) rep
                         | otherwise          = v
 
 
+
 toType = ConT . mkName . nameBase 
 
 mkTypeName n = mkName $ nameBase n ++ "Action"
-mkConName n = mkName $ "Act_" ++ nameBase n
+mkConName tname n = mkName $ "Act_" ++ nameBase tname ++ "_" ++ nameBase n
 mkPerformName n = mkName $ "perform" ++ nameBase n
 mkVarName n = mkName $ "v" ++ show n
+mkVarMore tname = mkName $ "more" ++ nameBase tname ++ "Actions"
 
 resultType :: Type -> Declaration -> Bool
 resultType rt (_,_,_,ty) = rt `compat` last ty

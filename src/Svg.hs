@@ -29,7 +29,7 @@ instance Arbitrary String where
    arbitrary = mgenName
 
 mencode :: SvgAction -> L8.ByteString
-mencode x = L8.pack $ renderSvg $ performSvg x
+mencode x = L8.pack $ renderSvg $ performSvg [x]
 
 
 

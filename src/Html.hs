@@ -29,4 +29,4 @@ instance Arbitrary String where
    arbitrary = mgenName
 
 mencode :: HtmlAction -> L8.ByteString
-mencode x = L8.pack $ renderHtml $ performHtml x
+mencode x = L8.pack $ renderHtml $ performHtml [x]
