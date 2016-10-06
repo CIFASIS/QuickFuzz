@@ -76,7 +76,7 @@ executable QuickFuzz
 
   build-depends:      base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, quickcheck-unicode, mtl, random, ghc-prim,
                       process, process-extras, deepseq, derive, unix, linear, template-haskell, directory, pretty, argparser,
-                      split, wl-pprint, text, parallel-io, monad-par,
+                      split, wl-pprint, text, parallel-io, monad-par, time,
                       abstract-par, megadeth, parallel
   if flag(codes)
       build-depends:   HaXml, language-ecmascript, language-dot, language-css, language-python, language-glsl, json, uniplate,
@@ -86,13 +86,13 @@ executable QuickFuzz
       build-depends:  zlib, JuicyPixels, svg-tree, xml, AC-PPM
 
   if flag(archs)
-      build-depends:  time, bitwise, tuple, zlib, tar, zip-archive, base16-bytestring
+      build-depends:  bitwise, tuple, zlib, tar, zip-archive, base16-bytestring
 
   if flag(docs)
       build-depends: pandoc-types, pandoc, data-default, hps, hcg-minus, iCalendar
 
   if flag(pki)
-      build-depends: asn1-types, asn1-encoding, x509, time
+      build-depends: asn1-types, asn1-encoding, x509
 
   if flag(net)
       build-depends: network, HTTP, dns, iproute, unbounded-delays, concurrent-extra,base16-bytestring, network-uri
