@@ -37,8 +37,13 @@ extra-deps:
 - concurrent-extra-0.7.0.10
 - language-bash-0.6.1
 - shell-escape-0.2.0
+- easyrender-0.1.1.2
+- superdoc-0.1.2.4
 
-# Override default flag values for local packages and extra-deps
+explicit-setup-deps:
+  "*": true
+
+  # Override default flag values for local packages and extra-deps
 flags:
   QuickFuzz:
     imgs : false

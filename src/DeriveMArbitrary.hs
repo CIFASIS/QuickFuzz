@@ -63,8 +63,8 @@ devCon tname (n, tv, cxt, ty) = normalC (mkConName tname n) (map (devBangType tn
 
 devBangType :: Name -> Type -> StrictTypeQ
 devBangType tname t = strictType notStrict replaceFunction 
-    where replaceFunction | toType tname == t  = appT listT (conT $ mkTypeName tname)
-                          | otherwise          = return t
+    where replaceFunction | toType tname `compat` t  = appT listT (conT $ mkTypeName tname)
+                          | otherwise                = return t
                                     
 
 devRun :: Name -> [Declaration] -> DecQ
@@ -73,13 +73,13 @@ devRun tname actions = funD (mkPerformName tname) $ emptyClause : (map (devClaus
 emptyClause = clause [listP []] (normalB [| return () |]) []
 
 devClause :: Name -> Declaration -> ClauseQ
-devClause tname d@(n,_,_,ts) =
+devClause tname (n,tvb,cxt,ts) =
     let cname = mkConName tname  n
         varsP = map (varP . mkVarName) [1..(length ts - 1)]  
         varsE = map (varE . mkVarName) [1..(length ts - 1)]
         actionP = conP cname varsP
         consMatch = infixP actionP (mkName ":") (varP $ mkVarMore tname)      
-        consBody = (normalB (uInfixE (apply tname d varsE) 
+        consBody = (normalB (uInfixE (apply tname (n,tvb,cxt,init ts) varsE) 
                             (varE $ mkName ">>") 
                             (appE (varE $ mkPerformName tname) (varE $ mkVarMore tname))))
     in clause [consMatch] consBody []
@@ -87,10 +87,10 @@ devClause tname d@(n,_,_,ts) =
     
 apply :: Name -> Declaration -> [ExpQ] -> ExpQ
 apply tname (n,_,_,_) [] = varE n 
-apply tname (n,tvb,cxt,(t:ts)) (v:vs) = appE (apply tname (n,tvb,cxt,ts) vs) replaceAction 
-    where replaceAction | t == toType tname  = appE (varE (mkPerformName tname)) v
-                        | otherwise          = v
-
+apply tname (n,tvb,cxt,ts) vs = appE (apply tname (n,tvb,cxt,init ts) (init vs)) replaceAction 
+    where replaceAction | toType tname `compat` last ts  = appE (varE (mkPerformName tname)) (last vs)
+                        | otherwise                      = last vs
+          
 
 
 toType = ConT . mkName . nameBase 
