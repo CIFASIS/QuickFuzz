@@ -243,7 +243,8 @@ prop_RadamsaExec filename pcmd encode outdir x =
            case not (has_failed ret) of
               False -> (do 
                         run $ report x filename outdir
-                        assert False
+                        --assert False
+                        assert True
                )
               _             -> assert True
            )

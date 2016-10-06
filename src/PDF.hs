@@ -28,5 +28,5 @@ instance Arbitrary String where
    arbitrary = mgenName
 
 
-mencode :: DrawAction -> L8.ByteString
-mencode x = L8.pack $ render_string Format_PDF $ newpage 10 20 $ performDraw [x]
+mencode :: [DrawAction] -> L8.ByteString
+mencode xs = L8.pack $ render_string Format_PDF $ newpage 300 200 $ performDraw xs

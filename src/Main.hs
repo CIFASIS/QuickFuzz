@@ -6,6 +6,7 @@ import qualified Process
 
 #ifdef IMGS
 
+import qualified PDF
 import qualified Tga
 import qualified Tiff
 import qualified Png
@@ -116,6 +117,7 @@ dispatch arg = do
 
 #ifdef IMGS
 
+            "Pdf"  -> Process.main (PDF.mencode,undefined) args b
             "Bmp"  -> Process.main (Bmp.mencode,undefined) args b
             "Gif"  -> Process.main (Gif.mencode,Gif.mdecode) args b
             "Jpeg" -> Process.main (Jpeg.mencode,Jpeg.mdecode) args b
@@ -123,7 +125,7 @@ dispatch arg = do
             "Tiff" -> Process.main (Tiff.mencode,undefined)  args b
             "Tga"  -> Process.main (Tga.mencode,undefined)  args b
             "Pnm"  -> Process.main (Pnm.mencode,undefined)  args b
-            "Svg"  -> Process.main (Svg.mencode,Svg.mdecode)  args b
+            "Svg"  -> Process.main (Svg.mencode,undefined)  args b
             "Ico"  -> Process.main (Ico.mencode, undefined)  args b
 #endif
 
