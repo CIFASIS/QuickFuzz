@@ -22,9 +22,8 @@ import Data.List(intersperse,partition)
 import qualified Data.Set as Set(toAscList,toList)
 import Data.Set(Set)
 
-instance {-# OVERLAPPING #-} Arbitrary String where
-   arbitrary = mgenName
-
+--instance {-# OVERLAPPING #-} Arbitrary String where
+--   arbitrary = mgenName
 
 -- taken from regex-parsec
 
@@ -63,10 +62,10 @@ showPattern pIn =
     PQuest p -> (showPattern p)++"?"
     PPlus p -> (showPattern p)++"+"
     PStar p -> (showPattern p)++"*"
-    PLazy p | isPostAtom p -> (showPattern p)++"?"
-            | otherwise -> "<Cannot print PLazy of "++show p++">"
-    PPossessive p | isPostAtom p -> (showPattern p)++"+"
-                  | otherwise -> "<Cannot print PPossessive of "++show p++">"
+    PLazy p -> (showPattern p)++"?"
+            -- | otherwise -> "<Cannot print PLazy of "++show p++">"
+    PPossessive p -> (showPattern p)++"+"
+                  -- | otherwise -> "<Cannot print PPossessive of "++show p++">"
     PBound i (Just j) p | i==j -> showPattern p ++ ('{':show i)++"}"
     PBound i mj p -> showPattern p ++ ('{':show i) ++ maybe ",}" (\j -> ',':show j++"}") mj
     PDot -> "."
@@ -123,4 +122,3 @@ type MRegex = Pattern
 
 mencode :: MRegex -> LC8.ByteString
 mencode x = LC8.pack $ "/" ++ showPattern x ++ "/"
---mencode x = LC8.pack $ "var text = 'Some text This is the end'; text.split(/" ++ showPattern x ++ "/);"
