@@ -3,6 +3,8 @@
 An experimental grammar fuzzer in Haskell using QuickCheck, Template Haskell and specific libraries from Hackage.
 There is more information in its [website](http://QuickFuzz.org/).
 
+[![CircleCI](https://circleci.com/gh/NineFX/QuickFuzz/tree/master.svg?style=shield&circle-token=2cc3cc1bdd4b749d692c97474c2e30c98af57362)](https://circleci.com/gh/NineFX/QuickFuzz/tree/master)
+
 ## Authors
 
 * Pablo **Buiras** ([Chalmers University of Technology](http://www.chalmers.se/en/Pages/default.aspx))
