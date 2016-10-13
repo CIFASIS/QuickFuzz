@@ -18,7 +18,7 @@ import Graphics.EasyRender
 import Graphics.EasyRender.Internal
 
 
-$(devMArbitrary "Graphics.EasyRender" ''Draw)
+$(devMArbitrary True [] "Graphics.EasyRender" ''Draw)
 $(devArbitrary ''DrawAction)
 $(devShow ''DrawAction)
 

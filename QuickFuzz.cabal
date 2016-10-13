@@ -78,7 +78,7 @@ executable QuickFuzz
                       quickcheck-unicode, mtl, random, ghc-prim, process, process-extras, deepseq, derive,
                       unix, linear, template-haskell, directory, pretty, argparser, split, wl-pprint,
                       text, parallel-io, monad-par, abstract-par, megadeth, ghc-mod, haskell-src-exts,
-                      haskell-src-meta, blaze-html, blaze-svg, superdoc, easyrender 
+                      haskell-src-meta, blaze-markup, blaze-html, blaze-svg, superdoc, easyrender 
   
   if flag(codes)
       build-depends:   HaXml, language-ecmascript, language-dot, language-css, language-python, language-glsl, json, uniplate,

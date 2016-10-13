@@ -19,7 +19,7 @@ import Text.Blaze.Svg11
 import Text.Blaze.Svg.Renderer.String
 
 
-$(devMArbitrary "Text.Blaze.Svg11" ''Svg)
+$(devMArbitrary True [] "Text.Blaze.Svg11" ''Svg)
 
 $(devArbitrary ''SvgAction)
 

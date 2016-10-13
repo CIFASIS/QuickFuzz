@@ -15,18 +15,29 @@ import DeriveShow
 import ByteString
 import Strings
 
+import Text.Blaze.Internal
 import Text.Blaze.Html5
+import Text.Blaze.Html5.Attributes
 import Text.Blaze.Html.Renderer.String
 
 
-$(devMArbitrary "Text.Blaze.Html5" ''Html)
+-- $(devMArbitrary False "Text.Blaze.Html5" ''AttributeValue)
 
-$(devArbitrary ''HtmlAction)
+-- $(devMArbitrary False [] "Text.Blaze.Html5.Attributes" ''Attribute)
+-- $(devArbitrary ''AttributeAction)
+-- $(devShow ''AttributeAction)
 
-$(devShow ''HtmlAction)
+-- $(devMArbitrary True [] "Text.Blaze.Html5" ''Html)
+-- $(devArbitrary ''HtmlAction)
+-- $(devShow ''HtmlAction)
+
+
+--instance Show AttributeAction  where
+--   show x = "(noshow)"
 
 instance Arbitrary String where
    arbitrary = mgenName
 
-mencode :: HtmlAction -> L8.ByteString
-mencode x = L8.pack $ renderHtml $ performHtml [x]
+--mencode :: [([HtmlAction], AttributeAction)] -> L8.ByteString
+--mencode xs = L8.pack $ renderHtml $ Prelude.foldr1 (>>) $ Prelude.map h xs 
+--    where h (html, attr) = performHtml html ! performAttribute attr
