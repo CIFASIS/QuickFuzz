@@ -18,11 +18,15 @@ import Graphics.EasyRender
 import Graphics.EasyRender.Internal
 
 
-$(devMArbitrary True [] "Graphics.EasyRender" ''Draw)
+
+$(devMArbitrary "Graphics.EasyRender" ''Draw True [''()])
 $(devArbitrary ''DrawAction)
 $(devShow ''DrawAction)
 
--- $(devMArbitrary "Graphics.EasyRender" ''Document)
+
+-- $(devMArbitrary "Graphics.EasyRender" ''Document True [''Int])
+-- $(devArbitrary ''DocumentAction)
+-- $(devShow ''DocumentAction)
 
 instance Arbitrary String where
    arbitrary = mgenName

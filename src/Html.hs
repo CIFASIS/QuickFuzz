@@ -20,24 +20,27 @@ import Text.Blaze.Html5
 import Text.Blaze.Html5.Attributes
 import Text.Blaze.Html.Renderer.String
 
+--import Data.Text
+--import Data.ByteString.Lazy
 
--- $(devMArbitrary False "Text.Blaze.Html5" ''AttributeValue)
+-- $(devMArbitrary "Text.Blaze.Internal" ''AttributeValue False [])
 
--- $(devMArbitrary False [] "Text.Blaze.Html5.Attributes" ''Attribute)
--- $(devArbitrary ''AttributeAction)
+$(devMArbitrary "Text.Blaze.Html5.Attributes" ''Attribute False [])
+$(devArbitrary ''AttributeAction)
 -- $(devShow ''AttributeAction)
 
--- $(devMArbitrary True [] "Text.Blaze.Html5" ''Html)
--- $(devArbitrary ''HtmlAction)
--- $(devShow ''HtmlAction)
+   
+$(devMArbitrary "Text.Blaze.Html5" ''Html True [''Html, ''String])
+$(devArbitrary ''HtmlAction)
+$(devShow ''HtmlAction)
 
 
---instance Show AttributeAction  where
---   show x = "(noshow)"
+instance Show AttributeAction  where
+   show x = "(noshow)"
 
 instance Arbitrary String where
    arbitrary = mgenName
 
---mencode :: [([HtmlAction], AttributeAction)] -> L8.ByteString
---mencode xs = L8.pack $ renderHtml $ Prelude.foldr1 (>>) $ Prelude.map h xs 
---    where h (html, attr) = performHtml html ! performAttribute attr
+mencode :: [([HtmlAction], AttributeAction)] -> L8.ByteString
+mencode xs = L8.pack $ renderHtml $ Prelude.foldr1 (>>) $ Prelude.map h xs 
+    where h (html, attr) = performHtml html ! performAttribute attr
