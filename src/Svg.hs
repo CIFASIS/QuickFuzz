@@ -25,15 +25,26 @@ import Text.Blaze.Svg.Renderer.String
 -- import Data.Text.Internal.Lazy   
 -- import Data.ByteString
 
-$(devMArbitrary "Text.Blaze.Svg11" ''Svg True [])
+
+$(devMArbitrary "Text.Blaze.Svg11.Attributes" ''Attribute False [])
+$(devArbitrary ''AttributeAction)
+
+
+instance Arbitrary Attribute where
+    arbitrary = do 
+        x <- arbitrary :: Gen AttributeAction   
+        return $ performAttribute x 
+
+$(devMArbitrary "Text.Blaze.Svg11" ''Svg True [''Svg, ''String])
 $(devArbitrary ''SvgAction)
-$(devShow ''SvgAction)
+-- $(devShow ''SvgAction)
 
--- $(devMArbitrary "Text.Blaze" ''AttributeValue False [''Int, ''Svg])
 
+instance Show SvgAction  where
+   show x = "(noshow)"
 
 instance Arbitrary String where
-   arbitrary = mgenName
+   arbitrary = oneof [mgenName, return "999"]
 
 mencode :: [SvgAction] -> L8.ByteString
 mencode xs = L8.pack $ renderSvg $ performSvg xs

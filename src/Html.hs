@@ -26,21 +26,27 @@ import Data.ByteString.Lazy
 
 -- $(devMArbitrary "Text.Blaze.Internal" ''AttributeValue False [])
 
--- $(devMArbitrary "Text.Blaze.Html5.Attributes" ''Attribute False [])
--- $(devArbitrary ''AttributeAction)
+$(devMArbitrary "Text.Blaze.Html5.Attributes" ''Attribute False [])
+$(devArbitrary ''AttributeAction)
 -- $(devShow ''AttributeAction)
 
-   
+
+instance Arbitrary Attribute where
+    arbitrary = do 
+        x <- arbitrary :: Gen AttributeAction   
+        return $ performAttribute x 
+
+
 $(devMArbitrary "Text.Blaze.Html5" ''Html True [''Html, ''String])
--- $(devArbitrary ''HtmlAction)
+$(devArbitrary ''HtmlAction)
 -- $(devShow ''HtmlAction)
 
 
---instance Show AttributeAction  where
+--instance Show HtmlAction  where
 --   show x = "(noshow)"
 
 instance Arbitrary String where
-   arbitrary = mgenName
+   arbitrary = oneof [mgenName, return "999"]
 
 mencode :: [HtmlAction] -> L8.ByteString
 mencode xs = L8.pack $ renderHtml $ performHtml xs 
