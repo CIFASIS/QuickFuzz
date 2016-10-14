@@ -25,8 +25,6 @@ import Debug.Trace
 -------------------------------------------------
 --             Module crawler                  --
 -------------------------------------------------
--- type Declaration = (Name, [Name], Cxt, [Type])
-
 
 data Declaration = D { fid   :: Name     -- Unique identifier used inside the actions adt
                      , fname :: Name     -- Name of the function to be called by perform 
@@ -50,7 +48,7 @@ getModuleExports mod = do
     (res, log) <- handle (\e -> error (show (e :: SomeException))) $ runGhcModT defaultOptions $ browse opts mod
     case res of
         Left err  -> error $ "error browsing module: " ++ mod
-        Right str -> trace str $ return (ok, failed)
+        Right str -> return (ok, failed)
             where (ok, failed, _) = foldr parse ([],[],0) $ lines str
 
 
@@ -80,7 +78,7 @@ splitDec str = case splitOn "::" str of
 parseName :: String -> Maybe (Name, Bool)
 parseName str = case parseExp str of
     Right (VarE n) -> Just (n, False)
-    Right (UInfixE (ConE m) _ (VarE op)) -> Just  (mkName $ show m ++ ".(" ++ show op ++ ")", True)
+    Right (UInfixE (ConE m) _ (VarE op)) -> Just  (mkName $ show m ++ "." ++ show op ++ "", True)
     _ -> Nothing 
 
 -- | Parse funtion signature 
@@ -116,28 +114,19 @@ fromTyVarBndr :: TyVarBndr -> Name
 fromTyVarBndr (PlainTV n) = n
 fromTyVarBndr (KindedTV n _) = n
 
-
-unqualify :: Name -> Name
-unqualify = mkName . nameBase
-
-
-
 -------------------------------------------------
 --  actions tree and perform code generation   --
 -------------------------------------------------
-
 devMArbitrary :: String -> Name -> Bool -> [Name] -> Q [Dec]
 devMArbitrary mod tname monad tinst = do
     (decs, failed) <- runIO $ getModuleExports $ mod
     let cons = getConstraints decs
     instances <- getInstances cons tinst
-    let decs' = concatMap (instantiate tinst) decs
-        decs'' = concatMap (concretizeConstraints instances) decs'
-        actions = filter (\d -> resultType tname d && decidableArgs d) decs' 
+    let decs' = concatMap (instantiateTVars tinst) decs
+        decs'' = concatMap (instantiateConstraints instances) decs'
+        actions = filter (\d -> resultType tname d && decidableArgs d) decs'' 
     adt <- devADT monad tname actions
-    run <- devRun monad tname actions
-    --runIO $ mapM_ print decs'' 
-    runIO $ mapM_ print decs 
+    run <- devPerform monad tname actions
     return [adt, run]
   
 
@@ -159,8 +148,8 @@ devBangType isMonad tname t = strictType notStrict replaceArgTy
                                       
 
 
-devRun :: Bool -> Name -> [Declaration] -> DecQ
-devRun isMonad tname actions = funD (mkPerformName tname) clauses
+devPerform :: Bool -> Name -> [Declaration] -> DecQ
+devPerform isMonad tname actions = funD (mkPerformName tname) clauses
     where clauses | isMonad   = clausesM
                   | otherwise = clausesP
           clausesM = emptyClause : (map (devClauseM tname) actions)
@@ -194,44 +183,93 @@ apply tname dec [] = varE (fname dec)
 apply tname dec vs = appE (apply tname (dec {ty = init (ty dec)}) (init vs)) replaceAction 
     where replaceAction | tname `compat` last (ty dec) = appE (varE (mkPerformName tname)) (last vs)
                         | otherwise                    = last vs
+
+
+
+-- Return all valid instances from a list of type names
+-- and a list of class names [(classname, typename)]
+getInstances :: [Name] -> [Name] -> Q [(Name,Name)]
+getInstances classes types = filterM instanceOf tuples
+    where tuples = liftA2 (,) classes types 
+          instanceOf (c, t) = not <$> isinsName c t
+
+
+-- | Instantiate a declaration with non-empty universaly
+-- quantified type vars with all permutations of a given
+-- list of type names, renaming each one
+instantiateTVars :: [Name] -> Declaration -> [Declaration]
+instantiateTVars types dec@(D{utv=[]}) = [dec] 
+instantiateTVars types dec = map mkNewDec tuples
+    where tperms = replicateM (length (utv dec)) (map ConT types)
+          dnames = zipWith mkFunSubName (repeat (fid dec)) [1..]
+          tuples = zip dnames tperms
+          replaceList tp = liftM3 replaceTVar (utv dec) tp (ty dec) 
+          mkNewDec (dname, tperm) = dec {fid=dname, utv=[], ty=replaceList tperm} 
+
+
+
+-- | Instantiate a declaration with non-empty type constraints
+-- using a list of tuples (classname, typename) of valid instances
+instantiateConstraints :: [(Name, Name)] -> Declaration -> [Declaration]
+instantiateConstraints [] dec = [dec]
+instantiateConstraints _  dec@(D{ctv=[]}) = [dec]
+instantiateConstraints instances dec = map mkNewDec namedBinds 
+    where dnames = zipWith mkFunSubName (repeat (fid dec)) [1..]
+          dcons = catMaybes $ map typeToTuple $ ctv dec   -- [(classname,varname)]
+          binds = bindInstances instances dcons  
+          validperms = foldr (\binds rem -> unzip binds : rem) [] binds 
+          namedBinds = zipWith (\dname (vs, ts) -> (dname, vs, ts)) dnames validperms
+          replaceList vs tperm = liftM3 replaceTVar vs tperm (ty dec)
+          mkNewDec (dname, vs, tperm) = dec {fid=dname, ty=replaceList vs tperm}
           
 
+-- | Bind a list of instances with a list of tuples (classname,varname)
+-- returning a list of all permutations which satisfies class constraints
+bindInstances :: [(Name,Name)] -> [(Name,Name)] -> [[(Name,Type)]]
+bindInstances instances [] = []
+bindInstances instances ((c,v):tcs) = sequence (binds :  bindInstances instances tcs) 
+    where validTypes = filter ((==c) . fst) instances
+          binds = map ((,) v . ConT . snd) validTypes          
 
+
+-- | Replace VarT=v with Type=t in a given type
+replaceTVar :: Name -> Type -> Type -> Type
+replaceTVar v t (AppT l r) = AppT (replaceTVar v t l) (replaceTVar v t r)
+replaceTVar v t (VarT n) | v == n    = t
+                         | otherwise = VarT n
+replaceTVar _ _ t = t
+
+
+-------------------------------------------------
+--                  Helpers                    --
+-------------------------------------------------
+
+-- | Name manipulations
 mkTypeName tname = mkName $ nameBase tname ++ "Action"
+mkPerformName tname = mkName $ "perform" ++ nameBase tname
+mkFunSubName f n = mkName $ nameBase f ++ "_" ++ show n
 mkOpName n = mkName $ "infix" ++ show n
 mkConName tname f = mkName $ "Act_" ++ nameBase tname ++ "_" ++ nameBase f
 mkVarName tname v = mkName $ "v" ++ show v ++ "_" ++ nameBase tname
-mkPerformName tname = mkName $ "perform" ++ nameBase tname
 mkVarMore tname = mkName $ "more" ++ nameBase tname ++ "Actions"
-mkFunSubName f n = mkName $ nameBase f ++ "_" ++ show n
+
+unqualify :: Name -> Name
+unqualify = mkName . nameBase
 
 
-
+-- | Remove duplicates
 rmdups :: (Ord a, Eq a) => [a] -> [a]
 rmdups = map head . group . sort
 
 
-getConstraints :: [Declaration] -> [Name]
-getConstraints = rmdups . map getClassName . concatMap ctv
+-- | Convert type constraint into (Class, TVar)
+-- NOTE: Only one type var supported
+typeToTuple :: Type -> Maybe (Name, Name)
+typeToTuple (AppT (ConT c) (VarT v)) = Just (c,v)
+typeToTuple _ = Nothing
 
-getClassName :: Type -> Name
-getClassName (ConT n) = n
-getClassName (AppT l r) = getClassName l
-getClassName _ = error "unexpected type"
 
-getInstances :: [Name] -> [Name] -> Q [(Name,Name)]
-getInstances types classes = filterM instanceOf tuples
-    where tuples = liftA2 (,) types classes 
-          instanceOf (t, c) = not <$> isinsName t c
-
-resultType :: Name -> Declaration -> Bool
-resultType tname dec = tname `compat` last (ty dec)
-
-compat :: Name -> Type -> Bool
-compat tname (AppT l r) = compat tname l
-compat tname (ConT c) = unqualify tname == unqualify c  
-compat _ _ = False
-
+-- | The given declaration contains type vars?
 decidableArgs :: Declaration -> Bool
 decidableArgs dec = all (not . hasVarT) (ty dec)
 
@@ -242,54 +280,24 @@ hasVarT (ConT _) = False
 hasVarT _ = False
 
 
--- | Instantiate a declaration with non-empty universaly
--- quantified type vars with all permutations of a given
--- list of type names, renaming each one
-instantiate :: [Name] -> Declaration -> [Declaration]
-instantiate types dec@(D{utv=[]}) = [dec] 
-instantiate types dec = map mkNewDec tuples
-    where tperms = replicateM (length (utv dec)) (map ConT types)
-          dnames = zipWith mkFunSubName (repeat (fid dec)) [1..]
-          tuples = zip dnames tperms
-          replaceList tp = liftM3 replaceTVar (utv dec) tp (ty dec) 
-          mkNewDec (dname, tperm) = dec {fid=dname, utv=[], ty=replaceList tperm} 
+-- Compare type name and the result type of a declaration
+resultType :: Name -> Declaration -> Bool
+resultType tname dec = tname `compat` last (ty dec)
+
+compat :: Name -> Type -> Bool
+compat tname (AppT l r) = compat tname l
+compat tname (ConT c) = unqualify tname == unqualify c  
+compat _ _ = False
 
 
+-- | Extract all type constraint names from a declaration batch
+getConstraints :: [Declaration] -> [Name]
+getConstraints = rmdups . map getClassName . concatMap ctv
 
--- | Instantiate a declaration with non-empty type constraints
--- using a list of tuples (Class, Type) of valid instances
-concretizeConstraints :: [(Name, Name)] -> Declaration -> [Declaration]
-concretizeConstraints [] dec = [dec]
-concretizeConstraints _  dec@(D{ctv=[]}) = [dec]
-concretizeConstraints instances dec = map mkNewDec namedBinds 
-    where tc = catMaybes $ map typeToTuple $ ctv dec   -- [(classname,varname)]
-          binds = auxFunc instances tc  
-          validperms = foldr (\binds rem -> unzip binds : rem) [] binds 
-          dnames = zipWith mkFunSubName (repeat (fid dec)) [1..]
-          namedBinds = zipWith (\dname (vs, ts) -> (dname, vs, ts)) dnames validperms
-          replaceList vs tperm = liftM3 replaceTVar vs tperm (ty dec)
-          mkNewDec (dname, vs, tperm) = dec {fid=dname, ty=replaceList vs tperm}
-          
-
-
-auxFunc instances [] = []
-auxFunc instances ((c,v):tcs) = sequence (binds :  auxFunc instances tcs) 
-    where validTypes = filter ((==c) . fst) instances
-          binds = map ((,) v . ConT . snd) validTypes          
-            
-
--- | Convert type constraint into (Class, TVar)
--- NOTE: Only one type var supported
-typeToTuple :: Type -> Maybe (Name, Name)
-typeToTuple (AppT (ConT c) (VarT v)) = Just (c,v)
-typeToTuple _ = Nothing
-
-
-replaceTVar :: Name -> Type -> Type -> Type
-replaceTVar v t (AppT l r) = AppT (replaceTVar v t l) (replaceTVar v t r)
-replaceTVar v t (VarT n) | v == n    = t
-                         | otherwise = VarT n
-replaceTVar _ _ t = t
+getClassName :: Type -> Name
+getClassName (ConT n) = n
+getClassName (AppT l r) = getClassName l
+getClassName _ = error "unexpected type"
 
 
 -------------------------------------------------
@@ -301,30 +309,30 @@ testParser mod tname types  = do
     putStrLn "--------------- RAW ------------------"
     mapM_ print decs 
     putStrLn "----------- INSTANTIATED  ------------"
-    let decs' = concatMap (instantiate types) decs 
+    let decs' = concatMap (instantiateTVars types) decs 
     mapM_ print decs'
     putStrLn "------------- ACTIONS ----------------"
     let actions = filter (\d -> resultType tname d && decidableArgs d) decs' 
     mapM_ print actions
-    putStrLn "------------ CONSTRAINS --------------"
+    putStrLn "------------ CONSTRAINTS -------------"
     mapM_ print $ getConstraints decs'
     putStrLn "-------------- FAILED ----------------"
     mapM_ putStrLn failed
 
 
-
-
---testDevAdt :: DeriveConfig -> IO ()
---testDevAdt conf = do
---    (decs, failed) <- getModuleExports (mname conf) 
---    let tname = mkName ts
---        Right rt = parseType ts
---        rtdecs = filter (resultType rt) decs
---        rtdecs' = filter decidableArgs rtdecs
---    adt <- runQ $ devADT (monad conf) (tname conf) rtdecs'
+--testDevAdt :: String -> Name -> Bool -> [Name]  -> IO ()
+--testDevAdt mod tname monad tinst = do
+--    (decs, failed) <- getModuleExports mod 
+--    let cons = getConstraints decs
+--    adt <- runQ $ do
+--            instances <- getInstances cons tinst
+--            let decs' = concatMap (instantiate tinst) decs
+--                decs'' = concatMap (instantiateConstraints instances) decs'
+--                actions = filter (\d -> resultType tname d && decidableArgs d) decs'' 
+--            devADT monad tname actions
 --    print $ ppr adt
---
---
+
+
 --testDevRun :: Bool -> String -> String -> IO ()
 --testDevRun isMonad mod ts = do
 --    (decs, failed) <- getModuleExports mod
@@ -332,5 +340,5 @@ testParser mod tname types  = do
 --        Right rt = parseType ts
 --        rtdecs = filter (resultType rt) decs
 --        rtdecs' = filter decidableArgs rtdecs
---    run <- runQ $ devRun isMonad tname rtdecs'
+--    run <- runQ $ devPerform isMonad tname rtdecs'
 --    print $ ppr run
