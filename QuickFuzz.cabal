@@ -87,7 +87,7 @@ executable QuickFuzz
                        language-lua, language-bash, shell-escape, blaze-markup, blaze-html
 
   if flag(imgs)
-      build-depends:  zlib, JuicyPixels, svg-tree, xml, AC-PPM, blaze-markup, blaze-svg
+      build-depends:  zlib, JuicyPixels, svg-tree, xml, AC-PPM, blaze-markup, blaze-svg, easyrender
 
   if flag(archs)
       build-depends:  bitwise, tuple, zlib, tar, zip-archive, base16-bytestring
