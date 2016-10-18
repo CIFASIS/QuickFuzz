@@ -24,7 +24,7 @@ parser = MainArgs
     `parsedBy` reqPos            "type"        `Descr` "File Type to generate (e.g. Bmp, Ogg, Gif, ...)"
     `andBy`    reqPos            "command"     `Descr` "Full command line to execute"
     `andBy`    optFlag []        "name"        `Descr` "Output filename"
-    `andBy`    optFlag "exec"    "action"      `Descr` "Action to execute (zzuf | check | gen | exec | mut | serve)"
+    `andBy`    optFlag "exec"    "action"      `Descr` "Action to execute (zzuf | radamasa | check | gen | exec | mut | serve)"
     --`andBy`    optFlag ""        "coefs"       `Descr` "File containing probability coefficients"
     `andBy`    optFlag 100000000 "tries"       `Descr` "Number of attempts"
     `andBy`    optFlag 50        "size"        `Descr` "Maximum structural size of generated values"
@@ -41,7 +41,7 @@ cli =
 
 
 splitCmd :: MainArgs -> Maybe (String, String)
-splitCmd args = if "@@" `isInfixOf` (findCmds args)
+splitCmd args = if usesFile args
                     then case splitOn "@@" (findCmds args) of
                             [l,r] -> Just (l, r) 
                             _ -> error "bad command"
@@ -56,3 +56,10 @@ formatArgs args = case (splitCmd args, findFileName args) of
                     (Just (l,r), name) -> \x -> args {findCmds = l ++ x ++ name ++ r}
                     _   -> \x -> args {findFileName = ""}
 
+usesFile :: MainArgs -> Bool
+usesFile args = if "@@" `isInfixOf` (findCmds args)
+                    then True
+                    else False
+
+mayUseStdIn :: MainArgs -> Bool
+mayUseStdIn args = (findAct args) `elem` ["zzuf", "radamsa", "check"]

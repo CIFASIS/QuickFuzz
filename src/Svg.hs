@@ -48,6 +48,3 @@ instance Arbitrary String where
 
 mencode :: [SvgAction] -> L8.ByteString
 mencode xs = L8.pack $ renderSvg $ performSvg xs
-
-
-

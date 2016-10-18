@@ -26,12 +26,23 @@ execFromStdinToBuffer :: Cmd                      -- ^ The command line
 
 execFromStdinToBuffer (cmd,args) input =  
   do
-    x <- mcatch input
+    x <- force_catch input
     case x of
       Nothing -> return Nothing 
-      Just y ->      do 
-                     (_, output, _) <- LP.readProcessWithExitCode cmd args y
-                     return $ Just output
+      Just y ->  do
+                    if (L.null y) then return Nothing
+                    else (
+                       do
+                         (_, output, _) <- LP.readProcessWithExitCode cmd args y
+                         return $ Just output
+                      )
+
+
+f cmd args y = 
+  do
+   (ret, _, _) <- LP.readProcessWithExitCode cmd args y
+   return $ seq ret ret
+ 
 
 execfromStdin :: Cmd                      -- ^ The command line
               -> L.ByteString             -- ^ Data to pass into the command's std_in
@@ -39,11 +50,15 @@ execfromStdin :: Cmd                      -- ^ The command line
 
 execfromStdin (cmd,args) input =  
   do
-    x <- mcatch input
+    x <- force_catch input
     case x of
-      Nothing -> return ExitSuccess 
-      Just y ->      do
-                     (code, _, _) <- LP.readProcessWithExitCode cmd args y
-                     return $ code
-
-
+      Nothing -> return ExitSuccess
+      Just y -> ( do
+                    if (L.null y) then return ExitSuccess
+                    else ( do
+                            z <- mcatch (f cmd args y)
+                            case z of
+                              Nothing -> return $ ExitFailure 128
+                              Just r -> r 
+                         )
+                 )

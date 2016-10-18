@@ -72,29 +72,31 @@ executable QuickFuzz
         cpp-options: -DPKI
 
 
-  other-extensions:    CPP, FlexibleContexts, TypeFamilies, TupleSections, ExistentialQuantification, BangPatterns, ScopedTypeVariables, TypeSynonymInstances, Rank2Types, FlexibleInstances, RankNTypes, MultiParamTypeClasses, GADTs, StandaloneDeriving, TypeOperators, GeneralizedNewtypeDeriving, FunctionalDependencies, OverloadedStrings
+  other-extensions:    CPP, FlexibleContexts, TypeFamilies, TupleSections, ExistentialQuantification, BangPatterns,
+                       ScopedTypeVariables, TypeSynonymInstances, Rank2Types, FlexibleInstances, RankNTypes, MultiParamTypeClasses,
+                       GADTs, StandaloneDeriving, TypeOperators, GeneralizedNewtypeDeriving, FunctionalDependencies, OverloadedStrings
 
   build-depends:      base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, 
                       quickcheck-unicode, mtl, random, ghc-prim, process, process-extras, deepseq, derive,
                       unix, linear, template-haskell, directory, pretty, argparser, split, wl-pprint,
-                      text, parallel-io, monad-par, abstract-par, megadeth, ghc-mod, haskell-src-exts,
-                      haskell-src-meta, blaze-markup, blaze-html, blaze-svg, superdoc, easyrender 
+                      text, parallel-io, monad-par, abstract-par, time, abstract-par, megadeth, parallel,
+                      ghc-mod, haskell-src-exts, haskell-src-meta 
   
   if flag(codes)
       build-depends:   HaXml, language-ecmascript, language-dot, language-css, language-python, language-glsl, json, uniplate,
-                       language-lua, language-bash, shell-escape
+                       language-lua, language-bash, shell-escape, blaze-markup, blaze-html
 
   if flag(imgs)
-      build-depends:  zlib, JuicyPixels, svg-tree, xml, AC-PPM 
+      build-depends:  zlib, JuicyPixels, svg-tree, xml, AC-PPM, blaze-markup, blaze-svg
 
   if flag(archs)
-      build-depends:  zlib, tar, zip-archive, base16-bytestring
+      build-depends:  bitwise, tuple, zlib, tar, zip-archive, base16-bytestring
 
   if flag(docs)
-      build-depends: pandoc-types, pandoc, data-default, hps, hcg-minus, iCalendar
+      build-depends: pandoc-types, pandoc, data-default, hps, hcg-minus, iCalendar, superdoc, easyrender
 
   if flag(pki)
-      build-depends: asn1-types, asn1-encoding, x509, time
+      build-depends: asn1-types, asn1-encoding, x509
 
   if flag(net)
       build-depends: network, HTTP, dns, iproute, unbounded-delays, concurrent-extra,base16-bytestring, network-uri

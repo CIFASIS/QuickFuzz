@@ -39,6 +39,11 @@ extra-deps:
 - shell-escape-0.2.0
 - easyrender-0.1.1.2
 - superdoc-0.1.2.4
+- process-extras-0.4.1.4
+- generic-deriving-1.10.0
+- OneTuple-0.2.1
+- tuple-0.3.0.2
+- bitwise-0.1.1.1
 
 explicit-setup-deps:
   "*": true

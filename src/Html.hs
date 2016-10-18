@@ -6,6 +6,8 @@ import Test.QuickCheck
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
+import qualified Data.ByteString.Char8 as C8
+
 import Data.DeriveTH
 
 import DeriveMArbitrary
@@ -42,8 +44,8 @@ $(devArbitrary ''HtmlAction)
 -- $(devShow ''HtmlAction)
 
 
---instance Show HtmlAction  where
---   show x = "(noshow)"
+instance Show HtmlAction  where
+   show x = "(noshow)"
 
 instance Arbitrary String where
    arbitrary = oneof [mgenName, return "999"]
