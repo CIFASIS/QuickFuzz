@@ -23,19 +23,17 @@ import Text.Blaze.Svg11.Attributes
 import Text.Blaze.Svg.Renderer.String
 
 
-$(devMArbitrary "Text.Blaze.Svg" ''Path True [''Int])
+$(devActions "Text.Blaze.Svg" ''Path True [''Int])
 $(devArbitrary ''PathAction)
-$(devShow ''PathAction)
+$(devArbitraryWithActions True ''Path)
+-- $(devShow ''PathAction)
 
-instance Arbitrary Path where
-    arbitrary = do 
-        x <- arbitrary :: Gen [PathAction]   
-        return $ performPath x 
 
-$(devMArbitrary "Text.Blaze.Svg" ''AttributeValue False [''Int, ''Path])
+$(devActions "Text.Blaze.Svg" ''AttributeValue False [''Int, ''Path])
 -- $(devArbitrary ''AttributeValueAction)  -- This fails miserably :(
+$(devArbitraryWithActions False ''AttributeValue)
+-- $(devShow ''AttributeValue)
 
--- I still can make it manally :)
 instance Arbitrary AttributeValueAction where
     arbitrary = do
         i1 <- arbitrary
@@ -56,29 +54,23 @@ instance Arbitrary AttributeValueAction where
             , Act_AttributeValue_translate_1 i1 i2 ]
 
 
-instance Arbitrary AttributeValue where
-    arbitrary = do
-        x <- arbitrary :: Gen AttributeValueAction
-        return $ performAttributeValue x
-
-$(devMArbitrary "Text.Blaze.Svg11.Attributes" ''Attribute False [''AttributeValue])
+$(devActions "Text.Blaze.Svg11.Attributes" ''Attribute False [''AttributeValue])
 $(devArbitrary ''AttributeAction)
+$(devArbitraryWithActions False ''Attribute)
+-- $(devShow ''Attribute)
 
-instance Arbitrary Attribute where
-    arbitrary = do 
-        x <- arbitrary :: Gen AttributeAction   
-        return $ performAttribute x 
 
-$(devMArbitrary "Text.Blaze.Svg11" ''Svg True [''Svg, ''Attribute, ''String])
+$(devActions "Text.Blaze.Svg11" ''Svg True [''Svg, ''Attribute, ''String])
 $(devArbitrary ''SvgAction)
+$(devArbitraryWithActions True ''Svg)
 -- $(devShow ''SvgAction)
 
 
-instance Show SvgAction  where
+instance Show Svg  where
    show x = "(noshow)"
 
 instance Arbitrary String where
    arbitrary = oneof [mgenName, return "999"]
 
-mencode :: [SvgAction] -> L8.ByteString
-mencode xs = L8.pack $ renderSvg $ performSvg xs
+mencode :: Svg -> L8.ByteString
+mencode xs = L8.pack $ renderSvg xs

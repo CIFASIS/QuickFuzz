@@ -17,20 +17,36 @@ import Strings
 import Graphics.EasyRender
 import Graphics.EasyRender.Internal
 
+type DrawUnit = Draw ()
 
 
-$(devMArbitrary "Graphics.EasyRender" ''Draw True [''()])
+
+$(devActions "Graphics.EasyRender" ''Draw True [''()])
 $(devArbitrary ''DrawAction)
+-- $(devArbitraryWithActions True ''Draw)
 $(devShow ''DrawAction)
 
+instance Arbitrary (Draw ()) where
+    arbitrary = do
+        x <- arbitrary :: Gen [DrawAction]
+        return $ performDraw x 
 
--- $(devMArbitrary "Graphics.EasyRender" ''Document True [''Int])
+
+type DocumentUnit = Document ()
+$(devActions "Graphics.EasyRender" '' Document True [''() ])
 -- $(devArbitrary ''DocumentAction)
--- $(devShow ''DocumentAction)
+-- $(devArbitraryWithActions True ''DocumentUnit)
+-- $(devShow ''DocumentUnitAction)
+
+instance Arbitrary (Document ()) where
+    arbitrary = do
+        x <- arbitrary
+        y <- arbitrary
+        d <- arbitrary  
+        return $ newpage x y d 
 
 instance Arbitrary String where
    arbitrary = mgenName
 
-
-mencode :: [DrawAction] -> L8.ByteString
-mencode xs = L8.pack $ render_string Format_PDF $ newpage 300 200 $ performDraw xs
+mencode :: Document () -> L8.ByteString
+mencode xs = L8.pack $ render_string Format_PDF  xs

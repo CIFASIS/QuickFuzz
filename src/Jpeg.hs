@@ -9,6 +9,7 @@ import Data.Binary( Binary(..), encode, decode )
 import Codec.Picture.Types
 import Codec.Picture.Jpg
 import Codec.Picture.Jpg.Types
+import Codec.Picture.Jpg.DefaultTable
 import Codec.Picture.Tiff.Types
 import Codec.Picture.Jpg.DefaultTable
 import Codec.Picture.Metadata.Exif
@@ -20,10 +21,25 @@ import qualified Data.ByteString as B
 import Data.DeriveTH
 import Data.Word(Word8, Word16, Word32)
 
-import DeriveArbitrary hiding (derive)
+import DeriveMArbitrary 
+
+import DeriveArbitrary 
 import ByteString
 import Vector
 import Images
+
+$(devActions "Codec.Picture.Jpg.DefaultTable" ''HuffmanTree False [])
+$(devArbitrary ''HuffmanTreeAction)
+$(devArbitraryWithActions False ''HuffmanTree)
+
+$(devActions "Codec.Picture.Jpg.DefaultTable" ''HuffmanPackedTree False [])
+$(devArbitrary ''HuffmanPackedTreeAction)
+$(devArbitraryWithActions False ''HuffmanPackedTree)
+
+$(devActions "Codec.Picture.Jpg.DefaultTable" ''HuffmanTable False [])
+$(devArbitrary ''HuffmanTableAction)
+$(devArbitraryWithActions False ''HuffmanTable)
+
 
 data MJpgImage  = Jpg0 JpgImage deriving Show -- | Jpg1 (Word8,Metadatas, Image PixelYCbCr8) | Jpg2 (Word8, Image PixelYCbCr8) deriving Show
 

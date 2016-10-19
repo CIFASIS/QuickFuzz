@@ -18,6 +18,8 @@ import Language.Haskell.GhcMod.Browse
 
 import Language.Haskell.Meta.Parse
 
+import Test.QuickCheck
+
 import Megadeth.Prim
 
 import Debug.Trace
@@ -36,7 +38,6 @@ data Declaration = D { fid   :: Name     -- Unique identifier used inside the ac
 
 instance Show Declaration where
     show d = show (fid d, fname d, oper d, utv d, ctv d, ty d)
-
 
 
 opts = BrowseOpts { optBrowseOperators = True
@@ -78,6 +79,7 @@ splitDec str = case splitOn "::" str of
 parseName :: String -> Maybe (Name, Bool)
 parseName str = case parseExp str of
     Right (VarE n) -> Just (n, False)
+    Right (ConE n) -> Just (n, False)
     Right (UInfixE (ConE m) _ (VarE op)) -> Just  (mkName $ show m ++ "." ++ show op ++ "", True)
     _ -> Nothing 
 
@@ -117,8 +119,8 @@ fromTyVarBndr (KindedTV n _) = n
 -------------------------------------------------
 --  actions tree and perform code generation   --
 -------------------------------------------------
-devMArbitrary :: String -> Name -> Bool -> [Name] -> Q [Dec]
-devMArbitrary mod tname monad tinst = do
+devActions :: String -> Name -> Bool -> [Name] -> Q [Dec]
+devActions mod tname monad tinst = do
     (decs, failed) <- runIO $ getModuleExports $ mod
     let cons = getConstraints decs
     instances <- getInstances cons tinst
@@ -179,15 +181,20 @@ devClauseP tname dec = clause [conP cname varsP] (normalB (apply tname (dec {ty 
 
     
 apply :: Name -> Declaration -> [ExpQ] -> ExpQ
-apply tname dec [] = varE (fname dec) 
+apply tname dec [] = funE (fname dec) 
 apply tname dec vs = appE (apply tname (dec {ty = init (ty dec)}) (init vs)) replaceAction 
     where replaceAction | tname `compat` last (ty dec) = appE (varE (mkPerformName tname)) (last vs)
                         | otherwise                    = last vs
 
 
+funE n = case parseExp $ nameBase n of
+    Right (ConE _) -> conE n 
+    _ -> varE n
+
 
 -- Return all valid instances from a list of type names
 -- and a list of class names [(classname, typename)]
+-- !TODO -- This should check kinds of classes and types 
 getInstances :: [Name] -> [Name] -> Q [(Name,Name)]
 getInstances classes types = filterM instanceOf tuples
     where tuples = liftA2 (,) classes types 
@@ -239,6 +246,20 @@ replaceTVar v t (VarT n) | v == n    = t
                          | otherwise = VarT n
 replaceTVar _ _ t = t
 
+
+-- | Create Arbitrary instance for the original type
+-- trivially using its derived actions type
+--devArbitraryWithActions :: Bool -> Name -> [DecQ]
+devArbitraryWithActions isMonad tname =
+    let sig | isMonad   = appT listT (conT $ mkTypeName tname)
+            | otherwise = conT $ mkTypeName tname
+        perform = varE $ mkPerformName tname
+    in [d| instance Arbitrary $(conT tname) where
+                arbitrary = (arbitrary :: Gen $sig) >>= return . $perform 
+       |]
+
+
+--arbitrary = (arbitrary :: Gen [PathAction]) >>= return . performPath 
 
 -------------------------------------------------
 --                  Helpers                    --
