@@ -27,13 +27,13 @@ import Data.Text
 import Data.ByteString.Lazy
 
 
-$(devActions "Text.Blaze.Html5.Attributes" ''Attribute False [])
+$(devActions ["Text.Blaze.Html5.Attributes"] ''Attribute False [])
 $(devArbitrary ''AttributeAction)
 $(devArbitraryWithActions False ''Attribute)
 -- $(devShow ''AttributeAction)
 
 
-$(devActions "Text.Blaze.Html5" ''Html True [''Html, ''String])
+$(devActions ["Text.Blaze.Html5"] ''Html True [''Html, ''String])
 $(devArbitrary ''HtmlAction)
 $(devArbitraryWithActions True ''Html)
 -- $(devShow ''HtmlAction)

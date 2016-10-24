@@ -116,21 +116,27 @@ fromTyVarBndr :: TyVarBndr -> Name
 fromTyVarBndr (PlainTV n) = n
 fromTyVarBndr (KindedTV n _) = n
 
+-- foldr (\(dec, n) decs -> mkSubName dec n : decs)
+
+
+
 -------------------------------------------------
 --  actions tree and perform code generation   --
 -------------------------------------------------
-devActions :: String -> Name -> Bool -> [Name] -> Q [Dec]
-devActions mod tname monad tinst = do
-    (decs, failed) <- runIO $ getModuleExports $ mod
-    let cons = getConstraints decs
+devActions :: [String] -> Name -> Bool -> [Name] -> Q [Dec]
+devActions mods tname monad tinst = do
+    modexps <- runIO $ mapM getModuleExports mods       -- [([Declaration], [String])]
+    let indexed = zip (map fst modexps) [1..]           -- [([Declaration], Int)]
+        mapModIndex (mod,n) = map (\dec-> dec {fid = mkSubName (fid dec) n}) mod 
+        decs = concat $ map mapModIndex indexed        -- [Declaration]
+        cons = getConstraints decs
     instances <- getInstances cons tinst
-    let decs' = concatMap (instantiateTVars tinst) decs
-        decs'' = concatMap (instantiateConstraints instances) decs'
+    let decs' = concatMap (instantiateConstraints instances) decs
+        decs'' = concatMap (instantiateTVars tinst) decs'
         actions = filter (\d -> resultType tname d && decidableArgs d) decs'' 
     adt <- devADT monad tname actions
     run <- devPerform monad tname actions
     return [adt, run]
-  
 
 
 devADT :: Bool -> Name -> [Declaration] -> DecQ
@@ -208,7 +214,7 @@ instantiateTVars :: [Name] -> Declaration -> [Declaration]
 instantiateTVars types dec@(D{utv=[]}) = [dec] 
 instantiateTVars types dec = map mkNewDec tuples
     where tperms = replicateM (length (utv dec)) (map ConT types)
-          dnames = zipWith mkFunSubName (repeat (fid dec)) [1..]
+          dnames = zipWith mkSubName (repeat (fid dec)) [1..]
           tuples = zip dnames tperms
           replaceList tp = liftM3 replaceTVar (utv dec) tp (ty dec) 
           mkNewDec (dname, tperm) = dec {fid=dname, utv=[], ty=replaceList tperm} 
@@ -221,7 +227,7 @@ instantiateConstraints :: [(Name, Name)] -> Declaration -> [Declaration]
 instantiateConstraints [] dec = [dec]
 instantiateConstraints _  dec@(D{ctv=[]}) = [dec]
 instantiateConstraints instances dec = map mkNewDec namedBinds 
-    where dnames = zipWith mkFunSubName (repeat (fid dec)) [1..]
+    where dnames = zipWith mkSubName (repeat (fid dec)) [1..]
           dcons = catMaybes $ map typeToTuple $ ctv dec   -- [(classname,varname)]
           binds = bindInstances instances dcons  
           validperms = foldr (\binds rem -> unzip binds : rem) [] binds 
@@ -268,7 +274,7 @@ devArbitraryWithActions isMonad tname =
 -- | Name manipulations
 mkTypeName tname = mkName $ nameBase tname ++ "Action"
 mkPerformName tname = mkName $ "perform" ++ nameBase tname
-mkFunSubName f n = mkName $ nameBase f ++ "_" ++ show n
+mkSubName f n = mkName $ nameBase f ++ "_" ++ show n
 mkOpName n = mkName $ "infix" ++ show n
 mkConName tname f = mkName $ "Act_" ++ nameBase tname ++ "_" ++ nameBase f
 mkVarName tname v = mkName $ "v" ++ show v ++ "_" ++ nameBase tname

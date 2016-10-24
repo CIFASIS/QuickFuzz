@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances #-}
 
-module PDF where
+module Eps where
 
 import Test.QuickCheck
 import qualified Data.ByteString.Lazy as L
@@ -53,4 +53,4 @@ instance Arbitrary String where
    arbitrary = mgenName
 
 mencode :: Document () -> L8.ByteString
-mencode xs = L8.pack $ render_string Format_PDF  xs
+mencode xs = L8.pack $ render_string (Format_EPS 1) xs
