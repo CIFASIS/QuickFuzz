@@ -200,11 +200,16 @@ funE n = case parseExp $ nameBase n of
 
 -- Return all valid instances from a list of type names
 -- and a list of class names [(classname, typename)]
--- !TODO -- This should check kinds of classes and types 
+-- !TODO -- This should check kinds of classes and types -- kind of solved 
 getInstances :: [Name] -> [Name] -> Q [(Name,Name)]
 getInstances classes types = filterM instanceOf tuples
     where tuples = liftA2 (,) classes types 
-          instanceOf (c, t) = not <$> isinsName c t
+--          instanceOf (c, t) = not <$> isinsName c t 
+          instanceOf (c, t) = do              
+                compat <- compatKinds c t -- This is still <very> experimental
+                if compat                       
+                    then not <$> isinsName c t  
+                    else return False           
 
 
 -- | Instantiate a declaration with non-empty universaly
@@ -251,6 +256,34 @@ replaceTVar v t (AppT l r) = AppT (replaceTVar v t l) (replaceTVar v t r)
 replaceTVar v t (VarT n) | v == n    = t
                          | otherwise = VarT n
 replaceTVar _ _ t = t
+
+
+-- | Extract the kind asociated to a type name
+getKind :: Name -> TypeQ
+getKind n = do
+    info <- reify n
+    case info of
+        ClassI (ClassD _ _ tvb _ _) _ -> makeKind tvb 
+        TyConI (DataD _ _ tvb _ _) -> makeKind tvb
+        TyConI (NewtypeD _ _ tvb _ _) -> makeKind tvb
+        TyConI (TySynD _ tvb _) -> makeKind tvb        -- This doesn't look to work properly
+        t -> error $ "getKind: unexpected reify info: " ++ show t 
+
+makeKind :: [TyVarBndr] -> TypeQ
+makeKind tvb = return $ foldr (\l r -> AppT (AppT ArrowT l) r) StarT $ map toKind tvb
+
+toKind :: TyVarBndr -> Type
+toKind (PlainTV _) = StarT
+toKind (KindedTV _ k) = k
+
+compatKinds :: Name -> Name -> Q Bool
+compatKinds cname tname = do
+    ckind <- getKind cname
+    tkind <- getKind tname
+    runIO $ print $ show ckind ++ "--" ++ show tkind
+    case ckind of
+        AppT (AppT ArrowT t) StarT -> return $ t == tkind
+        _ -> return False
 
 
 -- | Create Arbitrary instance for the original type
@@ -345,6 +378,9 @@ testParser mod tname types  = do
     mapM_ print $ getConstraints decs'
     putStrLn "-------------- FAILED ----------------"
     mapM_ putStrLn failed
+
+
+
 
 
 --testDevAdt :: String -> Name -> Bool -> [Name]  -> IO ()

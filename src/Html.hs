@@ -39,7 +39,7 @@ $(devArbitraryWithActions True ''Html)
 -- $(devShow ''HtmlAction)
 
 
-instance Show HtmlAction  where
+instance Show Html  where
    show x = "(noshow)"
 
 instance Arbitrary String where
