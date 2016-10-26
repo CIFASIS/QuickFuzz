@@ -43,10 +43,12 @@ instance Show Declaration where
 opts = BrowseOpts { optBrowseOperators = True
                   , optBrowseDetailed  = True
                   , optBrowseQualified = True }
- 
+
+
+
 getModuleExports :: String -> IO ([Declaration], [String])
 getModuleExports mod = do
-    (res, log) <- handle (\e -> error (show (e :: SomeException))) $ runGhcModT defaultOptions $ browse opts mod
+    (res, log) <- runGhcModT defaultOptions $ browse opts mod
     case res of
         Left err  -> error $ "error browsing module: " ++ mod
         Right str -> return (ok, failed)
@@ -85,9 +87,11 @@ parseName str = case parseExp str of
 
 -- | Parse funtion signature 
 parseSignature :: String -> Maybe Type
-parseSignature str = case parseDecs ("dummy :: " ++ str) of
-    Right [SigD _ ty] -> Just ty
-    _ -> Nothing
+parseSignature str = 
+    let str' = "dummy :: " ++ filter (/='#') str
+    in case parseDecs str' of
+        Right [SigD _ ty] -> Just ty
+        _ -> Nothing
 
 
 -- | Transform type ast into (utv, ctv, ty)
@@ -255,7 +259,7 @@ replaceTVar _ _ t = t
 
 -- | Create Arbitrary instance for the original type
 -- trivially using its derived actions type
---devArbitraryWithActions :: Bool -> Name -> [DecQ]
+devArbitraryWithActions :: Bool -> Name -> DecsQ
 devArbitraryWithActions isMonad tname =
     let sig | isMonad   = appT listT (conT $ mkTypeName tname)
             | otherwise = conT $ mkTypeName tname
