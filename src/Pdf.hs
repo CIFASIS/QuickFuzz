@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances #-}
 
-module PDF where
+module Pdf where
 
 import Test.QuickCheck
 import qualified Data.ByteString.Lazy as L

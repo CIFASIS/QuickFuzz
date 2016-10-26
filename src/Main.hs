@@ -6,7 +6,8 @@ import qualified Process
 
 #ifdef IMGS
 
-import qualified PDF
+import qualified Pdf
+import qualified Eps
 import qualified Tga
 import qualified Tiff
 import qualified Png
@@ -116,7 +117,8 @@ dispatch arg = do
 
 #ifdef IMGS
 
-            "Pdf"  -> Process.main (PDF.mencode,undefined) args b
+            "Pdf"  -> Process.main (Pdf.mencode,undefined) args b
+            "Eps"  -> Process.main (Eps.mencode,undefined) args b
             "Bmp"  -> Process.main (Bmp.mencode,undefined) args b
             "Gif"  -> Process.main (Gif.mencode,Gif.mdecode) args b
             "Jpeg" -> Process.main (Jpeg.mencode,Jpeg.mdecode) args b
