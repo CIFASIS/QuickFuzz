@@ -36,8 +36,8 @@ parser = MainArgs
 cli :: IO (CmdLnInterface MainArgs)
 cli =
     (`setAppDescr` "An experimental grammar fuzzer in Haskell using QuickCheck.")
-    <$> (`setAppEpilog` "More info: QuickFuzz.org")
-    <$> mkApp parser
+      . (`setAppEpilog` "More info: QuickFuzz.org")
+      <$> mkApp parser
 
 
 splitCmd :: MainArgs -> Maybe (String, String)
@@ -49,7 +49,8 @@ splitCmd args = if usesFile args
 
 formatFileName :: MainArgs -> String -> MainArgs
 formatFileName args filename = 
-    args {findFileName = (filename ++ '.': (map toLower (findFileType args)))}
+    args{findFileName =
+           filename ++ '.' : map toLower (findFileType args)}
 
 formatArgs :: MainArgs -> (String -> MainArgs)
 formatArgs args = case (splitCmd args, findFileName args) of
@@ -57,9 +58,7 @@ formatArgs args = case (splitCmd args, findFileName args) of
                     _   -> \x -> args {findFileName = ""}
 
 usesFile :: MainArgs -> Bool
-usesFile args = if "@@" `isInfixOf` (findCmds args)
-                    then True
-                    else False
+usesFile args = "@@" `isInfixOf` findCmds args
 
 mayUseStdIn :: MainArgs -> Bool
-mayUseStdIn args = (findAct args) `elem` ["zzuf", "radamsa", "check"]
+mayUseStdIn args = findAct args `elem` ["zzuf", "radamsa", "check"]
