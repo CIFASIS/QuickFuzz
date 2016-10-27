@@ -17,9 +17,6 @@ import Strings
 import Graphics.EasyRender
 import Graphics.EasyRender.Internal
 
-type DrawUnit = Draw ()
-
-
 
 $(devActions ["Graphics.EasyRender"] ''Draw True [''()])
 $(devArbitrary ''DrawAction)
@@ -32,22 +29,21 @@ instance Arbitrary (Draw ()) where
         return $ performDraw x 
 
 
-type DocumentUnit = Document ()
 $(devActions ["Graphics.EasyRender"] '' Document True [''() ])
 -- $(devArbitrary ''DocumentAction)
--- $(devArbitraryWithActions True ''DocumentUnit)
--- $(devShow ''DocumentUnitAction)
+-- $(devArbitraryWithActions True ''Document)
+-- $(devShow ''DocumentAction)
 
-
-instance Show (Document ()) where
-    show x = "<doc>"
- 
 instance Arbitrary (Document ()) where
     arbitrary = do
         x <- arbitrary
         y <- arbitrary
         d <- arbitrary  
         return $ newpage x y d 
+ 
+instance Show (Document ()) where
+    show x = "<doc>"
+
 
 instance Arbitrary String where
    arbitrary = mgenName

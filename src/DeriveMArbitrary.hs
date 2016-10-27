@@ -127,12 +127,16 @@ fromTyVarBndr (KindedTV n _) = n
 -------------------------------------------------
 --  actions tree and perform code generation   --
 -------------------------------------------------
-devActions :: [String] -> Name -> Bool -> [Name] -> Q [Dec]
+devActions :: [String]  -- Modules to crawl 
+           -> Name      -- Target type
+           -> Bool      -- Monadic type?
+           -> [Name]    -- Type names used for type vars instatiations
+           -> DecsQ
 devActions mods tname monad tinst = do
-    modexps <- runIO $ mapM getModuleExports mods       -- [([Declaration], [String])]
-    let indexed = zip (map fst modexps) [1..]           -- [([Declaration], Int)]
+    modexps <- runIO $ mapM getModuleExports mods       
+    let indexed = zip (map fst modexps) [1..]          
         addModIndex (mod,n) = map (\dec-> dec {fid = mkSubName (fid dec) n}) mod
-        decs = concat $ map addModIndex indexed         -- [Declaration]
+        decs = concat $ map addModIndex indexed       
         cons = getConstraints decs
     instances <- getInstances cons tinst
     let decs' = concatMap (instantiateConstraints instances) decs
@@ -143,10 +147,21 @@ devActions mods tname monad tinst = do
     return [adt, run]
 
 
+-- | Derive Arbitrary instance for the original type
+-- trivially using its derived actions type
+devArbitraryWithActions :: Bool   -- Monadic type?
+                        -> Name   -- Target type
+                        -> DecsQ
+devArbitraryWithActions isMonad tname =
+    let sig | isMonad   = appT listT (conT $ mkTypeName tname)
+            | otherwise = conT $ mkTypeName tname
+        perform = varE $ mkPerformName tname
+    in [d| instance Arbitrary $(conT tname) where
+                arbitrary = (arbitrary :: Gen $sig) >>= return . $perform 
+       |]
 
 
-
-
+-- | Derive actions adt for a given type from a list of functions declarations
 devADT :: Bool -> Name -> [Declaration] -> DecQ
 devADT isMonad tname funcs = 
     dataD (cxt []) (mkTypeName tname) [] (map (devCon isMonad tname) funcs) [] 
@@ -163,7 +178,7 @@ devBangType isMonad tname t = strictType notStrict replaceArgTy
                    | otherwise  = conT $ mkTypeName tname
                                       
 
-
+-- | Derive actions performer for a previosly derived actions adt
 devPerform :: Bool -> Name -> [Declaration] -> DecQ
 devPerform isMonad tname actions = funD (mkPerformName tname) clauses
     where clauses | isMonad   = clausesM
@@ -202,7 +217,6 @@ funE n = case parseExp $ nameBase n of
     _ -> varE n
 
 
-
 -- | Return all valid instances from a list of type names
 -- and a list of class names [(classname, typename)]
 getInstances :: [Name] -> [Name] -> Q [(Name,Name)]
@@ -224,7 +238,7 @@ instantiateTVars types dec = map mkNewDec tuples
     where tperms = replicateM (length (utv dec)) (map ConT types)
           dnames = zipWith mkSubName (repeat (fid dec)) [1..]
           tuples = zip dnames tperms
-          mkNewDec (dname, tperm) = dec {fid=dname, utv=[], ty=replaceList (utv dec) tperm (ty dec)}
+          mkNewDec (dname, tperm) = dec {fid=dname, utv=[], ty=replaceTVarList (utv dec) tperm (ty dec)}
 
 
 -- | Instantiate a declaration with non-empty type constraints
@@ -238,13 +252,7 @@ instantiateConstraints instances dec = map mkNewDec namedBinds
           binds = bindInstances instances dcons
           validperms = foldr (\binds rem -> unzip binds : rem) [] binds 
           namedBinds = zipWith (\dname (vs, ts) -> (dname, vs, ts)) dnames validperms
-          mkNewDec (dname, vs, tperm) = dec {fid=dname, ty=replaceList vs tperm (ty dec)}
-
--- | Replace a list of var with a list of types in a declaration types list
-replaceList :: [Name] -> [Type] -> [Type] -> [Type]
-replaceList [] [] ty = ty
-replaceList (v:vs) (tp:tps) ty = replaceList vs tps (map (replaceTVar v tp) ty)
-replaceList v tp _ = error $ "replaceTVar: unexpected input: " ++ show v ++", " ++ show tp
+          mkNewDec (dname, vs, tperm) = dec {fid=dname, ty=replaceTVarList vs tperm (ty dec)}
 
 
 -- | Bind a list of instances with a list of tuples (classname,varname)
@@ -256,7 +264,14 @@ bindInstances instances ((c,v):tcs) = sequence (binds :  bindInstances instances
           binds = map ((,) v . ConT . snd) validTypes          
 
 
--- | Replace VarT=v with Type=t in a given type
+
+-- | Replace a list of type var names with a list of types in a declaration types list
+replaceTVarList :: [Name] -> [Type] -> [Type] -> [Type]
+replaceTVarList [] [] ty = ty
+replaceTVarList (v:vs) (tp:tps) ty = replaceTVarList vs tps (map (replaceTVar v tp) ty)
+replaceTVarList v tp _ = error $ "replaceTVar: unexpected input: " ++ show v ++", " ++ show tp
+
+-- | Replace var name with type in a given type 
 replaceTVar :: Name -> Type -> Type -> Type
 replaceTVar v t (AppT l r) = AppT (replaceTVar v t l) (replaceTVar v t r)
 replaceTVar v t (VarT n) | v == n    = t
@@ -264,6 +279,20 @@ replaceTVar v t (VarT n) | v == n    = t
 replaceTVar _ _ t = t
 
 
+
+-- | Check if a type name can be applied to a class name
+-- e.g.:  Monad :: (* -> *) -> *
+--        Maybe :: * -> * 
+--        Int   :: *
+--        compatKinds ''Monad ''Maybe = True
+--        compatKinds ''Monad ''Int   = False
+compatKinds :: Name -> Name -> Q Bool
+compatKinds cname tname = do
+    ckind <- getKind cname
+    tkind <- getKind tname
+    case ckind of
+        AppT (AppT ArrowT t) StarT -> return $ t == tkind
+        _ -> return False
 
 -- | Extract the kind asociated to a type name
 getKind :: Name -> TypeQ
@@ -283,14 +312,6 @@ toKind :: TyVarBndr -> Type
 toKind (PlainTV _) = StarT
 toKind (KindedTV _ k) = k
 
-compatKinds :: Name -> Name -> Q Bool
-compatKinds cname tname = do
-    ckind <- getKind cname
-    tkind <- getKind tname
-    case ckind of
-        AppT (AppT ArrowT t) StarT -> return $ t == tkind
-        _ -> return False
-
 
 -- | Convert type constraint into (Class, TVar)
 -- NOTE: Only one type var supported
@@ -298,6 +319,9 @@ splitConstraint :: Type -> (Name, Name)
 splitConstraint (AppT (ConT c) (VarT v)) = (c,v)
 splitConstraint t = error $ "splitConstraint: unexpected input: " ++ show t
 
+-- | Extract all type constraint names from a declaration batch
+getConstraints :: [Declaration] -> [Name]
+getConstraints = rmdups . map (fst . splitConstraint) . concatMap ctv
 
 -- | The given declaration contains type vars?
 decidableArgs :: Declaration -> Bool
@@ -320,20 +344,8 @@ compat tname (ConT c) = unqualify tname == unqualify c
 compat _ _ = False
 
 
--- | Extract all type constraint names from a declaration batch
-getConstraints :: [Declaration] -> [Name]
-getConstraints = rmdups . map (fst . splitConstraint) . concatMap ctv
 
--- | Create Arbitrary instance for the original type
--- trivially using its derived actions type
-devArbitraryWithActions :: Bool -> Name -> DecsQ
-devArbitraryWithActions isMonad tname =
-    let sig | isMonad   = appT listT (conT $ mkTypeName tname)
-            | otherwise = conT $ mkTypeName tname
-        perform = varE $ mkPerformName tname
-    in [d| instance Arbitrary $(conT tname) where
-                arbitrary = (arbitrary :: Gen $sig) >>= return . $perform 
-       |]
+
 
 
 -------------------------------------------------

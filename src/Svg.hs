@@ -65,9 +65,9 @@ $(devArbitrary ''SvgAction)
 $(devArbitraryWithActions True ''Svg)
 -- $(devShow ''SvgAction)
 
-
 instance Show Svg  where
    show x = "(noshow)"
+
 
 instance Arbitrary String where
    arbitrary = oneof [mgenName, return "999"]
