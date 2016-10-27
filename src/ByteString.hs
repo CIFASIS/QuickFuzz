@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
+{-# LANGUAGE FlexibleInstances, IncoherentInstances#-}
 module ByteString where
 
 import Test.QuickCheck
@@ -21,7 +21,7 @@ instance Arbitrary L.ByteString where
      return $ L.pack l
 
    shrink xs = ys -- ++ concat (map shrink ys)
-                where ys = (tail (L.tails xs)) ++ (init (L.inits xs))
+                where ys = tail (L.tails xs) ++ init (L.inits xs)
 
 instance CoArbitrary L.ByteString where
    coarbitrary x = coarbitrary $ L.unpack x

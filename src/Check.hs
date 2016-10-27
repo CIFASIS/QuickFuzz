@@ -51,19 +51,19 @@ getFileSize path = do
 
 save filename outdir = 
   do
-     seed <- (randomIO :: IO Int)
+     seed <- randomIO :: IO Int
      copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
  
 report value filename outdir =
   do
-     seed <- (randomIO :: IO Int)
+     seed <- randomIO :: IO Int
      LC8.writeFile (outdir ++ "/" ++ show seed ++ "." ++ filename ++ ".val") (LC8.pack (show value))
      copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
      copyFile filename (outdir ++ "/last")
 
 vreport value report filename outdir =
   do
-     seed <- (randomIO :: IO Int)
+     seed <- randomIO :: IO Int
      LC8.writeFile (outdir ++ "/" ++ show seed ++ "." ++ filename ++ ".val") (LC8.pack (show value))
      copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
      copyFile report (outdir ++ "/" ++ show seed ++ "." ++ report)
@@ -71,7 +71,7 @@ vreport value report filename outdir =
     
 freport value orifilename filename outdir =
   do
-     seed <- (randomIO :: IO Int)
+     seed <- randomIO :: IO Int
      LC8.writeFile (outdir ++ "/" ++ show seed ++ "." ++ filename ++ ".val") (LC8.pack (show value))
      copyFile orifilename (outdir ++ "/" ++ show seed ++ "." ++ filename ++ ".ori")
      copyFile filename (outdir ++ "/" ++ show seed ++ "." ++ filename)
@@ -79,7 +79,7 @@ freport value orifilename filename outdir =
 
 rreport filename outdir =
   do
-     seed <- (randomIO :: IO Int)
+     seed <- randomIO :: IO Int
      copyFile filename (outdir ++ "/red." ++ show seed ++ "." ++ filename)
  
 
@@ -89,13 +89,13 @@ prop_MutateGen :: (Mutation a, Show a, Arbitrary a) => FilePath -> Cmd -> (a -> 
 prop_MutateGen filename pcmd encode outdir vals x = 
          noShrinking $ monadicIO $ do
          r <- run (randomIO :: IO Int)
-         idx <- run $ return (r `mod` (Prelude.length vals))
+         idx <- run $ return (r `mod` Prelude.length vals)
          --run $ print "Mutating.."
 
          x <- run $ return $ vals !! idx
          --run $ print "Reading.."
 
-         y <- run $ generate $ resize 100 $ mutt $ x
+         y <- run $ generate $ resize 100 $ mutt x
 
          --run $ print ((show x) == (show y))
          run $ write (encode y) filename
@@ -108,13 +108,10 @@ prop_MutateGen filename pcmd encode outdir vals x =
          else (
            do
             ret <- run $ exec pcmd
-            case not (has_failed ret) of
-              False -> (do 
-                        run $ report x filename outdir
-                        assert False
-               )
-              _             -> assert True
-             
+            if not (has_failed ret) then assert True else
+              (do run $ report x filename outdir
+                  assert False)
+
              {-run $ write (encode y) filename
              run $ save filename outdir
              assert True-}
@@ -122,11 +119,11 @@ prop_MutateGen filename pcmd encode outdir vals x =
  
 
 
-exec_honggfuzz filename (prog,args) seed outdir = 
+execHonggfuzz filename (prog,args) seed outdir = 
    rawSystem "honggfuzz" (["-q", "-v", "-n", "2", "-N", "5", "-r", "0.00001", "-t","60", "-f", filename,  "-W", outdir, "--", prog] ++ args)
 
-prop_HonggfuzzExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
-prop_HonggfuzzExec filename pcmd encode outdir x = 
+propHonggfuzzExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+propHonggfuzzExec filename pcmd encode outdir x = 
          noShrinking $ monadicIO $ do
          run $ write (encode x) filename
          size <- run $ getFileSize filename
@@ -134,110 +131,99 @@ prop_HonggfuzzExec filename pcmd encode outdir x =
             then assert True
          else (
            do 
-             ret <- run $ exec_honggfuzz filename pcmd undefined outdir
+             ret <- run $ execHonggfuzz filename pcmd undefined outdir
              assert True
              )
          
 
-exec_zzuf seed = execFromStdinToBuffer ("zzuf", ["-r", "0.004:0.000001", "-s", show seed])
+execZzuf seed = execFromStdinToBuffer ("zzuf", ["-r", "0.004:0.000001", "-s", show seed])
 
-prop_ZzufExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
-prop_ZzufExec [] pcmd encode outdir x = 
+propZzufExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+propZzufExec [] pcmd encode outdir x = 
          monadicIO $ do
-         seed <- run $ (randomIO :: IO Int)
-         y <- run $ exec_zzuf seed (encode x) 
-         if (isNothing y) 
+         seed <- run (randomIO :: IO Int)
+         y <- run $ execZzuf seed (encode x) 
+         if isNothing y
             then assert True
          else (
            do 
            ret <- run $ execfromStdin pcmd (fromJust y)
-           case not (has_failed ret) of
-              False -> (do
-                          run $ write (fromJust y) ("stdin." ++ show seed)
-                          run $ report x ("stdin." ++ show seed) outdir
-                          assert False
-               )
-              _             -> assert True
+           if not (has_failed ret) then assert True else
+             (do run $ write (fromJust y) ("stdin." ++ show seed)
+                 run $ report x ("stdin." ++ show seed) outdir
+                 assert False)
            )
-prop_ZzufExec filename pcmd encode outdir x = 
+propZzufExec filename pcmd encode outdir x = 
          monadicIO $ do
-         seed <- run $ (randomIO :: IO Int)
-         x <- run $ exec_zzuf seed (encode x) 
-         if (isNothing x) 
+         seed <- run (randomIO :: IO Int)
+         x <- run $ execZzuf seed (encode x) 
+         if isNothing x
             then assert True
          else (
            do 
            run $ write (fromJust x) filename
            ret <- run $ exec pcmd
-           case not (has_failed ret) of
-              False -> (do 
-                        run $ report x filename outdir
-                        assert False
-               )
-              _             -> assert True
+           if not (has_failed ret) then assert True else
+             (do run $ report x filename outdir
+                 assert False)
            )
 
 
 
 
-exec_ltrace (prog,args) outfile =
+execLTrace (prog,args) outfile =
    do
      rawSystem "/usr/bin/ltrace" (["-o"++ outfile, "-e","execve",prog] ++ args)
      rawSystem "/bin/cat" [outfile]
 
-prop_LTraceExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
-prop_LTraceExec filename pcmd encode outdir x = 
+propLTraceExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+propLTraceExec filename pcmd encode outdir x = 
          noShrinking $ monadicIO $ do
          let rep_filename = filename ++ ".lreport.out"
          run $ write (encode x) filename
-         run $ exec_ltrace pcmd rep_filename
+         run $ execLTrace pcmd rep_filename
          size <- run $ getFileSize rep_filename
-         case size of
-             _     -> (assert True)
+         assert True
 
 
-exec_valgrind (prog,args) outfile =
+execValgrind (prog,args) outfile =
  rawSystem "/usr/bin/valgrind" (["--log-file="++ outfile, "--quiet", prog] ++ args)
 
-prop_ValgrindExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
-prop_ValgrindExec filename pcmd encode outdir x =
+propValgrindExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+propValgrindExec filename pcmd encode outdir x =
          noShrinking $ monadicIO $ do
          let rep_filename = filename ++ ".vreport.out"
          run $ write (encode x) filename
-         run $ exec_valgrind pcmd rep_filename
+         run $ execValgrind pcmd rep_filename
          size <- run $ getFileSize rep_filename
          case size of
-             0     -> (assert True)
-             _     -> (do
-                        run $ vreport x rep_filename filename outdir
-                        assert False)
+             0 -> assert True
+             _ -> do run $ vreport x rep_filename filename outdir
+                     assert False
  
 
-exec_radamsa = execFromStdinToBuffer ("radamsa", [])
+execRadamsa = execFromStdinToBuffer ("radamsa", [])
 --rawSystem "radamsa" [infile, "-o", outfile]
 
-prop_RadamsaExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
-prop_RadamsaExec [] pcmd encode outdir x = 
+propRadamsaExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+propRadamsaExec [] pcmd encode outdir x = 
          noShrinking $ monadicIO $ do
-         seed <- run $ (randomIO :: IO Int)
-         y <- run $ exec_radamsa (encode x)
-         if (isNothing y) 
+         seed <- run (randomIO :: IO Int)
+         y <- run $ execRadamsa (encode x)
+         if isNothing y
             then assert True
          else (
            do 
            ret <- run $ execfromStdin pcmd (fromJust y)
-           case not (has_failed ret) of
-              False -> (do
-                          run $ write (fromJust y) ("stdin." ++ show seed)
-                          run $ report x ("stdin." ++ show seed) outdir
-                          assert True
-               )
-              _             -> assert True
+           if not (has_failed ret) then assert True else
+             (do run $ write (fromJust y) ("stdin." ++ show seed)
+                 run $ report x ("stdin." ++ show seed) outdir
+                 assert True)
            )
-prop_RadamsaExec filename pcmd encode outdir x = 
+propRadamsaExec filename pcmd encode outdir x = 
          noShrinking $ monadicIO $ do
-         y <- run $ exec_radamsa (encode x)
-         if (isNothing y) 
+         y <- run $ execRadamsa (encode x)
+         if isNothing y
             then assert True
          else (
            do 
@@ -252,20 +238,19 @@ prop_RadamsaExec filename pcmd encode outdir x =
               _             -> assert True
            )
 
-prop_Exec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
-prop_Exec [] pcmd encode outdir x = 
+propExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+propExec [] pcmd encode outdir x = 
          monadicIO $ do
          seed <- run $ (randomIO :: IO Int)
          ret <- run $ execfromStdin pcmd (encode x)
          case not (has_failed ret) of
-            False -> (do
+            False -> do
                           run $ write (encode x) ("stdin." ++ show seed)
                           run $ report x ("stdin." ++ show seed) outdir
                           assert True
-             )
             _             -> assert True
 
-prop_Exec filename pcmd encode outdir x = 
+propExec filename pcmd encode outdir x = 
          monadicIO $ do
          run $ write (encode x) filename
          size <- run $ getFileSize filename
@@ -283,8 +268,8 @@ prop_Exec filename pcmd encode outdir x =
            )
 
 
-prop_EnvExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
-prop_EnvExec filename pcmd encode outdir x = 
+propEnvExec :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+propEnvExec filename pcmd encode outdir x = 
          monadicIO $ do
          str <- return $ Prelude.take 2000 $ Prelude.map (chr . fromEnum) . L.unpack $ (encode x) 
          run $ clearEnv
@@ -298,8 +283,8 @@ prop_EnvExec filename pcmd encode outdir x =
                )
               _             -> assert True 
 
-prop_Red :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
-prop_Red filename pcmd encode outdir x = 
+propRed :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+propRed filename pcmd encode outdir x = 
          monadicIO $ do
          run $ write (encode x) filename
          ret <- run $ exec pcmd
@@ -310,7 +295,7 @@ prop_Red filename pcmd encode outdir x =
                )
               _             -> assert True
          
-prop_Red [] pcmd encode outdir x = 
+propRed [] pcmd encode outdir x = 
          monadicIO $ do
          seed <- run $ (randomIO :: IO Int)
          ret <- run $ execfromStdin pcmd (encode x)
@@ -326,8 +311,8 @@ prop_Red [] pcmd encode outdir x =
 
 
 
-prop_Gen :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
-prop_Gen filename pcmd encode outdir x = 
+propGen :: Show a => FilePath -> Cmd -> (a -> L.ByteString) -> FilePath -> a -> Property
+propGen filename pcmd encode outdir x = 
          noShrinking $ monadicIO $ do
          run $ write (encode x) filename
          size <- run $ getFileSize filename
@@ -344,20 +329,20 @@ prop_Gen filename pcmd encode outdir x =
 serve :: PortNumber -> [L8.ByteString] -> IO ()
 serve port xs = withSocketsDo $ do
     sock <- listenOn $ PortNumber port
-    serve_loop sock xs
+    serveLoop sock xs
 
-serve_loop sock (x:xs) = do
+serveLoop sock (x:xs) = do
    Prelude.putStrLn "Accepting connection.."
    (conn, _) <- accept sock
    forkIO $ body conn
-   serve_loop sock xs
+   serveLoop sock xs
   where
    body c = do sendAll c x
                sClose c
 
-serve_loop _ [] = error "Empty list!"
+serveLoop _ [] = error "Empty list!"
 
-serveprop port _ encode x =  
+serveProp port _ encode x =  
         noShrinking $ monadicIO $ do
            run $ serve port (encode x)
            Test.QuickCheck.Monadic.assert True
@@ -372,19 +357,19 @@ cconnect port host xs = withSocketsDo $ do
     sock <- socket (addrFamily serverAddr) Stream defaultProtocol
     --sock <- conn $ PortNumber port
     connect sock (addrAddress serverAddr)
-    cconect_loop sock xs
+    cconectLoop sock xs
 
-cconect_loop sock (x:xs) = do
+cconectLoop sock (x:xs) = do
    Prelude.putStrLn "Sending data .."
    send sock x
    --(conn, _) <- accept sock
    --forkIO $ body conn
-   cconnect_loop sock xs
+   cconnectLoop sock xs
   --where
   -- body c = do sendAll c x
   --             sClose c
 
-cconnect_loop _ [] = error "Empty list!"
+cconnectLoop _ [] = error "Empty list!"
 
 cconnectprop port host encode x =  
         noShrinking $ monadicIO $ do

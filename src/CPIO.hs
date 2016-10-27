@@ -75,19 +75,19 @@ instance Binary Entry where
                put $ encodeR32 $ cpioNLink entry
                put $ encodeR32 $ cpioMTime entry
                let file_size = cpioFileSize entry
-               put $ encodeR32 $ file_size
+               put $ encodeR32 file_size
                put $ encodeR32 $ cpioDevMaj entry
                put $ encodeR32 $ cpioDevMin entry
                put $ encodeR32 $ cpioRDevMaj entry
                put $ encodeR32 $ cpioRDevMin entry
-               let filename_length = 1 + (fromInteger $ toInteger $ BS.length $ cpioFileName entry)
-               put $ encodeR32 $ (filename_length :: Word32)
+               let filename_length = 1 + fromInteger (toInteger $ BS.length $ cpioFileName entry)
+               put $ encodeR32 (filename_length :: Word32)
                case cpioCRC32 entry of
                  Nothing -> put $ encodeR32 0
                  Just x -> put $ encodeR32 x
                put $ cpioFileName entry
-               put $ ("\NUL" :: ByteString)
-               put $ BS.replicate ((alignTo4 $ fromInteger (110 + (toInteger filename_length))) :: Int)  0
+               put ("\NUL" :: ByteString)
+               put $ BS.replicate ((alignTo4 $ fromInteger (110 + toInteger filename_length)) :: Int)  0
                forM_ (BL.toChunks $ cpioFileData entry) put
                put $ BS.replicate (alignTo4 (fromInteger $ toInteger file_size)) 0
              
