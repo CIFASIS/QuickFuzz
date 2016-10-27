@@ -18,12 +18,12 @@ import Test.QuickCheck
 
 -- data MArchive = Archive0 Archive
 
-$(devActions "Codec.Archive.Zip" ''Entry False [])
+$(devActions ["Codec.Archive.Zip"] ''Entry False [])
 $(devArbitrary ''EntryAction)
 $(devArbitraryWithActions False ''Entry)
 
 
-$(devActions "Codec.Archive.Zip" ''Archive False [])
+$(devActions ["Codec.Archive.Zip"] ''Archive False [])
 $(devArbitrary ''ArchiveAction)
 $(devArbitraryWithActions False ''Archive)
 
