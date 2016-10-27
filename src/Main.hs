@@ -117,7 +117,6 @@ dispatch arg = do
 
 #ifdef IMGS
 
-            "Pdf"  -> Process.main (Pdf.mencode,undefined) args b
             "Eps"  -> Process.main (Eps.mencode,undefined) args b
             "Bmp"  -> Process.main (Bmp.mencode,undefined) args b
             "Gif"  -> Process.main (Gif.mencode,Gif.mdecode) args b
@@ -158,6 +157,7 @@ dispatch arg = do
 #endif
 
 #ifdef DOCS
+            "Pdf"  -> Process.main (Pdf.mencode,undefined) args b
             "Rtf"  -> Process.main (Pandoc.mencode_rtf,undefined)  args b
             "Docx"  -> Process.main (Pandoc.mencode_docx,undefined)  args b
             "Odt"  -> Process.main (Pandoc.mencode_odt,undefined)  args b

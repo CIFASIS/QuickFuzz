@@ -23,11 +23,11 @@ import Data.ByteString.Lazy hiding (map)
 
 import ByteString
 
-$(devActions "Codec.Container.Ogg.ContentType" ''ContentType False [])
+$(devActions ["Codec.Container.Ogg.ContentType"] ''ContentType False [])
 $(devArbitrary ''ContentTypeAction)
 $(devArbitraryWithActions False ''ContentType)
 
-$(devActions "Codec.Container.Ogg.Track" ''OggTrack False [])
+$(devActions ["Codec.Container.Ogg.Track"] ''OggTrack False [])
 $(devArbitrary ''OggTrackAction)
 $(devArbitraryWithActions False ''OggTrack)
 
