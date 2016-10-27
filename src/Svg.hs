@@ -4,73 +4,71 @@ module Svg where
 
 import Test.QuickCheck
 
-import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Lazy.Char8 as L8
+--import Data.Binary( Binary(..), encode )
+import Graphics.Svg
+import Graphics.Svg.Types
+
+import qualified Data.ByteString.Lazy.Char8 as LC8
+import qualified Data.ByteString.Char8 as C8
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as C
+
 import Data.DeriveTH
 
-import DeriveMArbitrary
+import DeriveMutation
 import DeriveArbitrary
-import DeriveShow
 
 import ByteString
+import Vector
+
+import Text.XML.Light.Input( parseXMLDoc )
+import Text.XML.Light.Output( ppcTopElement, prettyConfigPP )
+
+import Data.Map.Strict
+import qualified Data.Text.Internal as DT
+
+import qualified Data.Vector as V
+import qualified Data.Vector.Unboxed as VU
+import qualified Data.Vector.Storable as VS
+
+import Data.Text.Array
+
+import Data.Monoid
+--import Data.List.Split
+import Data.Char (chr)
+import qualified Data.Text as T
+
+import Linear
 import Strings
+import Images 
 
-import Text.Blaze.Internal
-import Text.Blaze.Svg
-import Text.Blaze.Svg.Internal
-import Text.Blaze.Svg11
-import Text.Blaze.Svg11.Attributes
-import Text.Blaze.Svg.Renderer.String
+data MSvgFile  = MSvgFile Document deriving Show
 
-
-$(devActions ["Text.Blaze.Svg"] ''Path True [''Int])
-$(devArbitrary ''PathAction)
-$(devArbitraryWithActions True ''Path)
--- $(devShow ''PathAction)
-
-
-$(devActions ["Text.Blaze.Svg"] ''AttributeValue False [''Int, ''Path])
--- $(devArbitrary ''AttributeValueAction)  -- This fails miserably :(
-$(devArbitraryWithActions False ''AttributeValue)
--- $(devShow ''AttributeValue)
-
-instance Arbitrary AttributeValueAction where
-    arbitrary = do
-        i1 <- arbitrary
-        i2 <- arbitrary
-        i3 <- arbitrary
-        i4 <- arbitrary
-        i5 <- arbitrary
-        i6 <- arbitrary
-        p <- arbitrary
-        elements 
-            [ Act_AttributeValue_matrix_1_1 i1 i2 i3 i4 i5 i6
-            , Act_AttributeValue_mkPath_1 p
-            , Act_AttributeValue_rotate_1_1 i1
-            , Act_AttributeValue_rotateAround_1_1 i1 i2 i3
-            , Act_AttributeValue_scale_1_1 i1 i2
-            , Act_AttributeValue_skewX_1_1 i1
-            , Act_AttributeValue_skewY_1_1 i1 
-            , Act_AttributeValue_translate_1_1 i1 i2 ]
-
-
-$(devActions ["Text.Blaze.Svg11.Attributes"] ''Attribute False [''AttributeValue])
-$(devArbitrary ''AttributeAction)
-$(devArbitraryWithActions False ''Attribute)
--- $(devShow ''Attribute)
-
-
-$(devActions ["Text.Blaze.Svg11"] ''Svg True [''Svg, ''Attribute, ''String])
-$(devArbitrary ''SvgAction)
-$(devArbitraryWithActions True ''Svg)
--- $(devShow ''SvgAction)
-
-instance Show Svg  where
-   show x = "(noshow)"
-
-
+--instance  Arbitrary DT.Text where
+--   arbitrary = do 
+--     xs <- mgenName
+--     oneof $ Prelude.map (return . T.pack) [xs]
+  
 instance Arbitrary String where
-   arbitrary = oneof [mgenName, return "999"]
+  arbitrary = mgenName
 
-mencode :: Svg -> L8.ByteString
-mencode xs = L8.pack $ renderSvg xs
+instance Arbitrary RPoint where
+   arbitrary = do 
+     a1 <- arbitrary
+     a2 <- arbitrary
+     return $ V2 a1 a2
+
+$(devArbitrary ''MSvgFile)
+-- $(devMutation ''MSvgFile)
+
+encodeMSvgFile = LC8.pack . ppcTopElement prettyConfigPP . xmlOfDocument
+   
+mencode :: MSvgFile -> LC8.ByteString
+mencode (MSvgFile d) = encodeMSvgFile d
+
+mdecode :: C8.ByteString -> MSvgFile
+mdecode x = 
+           case (parseSvgFile "." x) of --(B.pack  $ Prelude.map (ord . toEnum) (C.unpack x))) of
+             Just doc -> MSvgFile doc
+             Nothing  -> error "SVG impossible to parse"
+           --where x' = C8.unpack x 
