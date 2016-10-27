@@ -126,7 +126,7 @@ dispatch arg = do
             "Tiff" -> Process.main (Tiff.mencode,undefined)  args b
             "Tga"  -> Process.main (Tga.mencode,undefined)  args b
             "Pnm"  -> Process.main (Pnm.mencode,undefined)  args b
-            "Svg"  -> Process.main (Svg.mencode,undefined)  args b
+            "Svg"  -> Process.main (Svg.mencode,Svg.mdecode)  args b
             "Ico"  -> Process.main (Ico.mencode, undefined)  args b
 #endif
 
