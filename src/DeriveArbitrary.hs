@@ -71,8 +71,34 @@ genTupleArbs n =
          in
         doE $
              map (\x -> bindS (varP x) (varE 'arbitrary)) xs
-            ++ [ noBindS $ appE (varE 'return) (tupE (map varE xs))]
+             ++ [ noBindS $ appE (varE 'return) (tupE (map varE xs))]
+-- | Custom Gen simpleView
+cstmSimpleV :: ConView -> (Name -> Name) -> ExpQ
+cstmSimpleV (SimpleCon n _ []) cstI = conE n -- varE $ cstI n
+cstmSimpleV (SimpleCon n _ as) cstI = foldl (\ r t ->
+                                               case t of
+                                                 (ConT n') -> uInfixE r (varE '(<*>)) (varE $ cstI n')
+                                                 _ -> error "Not sure yet"
+                                               ) (conE n) as
 
+-- | Custom generators
+deriveGenerator :: Name -> (Name -> Name) -> Q Dec
+deriveGenerator t cstMap = do
+  inf <- reify t
+  runIO $ print $ "Generating custom dev for " ++ show inf
+  case inf of
+    TyConI (DataD _ _ params TH211MBKIND constructors _ ) ->
+      let fnm = mkName $ "cstm_" ++ (showName t)
+          scons = map (simpleConView t) constructors
+          fcs = filter ((== 0) . bf) scons
+          n = mkName "n"
+      in funD fnm $ [(clause [litP $ integerL 0]
+                       ( normalB $ [| oneof $(listE (map (\ x ->  cstmSimpleV x (\ _ -> 'arbitrary) ) fcs) ) |] 
+                        ) [])
+                    , (clause [varP n] (normalB
+                      $  [| oneof $(listE (map (flip cstmSimpleV cstMap) scons) ) |] )
+                       [])
+                    ]
 
 -- | Give an arbitrary instance for its argument.
 -- It doesn't check anything, just assume that it is ok to instance
