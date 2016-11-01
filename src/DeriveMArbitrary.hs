@@ -82,7 +82,7 @@ parseName :: String -> Maybe (Name, Bool)
 parseName str = case parseExp str of
     Right (VarE n) -> Just (n, False)
     Right (ConE n) -> Just (n, False)
-    Right (UInfixE (ConE m) _ (VarE op)) -> Just  (mkName $ show m ++ "." ++ show op ++ "", True)
+    Right (UInfixE (ConE m) _ (VarE op)) -> Just  (mkName $ show m ++ "." ++ show op, True)
     _ -> Nothing 
 
 -- | Parse funtion signature 
@@ -120,9 +120,6 @@ fromTyVarBndr :: TyVarBndr -> Name
 fromTyVarBndr (PlainTV n) = n
 fromTyVarBndr (KindedTV n _) = n
 
--- foldr (\(dec, n) decs -> mkSubName dec n : decs)
-
-
 
 -------------------------------------------------
 --  actions tree and perform code generation   --
@@ -141,10 +138,14 @@ devActions mods tname monad tinst = do
     instances <- getInstances cons tinst
     let decs' = concatMap (instantiateConstraints instances) decs
         decs'' = concatMap (instantiateTVars tinst) decs'
-        actions = filter (\d -> resultType tname d && decidableArgs d) decs'' 
+        conditions d = and $ map ($ d) [resultType tname, decidableArgs, not . isTypeParam tname, not . hasFuncParams]
+        actions = filter conditions decs'' 
+    --runIO $ putStrLn $ "Found " ++ show (length actions) ++ " actions for " ++ nameBase tname
     adt <- devADT monad tname actions
     run <- devPerform monad tname actions
     return [adt, run]
+
+
 
 
 -- | Derive Arbitrary instance for the original type
@@ -334,7 +335,7 @@ hasVarT (ConT _) = False
 hasVarT _ = False
 
 
--- Compare type name and the result type of a declaration
+-- | Compare type name and the result type of a declaration
 resultType :: Name -> Declaration -> Bool
 resultType tname dec = tname `compat` last (ty dec)
 
@@ -344,7 +345,32 @@ compat tname (ConT c) = unqualify tname == unqualify c
 compat _ _ = False
 
 
+-- | Check if a type name is a type parameter of another
+-- e.g.: isTypeParam ''Int (AppT (ConT ''Maybe) (ConT ''Int)) = True
+--       isTypeParam ''Int (ConT ''Int) = False
+isTypeParam :: Name -> Declaration -> Bool
+isTypeParam tname dec = any (\t -> not (tname `compat` t) && isContained tname t) (ty dec)
 
+isContained tname (AppT l r) = isContained tname l || isContained tname r
+isContained tname (ConT t) = unqualify tname == unqualify t
+isContained _ _ = False
+
+
+-- | Check if a declaration has functions as a parameter
+hasFuncParams :: Declaration -> Bool
+hasFuncParams dec = any hasArrows (ty dec)
+
+hasArrows (AppT l r) = hasArrows l || hasArrows r
+hasArrows ArrowT = True
+hasArrows _ = False
+
+
+-- | Replace a type constructor with another
+--replaceConT :: Name -> Name -> Type -> Type
+--replaceConT orig tname (AppT l r) = AppT (replaceConT tname orig l) (replaceConT tname orig r)
+--replaceConT orig tname (ConT t) | t == orig  =  ConT tname
+--                                | otherwise  =  ConT t
+--replaceConT orig tname t = t
 
 
 
