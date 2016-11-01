@@ -54,7 +54,22 @@ chooseExpQ g n t bf ty =
 
 
 makeArbs :: Name -> Name -> Name ->  [ConView] -> [ExpQ]
-makeArbs g n t xs = map (fmap fixAppl) [ foldl (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ g n t bf ty)) (conE name) tys' | SimpleCon name bf tys' <- xs]
+makeArbs g n t xs =
+  map (fmap fixAppl)
+      [
+        foldl
+          (\h ty -> uInfixE h (varE '(<*>)) (chooseExpQ g n t bf ty))
+          (conE name) tys'
+      | SimpleCon name bf tys' <- xs]
+
+oneOfStr ::  Name -> Name -> Name ->  [ConView] -> ExpQ
+oneOfStr g n t xs =
+  [| oneof $(listE (makeArbs g n t xs)) |]
+
+freqStr :: Name -> Name -> Name ->  [ConView] -> ExpQ
+freqStr g n t xs =
+  [| frequency $
+     map (\x -> ($(varE n), x)) $(listE (makeArbs g n t xs)) |]
 
 -- | Generic function used to create arbitrarily large tuples
 -- @
@@ -118,17 +133,17 @@ deriveArbitrary t = do
                       then
                             if length fcs == length scons
                             then
-                                [| oneof $(listE (makeArbs g n t fcs))|]
+                                oneOfStr g n t fcs
                             else
-                                if length fcs > 1 
+                                if length fcs > 1
                                 then
                                     [|  if $(varE n) <= 1
-                                    then oneof $(listE (makeArbs g n t fcs))
-                                    else oneof $(listE (makeArbs g n t scons))|]
+                                    then $(oneOfStr g n t fcs)
+                                    else $(oneOfStr g n t scons)|]
                                 else
                                     [|  if $(varE n) <= 1
                                     then $(head (makeArbs g n t fcs))
-                                    else oneof $(listE (makeArbs g n t scons))|]
+                                    else $(oneOfStr g n t scons)|]
                       else
                             [| $(head (makeArbs g n t scons)) |]
               if not $ null ns then
