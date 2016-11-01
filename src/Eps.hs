@@ -1,0 +1,52 @@
+{-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances #-}
+
+module Eps where
+
+import Test.QuickCheck
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy.Char8 as L8
+import Data.DeriveTH
+
+import DeriveMArbitrary
+import DeriveArbitrary
+import DeriveShow
+
+import ByteString
+import Strings
+
+import Graphics.EasyRender
+import Graphics.EasyRender.Internal
+
+
+$(devActions ["Graphics.EasyRender"] ''Draw True [''()])
+$(devArbitrary ''DrawAction)
+-- $(devArbitraryWithActions True ''Draw)
+$(devShow ''DrawAction)
+
+instance Arbitrary (Draw ()) where
+    arbitrary = do
+        x <- arbitrary :: Gen [DrawAction]
+        return $ performDraw x 
+
+
+$(devActions ["Graphics.EasyRender"] '' Document True [''() ])
+-- $(devArbitrary ''DocumentAction)
+-- $(devArbitraryWithActions True ''Document)
+-- $(devShow ''DocumentAction)
+
+instance Arbitrary (Document ()) where
+    arbitrary = do
+        x <- arbitrary
+        y <- arbitrary
+        d <- arbitrary  
+        return $ newpage x y d 
+ 
+instance Show (Document ()) where
+    show x = "<doc>"
+
+
+instance Arbitrary String where
+   arbitrary = mgenName
+
+mencode :: Document () -> L8.ByteString
+mencode xs = L8.pack $ render_string (Format_EPS 1) xs

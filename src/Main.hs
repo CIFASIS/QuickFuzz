@@ -6,6 +6,8 @@ import qualified Process
 
 #ifdef IMGS
 
+import qualified Pdf
+import qualified Eps
 import qualified Tga
 import qualified Tiff
 import qualified Png
@@ -93,6 +95,7 @@ import System.Exit
 import Control.Monad
 import Data.List.Split
 
+
 fillArgs :: MainArgs -> IO (String -> MainArgs)
 fillArgs args =
     case findFileName args of
@@ -114,6 +117,7 @@ dispatch arg = do
 
 #ifdef IMGS
 
+            "Eps"  -> Process.main (Eps.mencode,undefined) args b
             "Bmp"  -> Process.main (Bmp.mencode,undefined) args b
             "Gif"  -> Process.main (Gif.mencode,Gif.mdecode) args b
             "Jpeg" -> Process.main (Jpeg.mencode,Jpeg.mdecode) args b
@@ -140,7 +144,7 @@ dispatch arg = do
 
             "Dot"  -> Process.main (Dot.mencode,undefined)  args b
             "Xml"  -> Process.main (Xml.mencode,Xml.mdecode)  args b
-            "Html" -> Process.main (Html.mencode,Html.mdecode)  args b
+            "Html" -> Process.main (Html.mencode,undefined)  args b
             "Js"   -> Process.main (Js.mencode,undefined)  args b
             "Py"   -> Process.main (Python.mencode,undefined)  args b
             "CSS"  -> Process.main (Css.mencode,undefined)  args b
@@ -153,6 +157,7 @@ dispatch arg = do
 #endif
 
 #ifdef DOCS
+            "Pdf"  -> Process.main (Pdf.mencode,undefined) args b
             "Rtf"  -> Process.main (Pandoc.mencode_rtf,undefined)  args b
             "Docx"  -> Process.main (Pandoc.mencode_docx,undefined)  args b
             "Odt"  -> Process.main (Pandoc.mencode_odt,undefined)  args b

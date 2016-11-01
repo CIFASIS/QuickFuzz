@@ -11,8 +11,26 @@ import Data.Word(Word8, Word16, Word32)
 import qualified Data.Vector.Storable as VS
 
 import GHC.Types
--- import DeriveArbitrary
-import Data.DeriveTH
+
+import DeriveArbitrary
+import DeriveMArbitrary
+
+--instance Arbitrary (Elem a) where
+--  arbitrary = return $ undefined
+
+--instance (Arbitrary a) => Arbitrary (Keys a) where
+--  arbitrary = return $ undefined
+
+-- $(devActions "Codec.Picture.Gif" ''Palette False [])
+-- $(devArbitrary ''PaletteAction)
+-- $(devArbitraryWithActions False ''Metadatas)
+
+
+
+-- $(devActions "Codec.Picture.Metadata" ''Metadatas False [''Int])
+-- $(devArbitrary ''MetadatasAction)
+-- $(devArbitraryWithActions False ''Metadatas)
+
 
 -- $(deriveArbitraryRec ''SourceFormat)
 
@@ -20,9 +38,6 @@ instance Arbitrary PixelRGBA8 where
   arbitrary = do
       (r,g,b,a) <- (arbitrary)
       return $ PixelRGBA8 r g b a
-
---instance Arbitrary (Elem a) where
---  arbitrary = error "not defined!"
 
  
 instance Arbitrary (Metadatas) where

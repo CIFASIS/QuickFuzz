@@ -1,9 +1,13 @@
 {-# LANGUAGE TemplateHaskell, FlexibleInstances, IncoherentInstances#-}
 module Ogg where
 
-import DeriveArbitrary hiding (derive)
+import DeriveArbitrary
+import DeriveMArbitrary
+import DeriveShow
+
 import Test.QuickCheck
 
+import Codec.Container.Ogg.Serial
 import Codec.Container.Ogg.Page
 import Codec.Container.Ogg.Packet
 import Codec.Container.Ogg.Granulepos
@@ -13,27 +17,31 @@ import Codec.Container.Ogg.Granulerate
 import Codec.Container.Ogg.ContentType
 
 import qualified Data.ByteString.Lazy as L
+import Data.ByteString.Lazy hiding (map)
 
 --import Data.DeriveTH
 
 import ByteString
 
+$(devActions ["Codec.Container.Ogg.ContentType"] ''ContentType False [])
+$(devArbitrary ''ContentTypeAction)
+$(devArbitraryWithActions False ''ContentType)
 
-instance Arbitrary ContentType where
---    arbitrary = oneof $ (map return [flac])
-      arbitrary = oneof $ (map return [skeleton, cmml, vorbis, theora, speex, celt, flac])
+$(devActions ["Codec.Container.Ogg.Track"] ''OggTrack False [])
+$(devArbitrary ''OggTrackAction)
+$(devArbitraryWithActions False ''OggTrack)
 
-instance Arbitrary MessageHeaders where
-   arbitrary = do
-     y <- listOf (arbitrary :: Gen String)
-     x <- (arbitrary :: (Gen String))
-     return $ mhAppends x y mhEmpty
+-- $(devActions "Codec.Container.Ogg.Packet" ''OggPacket False []) --BUG!!! GhcMod is unpacking definition on nested record
+-- $(devArbitrary ''OggPacketAction)
+-- $(devArbitraryWithActions False ''OggPacket)
 
-$(devArbitrary ''OggPacket)
+data MOgg = Ogg0 [OggPacket] | Ogg1 [OggPage]
 
-type MOgg = [OggPacket]
+$(devArbitrary ''MOgg)
+$(devShow ''MOgg)
 
-appendvorbis d = L.append flacIdent d
-appendh (OggPage x track cont incplt bos eos gp seqno s) = OggPage x track cont incplt bos eos gp seqno (map appendvorbis s)
+--appendvorbis d = L.append flacIdent d
+--appendh (OggPage x track cont incplt bos eos gp seqno s) = OggPage x track cont incplt bos eos gp seqno (Prelude.map appendvorbis s)
 
-mencode = L.concat . (map pageWrite) . (map appendh) . packetsToPages --appendvorbis
+mencode (Ogg0 xs) = (L.concat . (map pageWrite) . packetsToPages) xs --appendvorbis
+mencode (Ogg1 xs) = (L.concat . (map pageWrite) . packetsToPages . pagesToPackets) xs --appendvorbis

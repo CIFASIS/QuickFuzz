@@ -7,6 +7,7 @@ import Text.XML.HaXml.Parse
 import Text.XML.HaXml.Posn
 import Text.XML.HaXml.Types
 import Text.XML.HaXml.ByteStringPP
+import Text.XML.HaXml.Combinators
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as LC8
@@ -15,17 +16,29 @@ import Data.Maybe
 
 import Mutation
 import DeriveArbitrary
+import DeriveMArbitrary
 import DeriveMutation
 import Strings 
 
-instance Arbitrary EncodingDecl where
-   arbitrary = oneof $ map (return . EncodingDecl) ["UTF-8"]
- 
-instance Arbitrary XMLDecl where
-   arbitrary = do 
-                ver <- oneof $ map return ["1.0"]
-                (x,y) <- arbitrary
-                return $ XMLDecl ver x y
+$(devActions ["Text.XML.HaXml.Combinators"] ''CFilter False [''Int])
+$(devArbitrary ''CFilterAction)
+-- $(devArbitraryWithActions False ''CFilter) -- Does not work because of the type var i
+
+instance Arbitrary (CFilter i) where
+    arbitrary = do
+        x <- arbitrary :: Gen CFilterAction
+        return $ performCFilter x 
+
+
+--instance Arbitrary EncodingDecl where
+--   arbitrary = oneof $ map (return . EncodingDecl) ["UTF-8"]
+-- 
+--instance Arbitrary XMLDecl where
+--   arbitrary = do 
+--                ver <- oneof $ map return ["1.0"]
+--                (x,y) <- arbitrary
+--                return $ XMLDecl ver x y
+--
 
 instance Arbitrary String where
    --arbitrary = genName
