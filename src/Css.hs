@@ -24,6 +24,7 @@ import Language.Css.Syntax
 import Language.Css.Pretty
 import Language.Css.Build
 import Language.Css.Build.Attributes
+import Language.Css.Build.Pseudos
 
 import Data.Monoid
 import Data.List.Split
@@ -40,13 +41,22 @@ type MCssFile  = StyleSheet
 instance Arbitrary String where
    arbitrary = mgenName
 
-$(devActions ["Language.Css.Build.Attributes", "Language.Css.Syntax"] ''Attr False [''Attr])
+-- $(devActions ["Language.Css.Build", "Language.Css.Syntax"] ''Expr False [])
+-- $(devArbitrary ''ExprAction)
+-- $(devArbitraryWithActions False ''Expr)
+
+$(devActions["Language.Css.Build", "Language.Css.Build.Attributes", "Language.Css.Syntax" ] ''Attr False [''Attr])
 $(devArbitrary ''AttrAction)
 $(devArbitraryWithActions False ''Attr)
 
 -- $(devActions ["Language.Css.Build.Attributes", "Language.Css.Syntax"] ''AttrIdent False [''AttrIdent])
 -- $(devArbitrary ''AttrIdentAction)
 -- $(devArbitraryWithActions False ''AttrIdent)
+
+$(devActions ["Language.Css.Build.Pseudos", "Language.Css.Syntax"] ''PseudoVal False [])
+$(devArbitrary ''PseudoValAction)
+$(devArbitraryWithActions False ''PseudoVal)
+ 
 
 $(devActions ["Language.Css.Build", "Language.Css.Syntax"] ''StyleBody False [])
 $(devArbitrary ''StyleBodyAction)
@@ -55,7 +65,6 @@ $(devArbitraryWithActions False ''StyleBody)
 $(devActions ["Language.Css.Build", "Language.Css.Syntax"] ''StyleSheet False [])
 $(devArbitrary ''StyleSheetAction)
 $(devArbitraryWithActions False ''StyleSheet)
-
 
 $(devArbitrary ''MCssFile)
 
