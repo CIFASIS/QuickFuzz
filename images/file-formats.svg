@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="18cm" height="11cm" viewBox="244 205 347 203" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="360.923" y="205.657" width="56.8" height="18"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="360.923" y="205.657" width="56.8" height="18"/>
+    <text font-size="11.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="389.323" y="219.657">Images</text>
+    <rect style="fill: #ffffff" x="360.923" y="223.657" width="56.8" height="164"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="360.923" y="223.657" width="56.8" height="164"/>
+    <ellipse style="fill: #000000" cx="365.923" cy="233.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="369.923" y="239.657">Bmp</text>
+    <ellipse style="fill: #000000" cx="365.923" cy="249.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="369.923" y="255.657">Gif</text>
+    <ellipse style="fill: #000000" cx="365.923" cy="265.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="369.923" y="271.657">Png</text>
+    <ellipse style="fill: #000000" cx="365.923" cy="281.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="369.923" y="287.657">Jpeg</text>
+    <ellipse style="fill: #000000" cx="365.923" cy="297.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="369.923" y="303.657">Svg</text>
+    <ellipse style="fill: #000000" cx="365.923" cy="313.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="369.923" y="319.657">Eps</text>
+    <ellipse style="fill: #000000" cx="365.923" cy="329.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="369.923" y="335.657">Ico</text>
+    <ellipse style="fill: #000000" cx="365.923" cy="345.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="369.923" y="351.657">Tga</text>
+    <ellipse style="fill: #000000" cx="365.923" cy="361.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="369.923" y="367.657">Tiff</text>
+    <ellipse style="fill: #000000" cx="365.923" cy="377.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="369.923" y="383.657">Pnm</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="431.964" y="205.939" width="64.15" height="18"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="431.964" y="205.939" width="64.15" height="18"/>
+    <text font-size="11.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="464.039" y="219.939">Archives</text>
+    <rect style="fill: #ffffff" x="431.964" y="223.939" width="64.15" height="68"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="431.964" y="223.939" width="64.15" height="68"/>
+    <ellipse style="fill: #000000" cx="436.964" cy="233.939" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="440.964" y="239.939">Zip</text>
+    <ellipse style="fill: #000000" cx="436.964" cy="249.939" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="440.964" y="255.939">Gzip</text>
+    <ellipse style="fill: #000000" cx="436.964" cy="265.939" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="440.964" y="271.939">Tar</text>
+    <ellipse style="fill: #000000" cx="436.964" cy="281.939" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="440.964" y="287.939">CPIO</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="244.34" y="205.657" width="103" height="18"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="244.34" y="205.657" width="103" height="18"/>
+    <text font-size="11.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="295.84" y="219.657">Codes</text>
+    <rect style="fill: #ffffff" x="244.34" y="223.657" width="103" height="180"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="244.34" y="223.657" width="103" height="180"/>
+    <ellipse style="fill: #000000" cx="249.34" cy="233.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="253.34" y="239.657">Javascript</text>
+    <ellipse style="fill: #000000" cx="249.34" cy="249.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="253.34" y="255.657">Python</text>
+    <ellipse style="fill: #000000" cx="249.34" cy="265.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="253.34" y="271.657">Html</text>
+    <ellipse style="fill: #000000" cx="249.34" cy="281.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="253.34" y="287.657">Lua</text>
+    <ellipse style="fill: #000000" cx="249.34" cy="297.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="253.34" y="303.657">Json</text>
+    <ellipse style="fill: #000000" cx="249.34" cy="313.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="253.34" y="319.657">Xml</text>
+    <ellipse style="fill: #000000" cx="249.34" cy="329.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="253.34" y="335.657">Css</text>
+    <ellipse style="fill: #000000" cx="249.34" cy="345.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="253.34" y="351.657">Sh</text>
+    <ellipse style="fill: #000000" cx="249.34" cy="361.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="253.34" y="367.657">GLSL</text>
+    <ellipse style="fill: #000000" cx="249.34" cy="377.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="253.34" y="383.657">Dot</text>
+    <ellipse style="fill: #000000" cx="249.34" cy="393.657" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="253.34" y="399.657">Regex</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="435.12" y="305.945" width="56.8" height="18"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="435.12" y="305.945" width="56.8" height="18"/>
+    <text font-size="11.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="463.52" y="319.945">Media</text>
+    <rect style="fill: #ffffff" x="435.12" y="323.945" width="56.8" height="84"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="435.12" y="323.945" width="56.8" height="84"/>
+    <ellipse style="fill: #000000" cx="440.12" cy="333.945" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="444.12" y="339.945">Ogg</text>
+    <ellipse style="fill: #000000" cx="440.12" cy="349.945" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="444.12" y="355.945">ID3</text>
+    <ellipse style="fill: #000000" cx="440.12" cy="365.945" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="444.12" y="371.945">Midi</text>
+    <ellipse style="fill: #000000" cx="440.12" cy="381.945" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="444.12" y="387.945">TTF</text>
+    <ellipse style="fill: #000000" cx="440.12" cy="397.945" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="444.12" y="403.945">Wav</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="518.205" y="335.809" width="64.5" height="18"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="518.205" y="335.809" width="64.5" height="18"/>
+    <text font-size="11.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="550.455" y="349.809">PKI</text>
+    <rect style="fill: #ffffff" x="518.205" y="353.809" width="64.5" height="52"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="518.205" y="353.809" width="64.5" height="52"/>
+    <ellipse style="fill: #000000" cx="523.205" cy="363.809" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="527.205" y="369.809">asn.1</text>
+    <ellipse style="fill: #000000" cx="523.205" cy="379.809" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="527.205" y="385.809">x509</text>
+    <ellipse style="fill: #000000" cx="523.205" cy="395.809" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="527.205" y="401.809">crt</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="510.426" y="205.788" width="80.8" height="18"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="510.426" y="205.788" width="80.8" height="18"/>
+    <text font-size="11.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="550.826" y="219.788">Documents</text>
+    <rect style="fill: #ffffff" x="510.426" y="223.788" width="80.8" height="100"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="510.426" y="223.788" width="80.8" height="100"/>
+    <ellipse style="fill: #000000" cx="515.426" cy="233.788" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="519.426" y="239.788">Pdf</text>
+    <ellipse style="fill: #000000" cx="515.426" cy="249.788" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="519.426" y="255.788">Ps</text>
+    <ellipse style="fill: #000000" cx="515.426" cy="265.788" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="519.426" y="271.788">Docx</text>
+    <ellipse style="fill: #000000" cx="515.426" cy="281.788" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="519.426" y="287.788">Odt</text>
+    <ellipse style="fill: #000000" cx="515.426" cy="297.788" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="519.426" y="303.788">Rtf</text>
+    <ellipse style="fill: #000000" cx="515.426" cy="313.788" rx="2" ry="2"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="519.426" y="319.788">ICal</text>
+  </g>
+</svg>
