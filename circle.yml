@@ -41,3 +41,7 @@ test:
   post:
    - mkdir -p $CIRCLE_ARTIFACTS/lint/
    - cp report.html $CIRCLE_ARTIFACTS/lint/report.html
+   - mkdir -p $CIRCLE_ARTIFACTS/build/
+   - bzexe /home/ubuntu/.local/bin/QuickFuzz
+   - cp /home/ubuntu/.local/bin/QuickFuzz $CIRCLE_ARTIFACTS/build/QuickFuzz.bzexe
+   - cp /home/ubuntu/.local/bin/QuickFuzz~ $CIRCLE_ARTIFACTS/build/QuickFuzz
