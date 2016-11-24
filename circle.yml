@@ -2,11 +2,6 @@ machine:
   environment:
     PATH: $PATH:/home/ubuntu/.local/bin
 
-general:
-  branches:
-    only:
-      - master # list of branches to build
-
 dependencies:
   cache_directories:
     - "~/.stack"
