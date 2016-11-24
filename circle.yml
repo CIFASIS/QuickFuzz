@@ -2,6 +2,11 @@ machine:
   environment:
     PATH: $PATH:/home/ubuntu/.local/bin
 
+general:
+  branches:
+    only:
+      - master # list of branches to build
+
 dependencies:
   cache_directories:
     - "~/.stack"
@@ -33,7 +38,6 @@ test:
     - stack install hlint
   override:
     - hlint --report src; exit 0
-    - stack install --fast --flag QuickFuzz:imgs
     - QuickFuzz Gif "/usr/bin/giffix @@" -a zzuf -t 10 -s 10
     - QuickFuzz Gif "/usr/bin/giffix @@" -a radamsa -t 10 -s 10
     - QuickFuzz Gif "/usr/bin/giffix" -a zzuf -t 10 -s 10
