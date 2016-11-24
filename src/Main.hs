@@ -6,8 +6,6 @@ import qualified Process
 
 #ifdef IMGS
 
-import qualified Pdf
-import qualified Eps
 import qualified Tga
 import qualified Tiff
 import qualified Png
@@ -48,9 +46,12 @@ import qualified Sh
 
 #ifdef DOCS
 
+import qualified Eps
+import qualified Pdf
 import qualified Pandoc
 import qualified PS
 import qualified ICal
+
 #endif
 
 #ifdef PKI
@@ -116,8 +117,6 @@ dispatch arg = do
         case findFileType arg of
 
 #ifdef IMGS
-
-            "Eps"  -> Process.main (Eps.mencode,undefined) args b
             "Bmp"  -> Process.main (Bmp.mencode,undefined) args b
             "Gif"  -> Process.main (Gif.mencode,Gif.mdecode) args b
             "Jpeg" -> Process.main (Jpeg.mencode,Jpeg.mdecode) args b
@@ -130,18 +129,15 @@ dispatch arg = do
 #endif
 
 #ifdef ARCHS
-
             "Zip"  -> Process.main (Zip.mencode,undefined)  args b
             --"Bzip" -> Process.main (Bzip.mencode,undefined)  args b
             "Gzip" -> Process.main (Gzip.mencode,undefined)  args b
             "Tar"  -> Process.main (Tar.mencode,undefined)  args b
             "CPIO" -> Process.main (CPIO.mencode,undefined)  args b
-
 #endif
 
 
 #ifdef CODES
-
             "Dot"  -> Process.main (Dot.mencode,undefined)  args b
             "Xml"  -> Process.main (Xml.mencode,Xml.mdecode)  args b
             "Html" -> Process.main (Html.mencode,undefined)  args b
@@ -153,17 +149,16 @@ dispatch arg = do
             "Regex" -> Process.main (Regex.mencode,undefined)  args b
             "Lua"   -> Process.main (Lua.mencode,undefined)  args b
             "Sh"   -> Process.main (Sh.mencode,undefined) args b
-
 #endif
 
 #ifdef DOCS
+            "Eps"  -> Process.main (Eps.mencode,undefined) args b
             "Pdf"  -> Process.main (Pdf.mencode,undefined) args b
             "Rtf"  -> Process.main (Pandoc.mencode_rtf,undefined)  args b
             "Docx"  -> Process.main (Pandoc.mencode_docx,undefined)  args b
             "Odt"  -> Process.main (Pandoc.mencode_odt,undefined)  args b
             "PS"  -> Process.main (PS.mencode,undefined)  args b
             "ICal"  -> Process.main (ICal.mencode,undefined)  args b
-
 #endif
 
 
@@ -171,7 +166,6 @@ dispatch arg = do
             "ASN1"  -> Process.main (ASN1.mencode,undefined)  args b
             "X509"  -> Process.main (X509.mencode,undefined)  args b
             "CRL"  -> Process.main (CRL.mencode,undefined)  args b
-
 #endif
 
 

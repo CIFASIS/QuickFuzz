@@ -87,14 +87,13 @@ executable QuickFuzz
                        language-lua, language-bash, shell-escape, blaze-markup, blaze-html
 
   if flag(imgs)
-      build-depends:  zlib, JuicyPixels, svg-tree, xml, AC-PPM, blaze-markup, blaze-svg, easyrender
-
+      build-depends:  zlib, JuicyPixels, svg-tree, xml, AC-PPM, blaze-markup, blaze-svg
 
   if flag(archs)
       build-depends:  bitwise, tuple, zlib, tar, zip-archive, base16-bytestring
 
   if flag(docs)
-      build-depends: pandoc-types, pandoc, data-default, hps, hcg-minus, iCalendar, superdoc
+      build-depends: pandoc-types, pandoc, data-default, hps, hcg-minus, iCalendar, superdoc, easyrender
   if flag(pki)
       build-depends: asn1-types, asn1-encoding, x509
 
