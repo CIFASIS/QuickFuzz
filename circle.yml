@@ -1,3 +1,8 @@
+general:
+  branches:
+    only:
+      - master 
+      
 machine:
   environment:
     PATH: $PATH:/home/ubuntu/.local/bin
