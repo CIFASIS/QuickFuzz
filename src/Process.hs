@@ -144,7 +144,7 @@ main fs fargs True  = processPar fargs (\x -> (_main fs x) >> return ())
 netprocess mencode par _ host prop maxSuccess maxSize outdir _ =
     --let (prog, args) = (Prelude.head spl, Prelude.tail spl)
     case prop of
-        "serve" -> quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ serveprop 6055 [] mencode)
+        "serve" -> quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ serveProp 6055 [] mencode)
 
         "connect" -> quickCheckWithResult stdArgs { maxSuccess = maxSuccess , maxSize = maxSize, chatty = not par } (noShrinking $ cconnectprop 6055 host mencode)
 
