@@ -23,14 +23,15 @@ dependencies:
   override:
     - stack setup
     - rm -rf $(stack path --dist-dir) $(stack path --local-install-root)
-    - stack build --only-dependencies --flag QuickFuzz:imgs
+    - stack build --only-dependencies --flag QuickFuzz:images
     - stack build --only-dependencies --flag QuickFuzz:pki
-    - stack build --only-dependencies --flag QuickFuzz:media
+    - stack build --only-dependencies --flag QuickFuzz:net
     - stack build --only-dependencies --flag QuickFuzz:docs
     - stack build --only-dependencies --flag QuickFuzz:archs
+    - stack build --only-dependencies --flag QuickFuzz:media
     - stack install alex # https://github.com/commercialhaskell/stack/issues/595
     - stack build --only-dependencies --flag QuickFuzz:codes
-    - stack install --flag QuickFuzz:imgs --flag QuickFuzz:codes --flag QuickFuzz:pki --flag QuickFuzz:media --flag QuickFuzz:docs --flag QuickFuzz:archs
+    - stack install --flag QuickFuzz:all
 
 test:
   pre:
@@ -38,10 +39,10 @@ test:
     - stack install hlint
   override:
     - hlint --report src; exit 0
-    - QuickFuzz Gif "/usr/bin/giffix @@" -a zzuf -t 10 -s 10
-    - QuickFuzz Gif "/usr/bin/giffix @@" -a radamsa -t 10 -s 10
-    - QuickFuzz Gif "/usr/bin/giffix" -a zzuf -t 10 -s 10
-    - QuickFuzz Gif "/usr/bin/giffix" -a radamsa -t 10 -s 10
+    - QuickFuzz test gif "/usr/bin/gifflip @@" -f zzuf -q 100 -l 1 -u 10
+    - QuickFuzz test gif "/usr/bin/gifflip @@" -f radamsa -q 100 -l 1 -u 10
+    - QuickFuzz test gif  "/usr/bin/gifflip" -f zzuf -q 100 -l 1 -u 10
+    - QuickFuzz test gif "/usr/bin/giflip" -f radamsa -q 100 -l 1 -u 10
   post:
    - mkdir -p $CIRCLE_ARTIFACTS/lint/
    - cp report.html $CIRCLE_ARTIFACTS/lint/report.html

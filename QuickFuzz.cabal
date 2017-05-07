@@ -1,111 +1,224 @@
-Name:                QuickFuzz
-Version:             0.1.0.0
-Synopsis:            An experimental grammar fuzzer in Haskell using QuickCheck.
-License:             GPL-3
-License-file:        LICENSE
-Author:              Pablo Buiras <buiras@chalmers.se>, Gustavo Grieco <grieco@cifasis-conicet.gov.ar>, Martín Escarrá <mescarra@gmail.com>
-Build-type:          Simple
-Extra-source-files:  README.md
-Cabal-version:       >=1.10
+name:                QuickFuzz
+version:             0.1.0.0
+synopsis:            An experimental grammar fuzzer in Haskell using QuickCheck.
+license:             GPL-3
+license-file:        LICENSE
+author:              Pablo Buiras   <buiras@chalmers.se>,
+                     Gustavo Grieco <grieco@cifasis-conicet.gov.ar>,
+                     Martín Ceresa  <ceresa@cifasis-conicet.gov.ar>
+                     Martín Escarrá <mescarra@gmail.com>
+                     Agustín Mista  <amista@dcc.fceia.unr.edu.ar>                    
 
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
 
-Flag Imgs
+flag debug
+    description: Enable debug messages
+    default: False
+
+flag image
   Description: Supports Tga, Png, Bmp, Jpeg, Tiff and Gif formats.
   Default:     False
   Manual:      True
 
-
-Flag Archs
+flag archs
   Description: Supports ... formats.
   Default:     False
   Manual:      True
 
-Flag Codes
+flag code
   Description: Supports ... formats.
   Default:     False
   Manual:      True
 
-Flag Docs
+flag docs
   Description: Supports ... formats.
   Default:     False
   Manual:      True
 
-Flag Net
+flag media
   Description: Supports ... formats.
   Default:     False
   Manual:      True
 
-Flag Media
+flag pki
   Description: Supports ... formats.
   Default:     False
   Manual:      True
 
-Flag Pki
+flag net
   Description: Supports ... formats.
   Default:     False
   Manual:      True
+
+flag all
+  Description: Enables all file formats
+  Default:     False
+  Manual:      True
+
+
+library
+    hs-source-dirs: src
+    exposed-modules:    
+        Test.QuickFuzz.Derive
+        Test.QuickFuzz.Derive.Actions
+        Test.QuickFuzz.Derive.Mutation
+        Test.QuickFuzz.Derive.Arbitrary
+        Test.QuickFuzz.Derive.Generator
+        Test.QuickFuzz.Derive.Show
+        Test.QuickFuzz.Derive.Fixable
+        Test.QuickFuzz.Gen.Base
+        Test.QuickFuzz.Gen.Base.Value
+        Test.QuickFuzz.Gen.Base.ByteString
+        Test.QuickFuzz.Gen.Base.Regex
+        Test.QuickFuzz.Gen.Base.String
+        Test.QuickFuzz.Gen.Base.Time
+        Test.QuickFuzz.Gen.Base.Unicode
+        Test.QuickFuzz.Gen.Base.Vector
+        Test.QuickFuzz.Gen.FormatInfo
+        Test.QuickFuzz.Global
+
+    build-depends: 
+        base, bytestring, QuickCheck, megadeth, template-haskell, vector,
+        ghc-prim, split, text, containers, time, derive, binary, mtl, 
+        transformers, ghc-mod, haskell-src-exts, haskell-src-meta,
+        global-variables, deepseq, data-default
+    
+    if flag(archs) || flag(all)
+        cpp-options: -DARCHS
+        exposed-modules:
+            Test.QuickFuzz.Gen.Archive
+            Test.QuickFuzz.Gen.Archive.Tar
+            Test.QuickFuzz.Gen.Archive.Zip
+
+        build-depends:
+            tar, zip-archive
+
+    if flag(media) || flag(all)
+        cpp-options: -DMEDIA
+        exposed-modules:
+            Test.QuickFuzz.Gen.Media
+            Test.QuickFuzz.Gen.Media.Wav
+
+        build-depends:
+            wavy
+
+    if flag(docs) || flag(all)
+        cpp-options: -DDOCS
+        exposed-modules:
+            Test.QuickFuzz.Gen.Document
+            Test.QuickFuzz.Gen.Document.Html
+            Test.QuickFuzz.Gen.Document.Css
+            Test.QuickFuzz.Gen.Document.PDF
+            Test.QuickFuzz.Gen.Document.PS
+            Test.QuickFuzz.Gen.Document.EPS
+            Test.QuickFuzz.Gen.Document.Xml
+
+        build-depends:
+            blaze-html, blaze-markup, easyrender, HaXml, xmlgen, blaze-builder, language-css
+
+    if flag(code) || flag(all)
+        cpp-options: -DCODE
+        exposed-modules:
+            Test.QuickFuzz.Gen.Code
+            Test.QuickFuzz.Gen.Code.C
+            Test.QuickFuzz.Gen.Code.Js
+            Test.QuickFuzz.Gen.Code.Python
+            Test.QuickFuzz.Gen.Code.Go
+            Test.QuickFuzz.Gen.Code.Lua
+
+        build-depends:
+            language-c, language-ecmascript, language-python, language-go, language-lua, pretty
+    
+    if flag(image) || flag(all)
+        cpp-options: -DIMAGE
+        exposed-modules:
+            Test.QuickFuzz.Gen.Base.Image
+            Test.QuickFuzz.Gen.Image
+            Test.QuickFuzz.Gen.Image.SVG
+            Test.QuickFuzz.Gen.Image.Gif
+            Test.QuickFuzz.Gen.Image.Png
+            Test.QuickFuzz.Gen.Image.Tiff
+
+        build-depends:
+            JuicyPixels, svg-tree, xml
+ 
+    if flag(pki) || flag(all)
+        cpp-options: -DPKI
+        exposed-modules:
+            Test.QuickFuzz.Gen.Pki
+            Test.QuickFuzz.Gen.Pki.ASN1
+            Test.QuickFuzz.Gen.Pki.X509
+            Test.QuickFuzz.Gen.Pki.CRL
+
+        build-depends: asn1-types, asn1-encoding, x509
+
+
+    if flag(net) || flag(all)
+        cpp-options: -DNET
+        exposed-modules:
+            Test.QuickFuzz.Gen.Network
+            Test.QuickFuzz.Gen.Network.HTTP
+
+        build-depends:
+            HTTP
+   
+    default-language: Haskell2010
+    ghc-options: -O2 -optc-O3 -threaded -rtsopts
 
 
 executable QuickFuzz
+    hs-source-dirs: app
+    main-is: Main.hs
+    other-modules:
+        Args
+        Fuzzers
+        Debug
+        Exception
+        Formats
+        DeriveDispatcher
+        Process
+        Utils
+        Utils.Generation
+        Utils.Patch
+        Utils.Console
+        Utils.Shrink
+        Utils.Unique
+        Run.Test    
+        Run.Gen
+        Run.Serve
+        Run.Exec
+        Run.Shrink
+        Run.List
 
-    Main-is:           Main.hs
-
-    if flag(codes)
-        cpp-options: -DCODES
-
-    if flag(imgs)
-        cpp-options: -DIMGS
-
-    if flag(archs)
+    if flag(debug)
+        cpp-options: -DDEBUG
+    if flag(archs) || flag(all)
         cpp-options: -DARCHS
-
-    if flag(docs)
-        cpp-options: -DDOCS
-
-    if flag(net)
-        cpp-options: -DNET
-
-    if flag(media)
+    if flag(media) || flag(all)
         cpp-options: -DMEDIA
-
-    if flag(pki)
+    if flag(docs) || flag(all)
+        cpp-options: -DDOCS
+    if flag(code) || flag(all)
+        cpp-options: -DCODE
+    if flag(image) || flag(all)
+        cpp-options: -DIMAGE
+    if flag(pki) || flag(all)
         cpp-options: -DPKI
+    if flag(net) || flag(all)
+        cpp-options: -DNET
+        build-depends:
+            network
+    
+    other-extensions: 
+        CPP, ViewPatterns
 
+    build-depends: 
+        QuickFuzz, base, bytestring, QuickCheck, argparser, split, containers,
+        template-haskell, filepath, directory, ansi-terminal, time, process,
+        silently, parallel, deepseq, random, process-extras, network, unix,
+        global-variables, Diff, stringsearch
 
-  other-extensions:    CPP, FlexibleContexts, TypeFamilies, TupleSections, ExistentialQuantification, BangPatterns,
-                       ScopedTypeVariables, TypeSynonymInstances, Rank2Types, FlexibleInstances, RankNTypes, MultiParamTypeClasses,
-                       GADTs, StandaloneDeriving, TypeOperators, GeneralizedNewtypeDeriving, FunctionalDependencies, OverloadedStrings
-
-  build-depends:      base, bytestring, containers, vector, primitive, transformers, binary, QuickCheck, 
-                      quickcheck-unicode, mtl, random, ghc-prim, process, process-extras, deepseq, derive,
-                      unix, linear, template-haskell, directory, pretty, argparser, split, wl-pprint,
-                      text, parallel-io, monad-par, abstract-par, time, abstract-par, megadeth, parallel,
-                      ghc-mod, haskell-src-exts, haskell-src-meta 
-  
-  if flag(codes)
-      build-depends:   HaXml, language-ecmascript, language-dot, language-css, language-python, language-glsl, json, uniplate,
-                       language-lua, language-bash, shell-escape, blaze-markup, blaze-html
-
-  if flag(imgs)
-      build-depends:  zlib, JuicyPixels, svg-tree, xml, AC-PPM, blaze-markup, blaze-svg
-
-  if flag(archs)
-      build-depends:  bitwise, tuple, zlib, tar, zip-archive, base16-bytestring
-
-  if flag(docs)
-      build-depends: pandoc-types, pandoc, data-default, hps, hcg-minus, iCalendar, superdoc, easyrender
-  if flag(pki)
-      build-depends: asn1-types, asn1-encoding, x509
-
-  if flag(net)
-      build-depends: network, HTTP, dns, iproute, unbounded-delays, concurrent-extra,base16-bytestring, network-uri
-
-  if flag(media)
-      build-depends: hogg, wavy, idiii, ttasm, HCodecs
-
-
-
-  hs-source-dirs:      src
-  default-language:    Haskell2010
-  ghc-options: -O2 -optc-O3 -threaded -rtsopts
-
+    default-language: Haskell2010
+    ghc-options: -O2 -optc-O3 -threaded -rtsopts -ddump-splices

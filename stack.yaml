@@ -1,80 +1,77 @@
-# Specifies the GHC version and set of packages available (e.g., lts-3.5, nightly-2015-09-21, ghc-7.10.2)
-resolver: lts-5.9
+# Override default flag values for local packages and extra-deps
+flags:
+  QuickFuzz:
+    debug : false
+    image : false
+    archs : false
+    docs : false
+    code : false
+    media : false
+    pki : false
+    all : false
 
-# Local packages, usually specified by relative directory name
+extra-package-dbs: []
+
 packages:
+- location: https://github.com/CIFASIS/megadeth/archive/master.zip
+  extra-dep: true
+  
+- location: https://bitbucket.org/jmg/global-variables/get/6bbea1933b8e.zip
+  extra-dep: true
+
+- location: https://github.com/agustinmista/ArgParser/archive/master.zip
+  extra-dep: true
+
+- location: https://github.com/agustinmista/GhcMod/archive/master.zip
+  extra-dep: true
+
+# Media
+
 - location:
     git: https://bitbucket.org/robertmassaioli/riff.git
     commit: 01734c4d205c642c471fd3ba76c2d492605f39c8
+  extra-dep: true
+
 - location: https://github.com/CIFASIS/wavy/archive/master.zip
-- location: https://github.com/CIFASIS/ttasm/archive/master.zip
-- location: https://github.com/CIFASIS/hogg/archive/master.zip
-- location: https://github.com/CIFASIS/Juicy.Pixels/archive/master.zip
-- location: https://github.com/CIFASIS/megadeth/archive/master.zip
+  extra-dep: true
+
+# Code
+
+- location: https://github.com/remyoudompheng/hs-language-go/archive/master.zip
+  extra-dep: true
+
+# PKI
+
 - location: https://github.com/CIFASIS/hs-certificate-x509/archive/master.zip
+  extra-dep: true
+
 - location: https://github.com/CIFASIS/hs-asn1-encoding/archive/master.zip
+  extra-dep: true
+
+# Imgs
+
+- location: https://github.com/CIFASIS/Juicy.Pixels/archive/master.zip
+  extra-dep: true
 
 - '.'
-# Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
+
 extra-deps:
 - QuickCheck-2.9.2
-- svg-tree-0.5.1.2
-- argparser-0.3.4
-- cpphs-1.20.1
-- text-1.2.2.1
+- derive-2.5.26
 - vector-0.10.12.3
-- AC-PPM-1.1.1
-- language-css-0.0.3
-- language-dot-0.0.9
-- hcg-minus-0.15
-- hps-0.15
-- idiii-0.1.3.3
-- language-python-0.5.4
-- language-lua-0.9.0
-- asn1-data-0.7.2
-- iCalendar-0.4.0.3
-- mime-0.4.0.2
-- concurrent-extra-0.7.0.10
-- language-bash-0.6.1
-- shell-escape-0.2.0
-- easyrender-0.1.1.2
-- superdoc-0.1.2.4
 - process-extras-0.4.1.4
 - generic-deriving-1.10.0
-- OneTuple-0.2.1
-- tuple-0.3.0.2
-- bitwise-0.1.1.1
+- language-python-0.5.4
+- global-variables-1.0.1.0
+- svg-tree-0.6
+- language-go-0.9
+- easyrender-0.1.1.1
+- superdoc-0.1.2.4
+- bytestring-0.10.8.1
+- language-css-0.0.3
+- language-lua-0.10.0
 
 explicit-setup-deps:
-  "*": true
+  ! '*': true
 
-  # Override default flag values for local packages and extra-deps
-flags:
-  QuickFuzz:
-    imgs : false
-    archs : false
-    docs : false
-    codes : false
-    media : false
-    pki : false
-
-# Extra package databases containing global packages
-extra-package-dbs: []
-
-# Control whether we use the GHC we find on the path
-# system-ghc: true
-
-# Require a specific version of stack, using version ranges
-# require-stack-version: -any # Default
-# require-stack-version: >= 1.0.0
-
-# Override the architecture used by stack, especially useful on Windows
-# arch: i386
-# arch: x86_64
-
-# Extra directories used by stack for building
-# extra-include-dirs: [/path/to/dir]
-# extra-lib-dirs: [/path/to/dir]
-
-# Allow a newer minor version of GHC than the snapshot specifies
-# compiler-check: newer-minor
+resolver: lts-5.9
