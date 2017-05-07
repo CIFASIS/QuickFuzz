@@ -23,7 +23,7 @@ dependencies:
   override:
     - stack setup
     - rm -rf $(stack path --dist-dir) $(stack path --local-install-root)
-    - stack build --only-dependencies --flag QuickFuzz:images
+    - stack build --only-dependencies --flag QuickFuzz:image
     - stack build --only-dependencies --flag QuickFuzz:pki
     - stack build --only-dependencies --flag QuickFuzz:net
     - stack build --only-dependencies --flag QuickFuzz:docs
