@@ -44,8 +44,6 @@ test:
     - QuickFuzz test gif  "/usr/bin/gifflip" -f zzuf -q 100 -l 1 -u 10
     - QuickFuzz test gif "/usr/bin/giflip" -f radamsa -q 100 -l 1 -u 10
   post:
-   - mkdir -p $CIRCLE_ARTIFACTS/lint/
-   - cp report.html $CIRCLE_ARTIFACTS/lint/report.html
    - mkdir -p $CIRCLE_ARTIFACTS/build/
    - bzexe /home/ubuntu/.local/bin/QuickFuzz
    - cp /home/ubuntu/.local/bin/QuickFuzz $CIRCLE_ARTIFACTS/build/QuickFuzz.bzexe
