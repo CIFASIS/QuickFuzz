@@ -66,21 +66,24 @@ After [installing stack](http://docs.haskellstack.org/en/stable/README/#how-to-i
     $ cd QuickFuzz
     $ stack setup
 
-Because *QuickFuzz* generates a lot of dependencies that may not be necessary to test an specific category of files, we modularized the project with different activation flags. Currently we have 6 flags:
+Because *QuickFuzz* generates a lot of dependencies that may not be necessary to test an specific category of files, we modularized the project with different activation flags. Currently we have 7 flags:
 
-* images
-* archs
-* docs
-* codes
-* media
-* net
-* pki
+|  Flag  |  Supported formats           |
+|-------:|:-----------------------------|
+|  image | svg, png, gif, tiff          |
+|   arch | tar, zip                     |
+|    doc | html, css, pdf, ps, eps, xml |
+|   code | c, js, py, go, lua           |
+|  media | wav                          |
+|    net | http                         |
+|    pki | asn1, crl, x509              | 
+
 
 For instance, to compile only with image generation (Bmp, Gif, Png, Ico, ..):
 
-    $ stack install --flag QuickFuzz:imgs
+    $ stack install --flag QuickFuzz:image
     
-Because of a Stack issue, you must install `alex` manually before enabling the `codes` flag:
+Because of a Stack issue, you must install `alex` manually before enabling the `code` flag:
 
     $ stack install alex
 
@@ -93,7 +96,7 @@ Direct cabal installation is **not** recommended nor supported.
 * Pablo **Buiras** ([Chalmers University of Technology](http://www.chalmers.se/en/Pages/default.aspx))
 * Martín **Ceresa** ([CIFASIS-Conicet](http://cifasis-conicet.gov.ar/))
 * Gustavo **Grieco** ([CIFASIS-Conicet](http://cifasis-conicet.gov.ar/) and [VERIMAG](http://www-verimag.imag.fr/?lang=en))
-* Agustín **Mista** ([UNR-FCEIA](http://fceia.unr.edu.ar/))
+* Agustín **Mista** ([Universidad Nacional de Rosario](http://www.unr.edu.ar/))
 
 ### Students
 
