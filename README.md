@@ -13,7 +13,7 @@ code repository. There is more information in its [website](http://QuickFuzz.org
 
 ## Example
 
-In this example, we uncover a null pointer derreference in gif2webp from [libwebp 0.5](https://github.com/webmproject/libwebp/releases/tag/v0.5.0):
+In this example, we uncover a null pointer dereference in gif2webp from [libwebp 0.5](https://github.com/webmproject/libwebp/releases/tag/v0.5.0):
 
 ```
 $ QuickFuzz test gif "./gif2webp @@ -o /dev/null" -l 1 -u 10 -f radamsa
@@ -23,7 +23,7 @@ Moving to outdir/QuickFuzz.68419739009.4481.3692945303624111961.1.gif
 ...
 ```
 
-We found a crash. We can inspect it manually to verify it is a null pointer derreference:
+We found a crash. We can inspect it manually to verify it is a null pointer issue:
 
 ```
 $ ./gif2webp outdir/QuickFuzz.68419739009.4481.3692945303624111961.1.gif
@@ -68,11 +68,12 @@ After [installing stack](http://docs.haskellstack.org/en/stable/README/#how-to-i
 
 Because *QuickFuzz* generates a lot of dependencies that may not be necessary to test an specific category of files, we modularized the project with different activation flags. Currently we have 6 flags:
 
-* imgs
+* images
 * archs
 * docs
 * codes
 * media
+* net
 * pki
 
 For instance, to compile only with image generation (Bmp, Gif, Png, Ico, ..):
