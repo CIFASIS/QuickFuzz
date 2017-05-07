@@ -22,7 +22,7 @@ flag image
   Default:     False
   Manual:      True
 
-flag archs
+flag arch
   Description: Supports ... formats.
   Default:     False
   Manual:      True
@@ -32,7 +32,7 @@ flag code
   Default:     False
   Manual:      True
 
-flag docs
+flag doc
   Description: Supports ... formats.
   Default:     False
   Manual:      True
@@ -85,8 +85,8 @@ library
         transformers, ghc-mod, haskell-src-exts, haskell-src-meta,
         global-variables, deepseq, data-default
     
-    if flag(archs) || flag(all)
-        cpp-options: -DARCHS
+    if flag(arch) || flag(all)
+        cpp-options: -DARCH
         exposed-modules:
             Test.QuickFuzz.Gen.Archive
             Test.QuickFuzz.Gen.Archive.Tar
@@ -104,8 +104,8 @@ library
         build-depends:
             wavy
 
-    if flag(docs) || flag(all)
-        cpp-options: -DDOCS
+    if flag(doc) || flag(all)
+        cpp-options: -DDOC
         exposed-modules:
             Test.QuickFuzz.Gen.Document
             Test.QuickFuzz.Gen.Document.Html
@@ -194,12 +194,12 @@ executable QuickFuzz
 
     if flag(debug)
         cpp-options: -DDEBUG
-    if flag(archs) || flag(all)
-        cpp-options: -DARCHS
+    if flag(arch) || flag(all)
+        cpp-options: -DARCH
     if flag(media) || flag(all)
         cpp-options: -DMEDIA
-    if flag(docs) || flag(all)
-        cpp-options: -DDOCS
+    if flag(doc) || flag(all)
+        cpp-options: -DDOC
     if flag(code) || flag(all)
         cpp-options: -DCODE
     if flag(image) || flag(all)

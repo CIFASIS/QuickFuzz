@@ -26,11 +26,11 @@ dependencies:
     - stack build --only-dependencies --flag QuickFuzz:image
     - stack build --only-dependencies --flag QuickFuzz:pki
     - stack build --only-dependencies --flag QuickFuzz:net
-    - stack build --only-dependencies --flag QuickFuzz:docs
-    - stack build --only-dependencies --flag QuickFuzz:archs
+    - stack build --only-dependencies --flag QuickFuzz:doc
+    - stack build --only-dependencies --flag QuickFuzz:arch
     - stack build --only-dependencies --flag QuickFuzz:media
     - stack install alex # https://github.com/commercialhaskell/stack/issues/595
-    - stack build --only-dependencies --flag QuickFuzz:codes
+    - stack build --only-dependencies --flag QuickFuzz:code
     - stack install --flag QuickFuzz:all
 
 test:

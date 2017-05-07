@@ -3,8 +3,8 @@ flags:
   QuickFuzz:
     debug : false
     image : false
-    archs : false
-    docs : false
+    arch : false
+    doc : false
     code : false
     media : false
     pki : false

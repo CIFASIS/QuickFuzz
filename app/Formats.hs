@@ -9,12 +9,12 @@ import Test.QuickFuzz.Gen.FormatInfo
 import Test.QuickFuzz.Gen.Base
 
 -- Document
-#ifdef DOCS
+#ifdef DOC
 import Test.QuickFuzz.Gen.Document
 #endif
 
 -- Archives
-#ifdef ARCHS
+#ifdef ARCH
 import Test.QuickFuzz.Gen.Archive
 #endif
 
@@ -46,20 +46,19 @@ import Test.QuickFuzz.Gen.Network
 
 formats = [
 
-    -- Archives 
-#ifdef ARCHS
+-- Archives 
+#ifdef ARCH
     ("tar", 'tarInfo),
     ("zip", 'zipInfo),
-
 #endif
 
-    -- Media
+-- Media
 #ifdef MEDIA
     ("wav", 'wavInfo),
 #endif
 
-    -- Document
-#ifdef DOCS
+-- Document
+#ifdef DOC
     ("html", 'htmlInfo),
     ("css", 'cssInfo),
     ("pdf", 'pdfInfo),
@@ -68,7 +67,7 @@ formats = [
     ("xml", 'xmlInfo),
 #endif
 
-    -- Image
+-- Image
 #ifdef IMAGE
     ("svg", 'svgInfo),
     ("png", 'pngInfo),
@@ -77,33 +76,29 @@ formats = [
 
 #endif
 
-    -- Source Code
+-- Source Code
 #ifdef CODE
     ("c",  'cInfo),
     ("js", 'jsInfo),
     ("py", 'pyInfo),
     ("go", 'goInfo),
     ("lua", 'luaInfo),
-
 #endif
 
-    -- PKI
+-- PKI
 #ifdef PKI
     ("asn1", 'asn1Info),
     ("crl",  'crlInfo),
     ("x509", 'x509Info),
-
-    -- lua
-
 #endif
 
 
-    -- Network
+-- Network
 #ifdef NET
     ("http", 'httpResponseInfo),
 #endif
 
-    -- Base
+-- Base
     ("regex", 'regexInfo) 
     
     ]
