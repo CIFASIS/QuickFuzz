@@ -2,9 +2,9 @@
 
 QuickFuzz, a tool written in Haskell designed for testing un-
 expected inputs of common file formats on third-party software,
-taking advantage of off-the-self well known fuzzers.
+taking advantage of off-the-shelf, well known fuzzers.
 Unlike other generational fuzzers, QuickFuzz does not require
-to write specifications for the files formats in question since it relies
+to write specifications for the file formats in question since it relies
 on existing file-format-handling libraries available on the Haskell
 code repository. There is more information in its [website](http://QuickFuzz.org/).
 
@@ -109,4 +109,4 @@ Direct cabal installation is **not** recommended nor supported.
 
 ## Mailing list
 
-You can join the [QuickFuzz mailing group](https://groups.google.com/forum/#!forum/QuickFuzz-users) to get notifications of new features and releases. To join, you can send an empty mail to QuickFuzz-users+subscribe@googlegroups.com.
+You can join the [QuickFuzz mailing group](https://groups.google.com/forum/#!forum/QuickFuzz-users) to get notifications of new features and releases. To join, you can send an empty email to QuickFuzz-users+subscribe@googlegroups.com.
