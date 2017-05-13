@@ -5,7 +5,7 @@ module Process where
 import Prelude hiding (putStrLn)
 
 import Control.Monad
-import Data.ByteString.Lazy
+import Data.ByteString.Lazy.Char8
 
 import System.Process.ByteString.Lazy (readProcessWithExitCode)
 import System.Process (rawSystem)
