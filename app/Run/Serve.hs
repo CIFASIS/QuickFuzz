@@ -33,7 +33,7 @@ serveLoop sock (x:xs) = do
    serveLoop sock xs
   where
    body c = do sendAll c (toStrict x)
-               sClose c
+               close c
 
 serveLoop _ [] = error "Empty list!"
 
