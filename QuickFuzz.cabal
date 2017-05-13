@@ -116,7 +116,7 @@ library
             Test.QuickFuzz.Gen.Document.Xml
 
         build-depends:
-            blaze-html, blaze-markup, easyrender, HaXml, xmlgen, blaze-builder, language-css
+            blaze-html, blaze-markup, easyrender, HaXml, xmlgen, blaze-builder, language-css, pretty
 
     if flag(code) || flag(all)
         cpp-options: -DCODE
