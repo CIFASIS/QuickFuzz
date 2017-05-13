@@ -58,7 +58,7 @@ Finished!
 
 We **support** [Stack](www.haskellstack.org) to compile and install QuickFuzz. Before starting with it, make sure you have libgmp-dev installed otherwise ghc will fail to compile. Also, zlib.h is required to compile QuickFuzz (some packages require it). For instance, in Ubuntu/Debian:
 
-    # apt-get install zlib1g-dev libgmp-dev
+    # apt-get install zlib1g-dev libgmp-dev libtinfo-dev
 
 After [installing stack](http://docs.haskellstack.org/en/stable/README/#how-to-install), you should:
 
@@ -83,9 +83,9 @@ For instance, to compile only with image generation (Bmp, Gif, Png, Ico, ..):
 
     $ stack install --flag QuickFuzz:image
     
-Because of a Stack issue, you must install `alex` manually before enabling the `code` flag:
+Because of a Stack issue, you must install `alex` and `happy` manually before enabling the `code` flag:
 
-    $ stack install alex
+    $ stack install alex happy
 
 ### Cabal Installation
 
