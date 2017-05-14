@@ -1,7 +1,18 @@
-QuickFuzz is a grammar fuzzer powered by [QuickCheck](http://www.cse.chalmers.se/~rjmh/QuickCheck/), [Template Haskell](https://wiki.haskell.org/Template_Haskell) and specific libraries from Hackage to generate many complex file-formats like Jpeg, Png, Svg, Xml, Zip, Tar and more!. QuickFuzz is open-source (GPL3) and it can use other bug detection tools like [zzuf](http://caca.zoy.org/wiki/zzuf), [radamsa](https://github.com/aoh/radamsa), [honggfuzz](http://google.github.io/honggfuzz/) and [valgrind](http://valgrind.org).
+# QuickFuzz
+
+QuickFuzz, a tool written in Haskell designed for testing un-
+expected inputs of common file formats on third-party software,
+taking advantage of off-the-shelf, well known fuzzers.
+Unlike other generational fuzzers, QuickFuzz does not require
+to write specifications for the file formats in question since it relies
+on existing file-format-handling libraries available on the Haskell
+code repository. QuickFuzz is open-source (GPL3) and it can use other bug detection tools like [zzuf](http://caca.zoy.org/wiki/zzuf), [radamsa](https://github.com/aoh/radamsa), [honggfuzz](http://google.github.io/honggfuzz/) and [valgrind](http://valgrind.org).
+
+[![CircleCI](https://circleci.com/gh/CIFASIS/QuickFuzz.svg?style=svg)](https://circleci.com/gh/CIFASIS/QuickFuzz)
 
 ## News
 
+* We will be presenting QuickFuzz in [C◦mp◦se 2017](http://www.composeconference.org/)!
 * Our intern, Franco Costantini improved a lot the generation of random source code [enforcing variable coherence](https://github.com/CIFASIS/QuickFuzz/blob/gh-pages/variable-fix.md). This feature is enabled in Javascript, Lua, Python and Bash, but it can easily extended for other languages.
 * QuickFuzz is now included in [Gentoo](https://packages.gentoo.org/packages/app-forensics/quickfuzz)!
 * An academic article on QuickFuzz will be presented at the Haskell Symposium 2016 ([preprint](https://github.com/CIFASIS/QuickFuzz/releases/download/haskell16-draft/draft-haskell16.pdf))!
@@ -31,36 +42,72 @@ QuickFuzz is a grammar fuzzer powered by [QuickCheck](http://www.cse.chalmers.se
 
 ## Quick introduction to QuickFuzz
 
-To generate corrupted gifs to test giffix using QuickFuzz and zzuf:
+In this example, we uncover a null pointer dereference in gif2webp from [libwebp 0.5](https://github.com/webmproject/libwebp/releases/tag/v0.5.0):
 
-    $ QuickFuzz Gif "/usr/bin/giffix @@" -a zzuf -t 25 -s 10
-    *** Error in `/usr/bin/giffix': double free or corruption (out): 0x0000000000b44f80 ***
-    zzuf[s=-1193471787,r=0.004:1e-06]: signal 6 (SIGABRT)
-    *** Error in `/usr/bin/giffix': free(): invalid pointer: 0x0000000002565f80 ***
-    zzuf[s=1436598283,r=0.004:1e-06]: signal 6 (SIGABRT)
-    zzuf[s=88548751,r=0.004:1e-06]: signal 11 (SIGSEGV)
-    +++ OK, passed 25 tests.
+```
+$ QuickFuzz test gif "./gif2webp @@ -o /dev/null" -l 1 -u 10 -f radamsa
+...
+Test case number 4481 has failed. 
+Moving to outdir/QuickFuzz.68419739009.4481.3692945303624111961.1.gif
+...
+```
 
-It looks like we re-discovered several files to trigger [CVE-2015-7555](https://bugzilla.redhat.com/show_bug.cgi?id=1290785) in a few seconds! QuickFuzz can also print the structure of the generated file that triggered a crash in Haskell syntax. For instance:
+We found a crash. We can inspect it manually to verify it is a null pointer issue:
 
-    GifFile {
-             gifHeader = GifHeader {gifVersion = GIF87a, gifScreenDescriptor = LogicalScreenDescriptor {screenWidth = 1, screenHeight = 0, backgroundIndex = 1, hasGlobalMap = True, colorResolution = 0, isColorTableSorted = True, colorTableSize = 1}, gifGlobalMap = }, 
-             gifImages = [(Just GraphicControlExtension {gceDisposalMethod = DisposalRestorePrevious, gceUserInputFlag = True, gceTransparentFlag = True, gceDelay = 1, gceTransparentColorIndex = 0},GifImage {imgDescriptor = ImageDescriptor {gDescPixelsFromLeft = 1, gDescPixelsFromTop = 1, gDescImageWidth = 0, gDescImageHeight = 1, gDescHasLocalMap = False, gDescIsInterlaced = False, gDescIsImgDescriptorSorted = False, gDescLocalColorTableSize = 0}, imgLocalPalette = Just , imgLzwRootSize = 0, imgData = ""})], 
-             gifLoopingBehaviour = LoopingForever
-            }
+```
+$ ./gif2webp outdir/QuickFuzz.68419739009.4481.3692945303624111961.1.gif
+==10953== ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 
+(pc 0x000000403ff9 sp 0x7fffffffd6e0 bp 0x7fffffffded0 T0)
+AddressSanitizer can not provide additional info.
+#0 0x403ff8 (examples/gif2webp+0x403ff8)
+#1 0x7ffff437af44 (/lib/x86_64-linux-gnu/libc-2.19.so+0x21f44)
+#2 0x401b18 (examples/gif2webp+0x401b18)
+==10953== ABORTING
+```
+
+Finally, we can shrink the crashing input to obtain a smaller file:
+
+```
+$ QuickFuzz test gif "./gif2webp @@ -o /dev/null" -l 1 -s 3692945303624111961 -f radamsa -r
+Test case number 1 has failed. 
+Moving to outdir/QuickFuzz.68997856397.1.3692945303624111961.1.gif
+Shrinking over bytes has begun...
+Testing shrink of size 48
+Testing shrink of size 47
+...
+Testing shrink of size 15
+Shrinking finished
+Reduced from 48 bytes to 16 bytes
+After executing 554 shrinks with 33 failing shrinks. 
+Saving to outdir/QuickFuzz.68997856397.1.3692945303624111961.1.gif.reduced
+Finished!
+```
 
 ## List of file types to generate
 
-<img src="https://rawgit.com/CIFASIS/QuickFuzz/gh-pages/images/file-formats.svg" width="400">
+Because *QuickFuzz* generates a lot of dependencies that may not be necessary to test an specific category of files, we modularized the project with different activation flags. Currently we have 7 flags:
+
+|  Flag  |  Supported formats           |
+|-------:|:-----------------------------|
+|  image | svg, png, gif, tiff          |
+|   arch | tar, zip                     |
+|    doc | html, css, pdf, ps, eps, xml |
+|   code | c, js, py, go, lua           |
+|  media | wav                          |
+|    net | http                         |
+|    pki | asn1, crl, x509              | 
 
 ## Downloads
 
-Pre-compiled and compressed (bzexe) binaries are available here:
+Pre-compiled and compressed (bzexe) binaries supporting all the file formats are available here:
 
-* [Linux x86 (Outdated)](https://github.com/CIFASIS/QuickFuzz/releases/download/v0.1/QuickFuzz.x86)
 * [Linux x86_64](https://circleci.com/api/v1/project/CIFASIS/QuickFuzz/latest/artifacts/0/$CIRCLE_ARTIFACTS/build/QuickFuzz.bzexe?filter=successful&branch=master)
 
 Otherwise QuickFuzz can be [easily compiled](https://github.com/CIFASIS/QuickFuzz#instalation) using [stack](http://docs.haskellstack.org/en/stable/README/#how-to-install).
+
+## Mailing list
+
+You can join the [QuickFuzz mailing group](https://groups.google.com/forum/#!forum/QuickFuzz-users) to get notifications of new features and releases. To join, you can send an empty email to QuickFuzz-users+subscribe@googlegroups.com.
 
 ## Authors
 ### The QuickFuzz team
