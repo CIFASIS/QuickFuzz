@@ -1,0 +1,8 @@
+title: QuickFuzz
+description: An experimental grammar fuzzer in Haskell using QuickCheck
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-architect
+
+gems:
+  - jekyll-mentions
