@@ -1,14 +1,11 @@
 # QuickFuzz
 
-QuickFuzz, a tool written in Haskell designed for testing un-
-expected inputs of common file formats on third-party software,
+QuickFuzz, a tool written in Haskell designed for testing unexpected inputs of common file formats on third-party software,
 taking advantage of off-the-shelf, well known fuzzers.
 Unlike other generational fuzzers, QuickFuzz does not require
 to write specifications for the file formats in question since it relies
 on existing file-format-handling libraries available on the Haskell
 code repository. QuickFuzz is open-source (GPL3) and it can use other bug detection tools like [zzuf](http://caca.zoy.org/wiki/zzuf), [radamsa](https://github.com/aoh/radamsa), [honggfuzz](http://google.github.io/honggfuzz/) and [valgrind](http://valgrind.org).
-
-[![CircleCI](https://circleci.com/gh/CIFASIS/QuickFuzz.svg?style=svg)](https://circleci.com/gh/CIFASIS/QuickFuzz)
 
 ## News
 
@@ -85,17 +82,7 @@ Finished!
 
 ## List of file types to generate
 
-Because *QuickFuzz* generates a lot of dependencies that may not be necessary to test an specific category of files, we modularized the project with different activation flags. Currently we have 7 flags:
-
-|  Flag  |  Supported formats           |
-|-------:|:-----------------------------|
-|  image | svg, png, gif, tiff          |
-|   arch | tar, zip                     |
-|    doc | html, css, pdf, ps, eps, xml |
-|   code | c, js, py, go, lua           |
-|  media | wav                          |
-|    net | http                         |
-|    pki | asn1, crl, x509              | 
+<img src="https://rawgit.com/CIFASIS/QuickFuzz/gh-pages/images/file-formats.svg" width="400">
 
 ## Downloads
 
@@ -104,6 +91,8 @@ Pre-compiled and compressed (bzexe) binaries supporting all the file formats are
 * [Linux x86_64](https://circleci.com/api/v1/project/CIFASIS/QuickFuzz/latest/artifacts/0/$CIRCLE_ARTIFACTS/build/QuickFuzz.bzexe?filter=successful&branch=master)
 
 Otherwise QuickFuzz can be [easily compiled](https://github.com/CIFASIS/QuickFuzz#instalation) using [stack](http://docs.haskellstack.org/en/stable/README/#how-to-install).
+
+[![CircleCI](https://circleci.com/gh/CIFASIS/QuickFuzz.svg?style=svg)](https://circleci.com/gh/CIFASIS/QuickFuzz)
 
 ## Mailing list
 
