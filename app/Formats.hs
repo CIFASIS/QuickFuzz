@@ -73,6 +73,7 @@ formats = [
     ("png", 'pngInfo),
     ("gif", 'gifInfo),
     ("tiff", 'tiffInfo),
+    ("jpeg", 'jpegInfo),
 
 #endif
 

@@ -70,7 +70,7 @@ Because *QuickFuzz* generates a lot of dependencies that may not be necessary to
 
 |  Flag  |  Supported formats           |
 |-------:|:-----------------------------|
-|  image | svg, png, gif, tiff          |
+|  image | svg, png, gif, tiff, jpeg    |
 |   arch | tar, zip                     |
 |    doc | html, css, pdf, ps, eps, xml |
 |   code | c, js, py, go, lua           |

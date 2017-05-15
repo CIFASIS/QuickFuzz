@@ -140,6 +140,7 @@ library
             Test.QuickFuzz.Gen.Image.Gif
             Test.QuickFuzz.Gen.Image.Png
             Test.QuickFuzz.Gen.Image.Tiff
+            Test.QuickFuzz.Gen.Image.Jpeg
 
         build-depends:
             JuicyPixels, svg-tree, xml
