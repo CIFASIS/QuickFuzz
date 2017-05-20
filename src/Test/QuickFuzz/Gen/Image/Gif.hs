@@ -30,12 +30,12 @@ import Test.QuickFuzz.Gen.Base.Image
 import qualified Data.ByteString.Lazy as L
 
 devShow ''GifFile
-devArbitrary ''GifImage
+devArbitrary ''GifFile
 
-gifencode :: GifImage -> L.ByteString
+gifencode :: GifFile -> L.ByteString
 gifencode = Data.Binary.encode
 
-gifInfo :: FormatInfo GifImage NoActions
+gifInfo :: FormatInfo GifFile NoActions
 gifInfo = def 
     { encode = gifencode
     , random = arbitrary
