@@ -74,6 +74,7 @@ formats = [
     ("gif", 'gifInfo),
     ("tiff", 'tiffInfo),
     ("jpeg", 'jpegInfo),
+    ("tga", 'tgaInfo),
 
 #endif
 
