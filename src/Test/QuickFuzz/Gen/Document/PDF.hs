@@ -11,6 +11,7 @@ import Test.QuickCheck
 
 import qualified Data.ByteString.Lazy.Char8 as L8
 import Data.DeriveTH
+import Control.DeepSeq
 
 import Graphics.EasyRender
 import Graphics.EasyRender.Internal
@@ -28,6 +29,9 @@ $(devShow ''DrawAction)
 
 instance Arbitrary (Draw ()) where
     arbitrary = performDrawAction <$> arbitrary
+
+instance NFData (Draw ()) where
+    rnf _ = ()
 
 -- $(devActions ["Graphics.EasyRender"] ''Document True [''() ])
 -- $(devArbitrary ''DocumentAction)

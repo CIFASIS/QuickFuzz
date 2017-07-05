@@ -14,6 +14,7 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Char8 as C8
 
 import Data.DeriveTH
+import Control.DeepSeq
 
 import Test.QuickFuzz.Derive.Actions
 import Test.QuickFuzz.Derive.Arbitrary
@@ -48,6 +49,10 @@ instance Arbitrary XmlDoc where
 
 instance (Show XmlDoc) where
     show _ = "<not-implemented>"
+
+instance NFData XmlDoc where
+    rnf _ = ()
+
 
 xmlInfo :: FormatInfo XmlDoc XmlElemAction
 xmlInfo = def 

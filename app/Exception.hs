@@ -28,7 +28,7 @@ handleDecode x = handlePrint x >> return Nothing
 toNF :: (NFData a) => a -> IO a
 toNF = evaluate . withStrategy rdeepseq
 
-forceEvaluation :: ByteString -> IO (Maybe ByteString)
+forceEvaluation :: (NFData a) => a -> IO (Maybe a)
 forceEvaluation x = handle handleDecode (toNF (Just x))
 
 --write :: FilePath -> ByteString -> IO ()

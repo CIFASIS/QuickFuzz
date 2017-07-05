@@ -13,3 +13,4 @@ import           Test.QuickFuzz.Derive.Fixable
 import           Test.QuickFuzz.Derive.Generator
 import           Test.QuickFuzz.Derive.Mutation
 import           Test.QuickFuzz.Derive.Show
+import           Test.QuickFuzz.Derive.NFData

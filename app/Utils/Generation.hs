@@ -4,6 +4,8 @@ module Utils.Generation where
 import Prelude hiding (null)
 
 import Data.ByteString.Lazy
+--import qualified Data.ByteString as BS
+
 import Data.Maybe
 
 import Control.DeepSeq

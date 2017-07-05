@@ -4,6 +4,7 @@
 
 module Test.QuickFuzz.Gen.Base.Regex where
 
+import Control.DeepSeq
 import Data.Default
 import Data.Char (chr)
 import Data.List (intersperse, partition, subsequences)
@@ -15,6 +16,7 @@ import qualified Data.ByteString.Lazy.Char8 as LC8
 import Test.QuickCheck hiding (shrink)
 import Test.QuickFuzz.Derive
 import Test.QuickFuzz.Derive.Generator
+import Test.QuickFuzz.Derive.NFData
 import Test.QuickFuzz.Gen.Base.ByteString
 import Test.QuickFuzz.Gen.FormatInfo
 
@@ -109,6 +111,7 @@ isPostAtom p = case p of
                  _ -> False
 
 $(devArbitrary ''Pattern)
+$(devNFData ''Pattern)
 $(devGenerator "genPattern" ''Pattern)
 
 type Regex = Pattern

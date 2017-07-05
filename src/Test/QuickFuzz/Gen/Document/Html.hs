@@ -14,6 +14,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Char8 as C8
 
+import Control.DeepSeq
 import Data.DeriveTH
 
 import Test.QuickFuzz.Derive.Actions
@@ -45,8 +46,11 @@ $(devArbitraryWithActions True ''Html)
 $(derive makeShow ''HtmlAction)
 -- $(devShow ''HtmlAction)
 
-instance (Show Html) where
+instance Show Html where
     show _ = "<not-implemented>"
+
+instance NFData Html where
+    rnf _ = ()
 
 htmlInfo :: FormatInfo Html [HtmlAction]
 htmlInfo = def

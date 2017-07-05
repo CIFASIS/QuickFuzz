@@ -67,6 +67,7 @@ library
         Test.QuickFuzz.Derive.Arbitrary
         Test.QuickFuzz.Derive.Generator
         Test.QuickFuzz.Derive.Show
+        Test.QuickFuzz.Derive.NFData
         Test.QuickFuzz.Derive.Fixable
         Test.QuickFuzz.Gen.Base
         Test.QuickFuzz.Gen.Base.Value
@@ -154,7 +155,7 @@ library
             Test.QuickFuzz.Gen.Pki.X509
             Test.QuickFuzz.Gen.Pki.CRL
 
-        build-depends: asn1-types, asn1-encoding, x509
+        build-depends: asn1-types, asn1-encoding, x509, cryptonite, hourglass
 
 
     if flag(net) || flag(all)
@@ -183,11 +184,14 @@ executable QuickFuzz
         Process
         Utils
         Utils.Generation
+        Utils.Decoding
+        Utils.Mutation
         Utils.Patch
         Utils.Console
         Utils.Shrink
         Utils.Unique
-        Run.Test    
+        Run.GenTest
+        Run.MutTest
         Run.Gen
         Run.Serve
         Run.Exec

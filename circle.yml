@@ -39,10 +39,10 @@ test:
     - stack install hlint
   override:
     - hlint --report src; exit 0
-    - QuickFuzz test gif "/usr/bin/gifflip @@" -f zzuf -q 100 -l 1 -u 10
-    - QuickFuzz test gif "/usr/bin/gifflip @@" -f radamsa -q 100 -l 1 -u 10
-    - QuickFuzz test gif  "/usr/bin/gifflip" -f zzuf -q 100 -l 1 -u 10
-    - QuickFuzz test gif "/usr/bin/giflip" -f radamsa -q 100 -l 1 -u 10
+    - QuickFuzz gentest gif "/usr/bin/gifflip @@" -f zzuf -q 100 -l 1 -u 10
+    - QuickFuzz gentest gif "/usr/bin/gifflip @@" -f radamsa -q 100 -l 1 -u 10
+    - QuickFuzz gentest gif  "/usr/bin/gifflip" -f zzuf -q 100 -l 1 -u 10
+    - QuickFuzz gentest gif "/usr/bin/giflip" -f radamsa -q 100 -l 1 -u 10
   post:
    - mkdir -p $CIRCLE_ARTIFACTS/build/
    - bzexe /home/ubuntu/.local/bin/QuickFuzz

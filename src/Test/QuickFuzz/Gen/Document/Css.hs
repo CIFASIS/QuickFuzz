@@ -15,10 +15,13 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.ByteString.Char8 as C8
 
 import Data.DeriveTH
+import Control.DeepSeq
 
 import Test.QuickFuzz.Derive.Actions
 import Test.QuickFuzz.Derive.Arbitrary
 import Test.QuickFuzz.Derive.Show
+import Test.QuickFuzz.Derive.NFData
+
 import Test.QuickFuzz.Gen.FormatInfo
 import Test.QuickFuzz.Gen.Base.ByteString
 import Test.QuickFuzz.Gen.Base.String
@@ -56,7 +59,8 @@ $(devArbitraryWithActions False ''StyleSheet)
 
 $(devShow ''StyleSheetAction)
 
--- $(devArbitrary ''MCssFile)
+instance NFData StyleSheet where
+  rnf x = ()
 
 cssInfo :: FormatInfo StyleSheet StyleSheetAction
 cssInfo = def

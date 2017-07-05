@@ -16,6 +16,7 @@ import Text.XML.Light.Output( ppcTopElement, prettyConfigPP )
 
 import Test.QuickCheck
 import Control.Monad
+import Control.DeepSeq
 import Control.Monad.Trans
 import Control.Monad.Trans.State
 import Data.List
@@ -24,6 +25,8 @@ import Data.Monoid
 import Test.QuickFuzz.Derive.Arbitrary
 
 import Test.QuickFuzz.Derive.Show
+import Test.QuickFuzz.Derive.NFData
+
 import Test.QuickFuzz.Gen.FormatInfo
 import Test.QuickFuzz.Gen.Base.ByteString
 import Test.QuickFuzz.Gen.Base.String
@@ -36,6 +39,15 @@ instance Arbitrary PixelRGBA8 where
       return $ PixelRGBA8 r g b a
 
 devArbitrary ''Tree
+
+instance NFData PixelRGBA8 where
+    rnf _ = ()
+
+instance NFData Graphics.Svg.Types.Image where
+    rnf _ = ()
+
+devNFData ''Tree
+
 -- devShow ''	
 
 mkDocument ts = Document { _viewBox= Just (0.0,0.0,128.0,128.0), 

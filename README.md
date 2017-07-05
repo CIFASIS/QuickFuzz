@@ -16,7 +16,7 @@ code repository. There is more information in its [website](http://QuickFuzz.org
 In this example, we uncover a null pointer dereference in gif2webp from [libwebp 0.5](https://github.com/webmproject/libwebp/releases/tag/v0.5.0):
 
 ```
-$ QuickFuzz test gif "./gif2webp @@ -o /dev/null" -l 1 -u 10 -f radamsa
+$ QuickFuzz gentest gif "./gif2webp @@ -o /dev/null" -l 1 -u 10 -f radamsa
 ...
 Test case number 4481 has failed. 
 Moving to outdir/QuickFuzz.68419739009.4481.3692945303624111961.1.gif
@@ -39,7 +39,7 @@ AddressSanitizer can not provide additional info.
 Finally, we can shrink the crashing input to obtain a smaller file:
 
 ```
-$ QuickFuzz test gif "./gif2webp @@ -o /dev/null" -l 1 -s 3692945303624111961 -f radamsa -r
+$ QuickFuzz gentest gif "./gif2webp @@ -o /dev/null" -l 1 -s 3692945303624111961 -f radamsa -r
 Test case number 1 has failed. 
 Moving to outdir/QuickFuzz.68997856397.1.3692945303624111961.1.gif
 Shrinking over bytes has begun...

@@ -11,7 +11,8 @@ import Utils
 
 import DeriveDispatcher
 
-import Run.Test
+import Run.GenTest
+import Run.MutTest
 import Run.Gen
 import Run.Exec
 import Run.Shrink
@@ -28,15 +29,17 @@ unsupported fmt = do
             "See '" ++ qf ++ " list' to print the available formats."  
 
 -- |Template Haskell dispatcher derivations
-devDispatcher 'Test   'runTest
-devDispatcher 'Gen    'runGen
-devDispatcher 'Exec   'runExec
-devDispatcher 'Shrink 'runShrink
-devDispatcher 'Serve  'runServe
+devDispatcher 'GenTest   'runGenTest
+devDispatcher 'MutTest   'runMutTest
+devDispatcher 'Gen       'runGen
+devDispatcher 'Exec      'runExec
+devDispatcher 'Shrink    'runShrink
+devDispatcher 'Serve     'runServe
 
 -- |Subcommands dispatcher
 quickfuzz :: QFCommand -> IO ()
-quickfuzz cmd@(Test {}) = dispatchTest cmd
+quickfuzz cmd@(GenTest {}) = dispatchGenTest cmd
+quickfuzz cmd@(MutTest {}) = dispatchMutTest cmd
 quickfuzz cmd@(Gen {}) = dispatchGen cmd
 quickfuzz cmd@(Exec {}) = dispatchExec cmd
 quickfuzz cmd@(Shrink {}) = dispatchShrink cmd

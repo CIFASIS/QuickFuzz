@@ -10,6 +10,7 @@ zipInfo
 import Data.Default
 
 import Control.Exception
+import Control.DeepSeq
 import Data.ByteString.Lazy
 import Test.QuickCheck
 import Data.Word
@@ -19,6 +20,7 @@ import Codec.Archive.Zip
 import Test.QuickFuzz.Derive.Arbitrary
 import Test.QuickFuzz.Derive.Actions
 import Test.QuickFuzz.Derive.Show
+import Test.QuickFuzz.Derive.NFData
 import Test.QuickFuzz.Gen.FormatInfo
 import Test.QuickFuzz.Gen.Base.ByteString
 import Test.QuickFuzz.Gen.Base.String
@@ -34,6 +36,8 @@ $(devArbitrary ''ArchiveAction)
 $(devArbitraryWithActions False ''Archive )
 
 $(devShow ''ArchiveAction)
+
+$(devNFData ''Archive)
 
 zipInfo :: FormatInfo Archive ArchiveAction
 zipInfo = def 

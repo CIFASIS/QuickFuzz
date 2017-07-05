@@ -33,13 +33,27 @@ instance RawRead Fuzzer where
 -- |The data type representing the actions
 -- that QuickFuzz can perform
 data QFCommand 
-    = Test     -- ^Generate, maybe fuzz, execute and maybe shrink   
+    = GenTest     -- ^Generate, maybe fuzz, execute and maybe shrink   
         { format :: String
         , cli :: String
         , verbose :: Bool
         , timeout :: Maybe Int
         , shrinking :: Bool
         , fuzzer :: Maybe Fuzzer
+        , singleFail :: Bool
+        , genSeed :: Maybe Int
+        , maxTries :: Maybe Int
+        , minSize :: Int
+        , maxSize :: Int
+        , outDir :: String
+        , outFile :: Maybe String }
+    | MutTest     -- ^Read, mutate, execute and maybe shrink   
+        { format :: String
+        , cli :: String
+        , inDir :: String
+        , verbose :: Bool
+        , timeout :: Maybe Int
+        , shrinking :: Bool
         , singleFail :: Bool
         , genSeed :: Maybe Int
         , maxTries :: Maybe Int
@@ -94,16 +108,17 @@ parseCommand = setVersion "1.0.0"
 -- | Compose main parser using subcommand parsers
 parseSubcommand :: IO (CmdLnInterface QFCommand)
 parseSubcommand = mkSubParser 
-    [ ("test", mkDefaultApp testParser "test") 
+    [ ("gentest", mkDefaultApp gentestParser "gentest") 
+    , ("muttest", mkDefaultApp muttestParser "muttest") 
     , ("gen", mkDefaultApp genParser "gen") 
     , ("serve", mkDefaultApp serveParser "serve") 
     , ("exec", mkDefaultApp execParser "exec") 
     , ("reduce", mkDefaultApp shrinkParser "reduce") 
     , ("list", mkDefaultApp listParser "list") ]
 
--- | Test subcommand parser
-testParser :: ParserSpec QFCommand
-testParser = Test
+-- | GenTest subcommand parser
+gentestParser :: ParserSpec QFCommand
+gentestParser = GenTest
     `parsedBy` reqPos           "format"   `Descr` "File format to generate (run list option to see available formats)"
     `andBy`    reqPos           "command"  `Descr` "Command line to execute"
     `andBy`    boolFlag         "verbose"  `Descr` "Print execution output"
@@ -117,6 +132,24 @@ testParser = Test
     `andBy`    optFlag 50       "upper"    `Descr` "Maximum generation size"
     `andBy`    optFlag "outdir" "outdir"   `Descr` "Output directory"
     `andBy`    optFlag Nothing  "name"     `Descr` "Output filename"
+
+-- | Test subcommand parser
+muttestParser :: ParserSpec QFCommand
+muttestParser = MutTest
+    `parsedBy` reqPos           "format"   `Descr` "File format to mutate (run list option to see available formats)"
+    `andBy`    reqPos           "command"  `Descr` "Command line to execute"
+    `andBy`    reqPos           "indir"    `Descr` "Directory with inputs to mutate"
+    `andBy`    boolFlag         "verbose"  `Descr` "Print execution output"
+    `andBy`    optFlag Nothing  "timeout"  `Descr` "Set a timeout to prevent long executions"
+    `andBy`    boolFlag         "reduce"   `Descr` "Reduce crash-inducing test cases"
+    `andBy`    boolFlag         "keep"     `Descr` "Keep testing after finding a crashing test case"
+    `andBy`    optFlag Nothing  "seed"     `Descr` "Generate using a given integer seed"
+    `andBy`    optFlag Nothing  "quantity" `Descr` "Maximum number of tries"
+    `andBy`    optFlag 1        "lower"    `Descr` "Minimum generation size"
+    `andBy`    optFlag 50       "upper"    `Descr` "Maximum generation size"
+    `andBy`    optFlag "outdir" "outdir"   `Descr` "Output directory"
+    `andBy`    optFlag Nothing  "name"     `Descr` "Output filename"
+
 
 -- | Gen subcommand parser
 genParser :: ParserSpec QFCommand 
@@ -190,7 +223,8 @@ usesSeed = isJust . genSeed
 -- |Args sanitizing, e.g: check lower/upper bounds,
 -- check executable existense, etc.
 sanitize :: QFCommand -> IO QFCommand
-sanitize cmd@(Test {}) = checkBounds cmd >>= checkSeedTries >>= checkMaxTries 
+sanitize cmd@(GenTest {}) = checkBounds cmd >>= checkSeedTries >>= checkMaxTries 
+sanitize cmd@(MutTest {}) = checkBounds cmd >>= checkSeedTries >>= checkMaxTries 
 sanitize cmd@(Gen {}) = checkGenQty cmd >>= checkBounds >>= checkSeedQty  
 sanitize cmd@(Exec {}) = checkInDir cmd  
 sanitize cmd@(Shrink {}) = checkInDir cmd 

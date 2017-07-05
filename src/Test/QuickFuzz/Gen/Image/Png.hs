@@ -17,6 +17,7 @@ import Codec.Picture.ColorQuant
 
 import Test.QuickCheck
 import Control.Monad
+import Control.DeepSeq
 import Control.Monad.Trans
 import Control.Monad.Trans.State
 import Data.List
@@ -25,6 +26,7 @@ import Data.Monoid
 import Test.QuickFuzz.Derive.Arbitrary
 
 import Test.QuickFuzz.Derive.Show
+import Test.QuickFuzz.Derive.NFData
 import Test.QuickFuzz.Gen.FormatInfo
 import Test.QuickFuzz.Gen.Base.ByteString
 import Test.QuickFuzz.Gen.Base.String
@@ -34,6 +36,7 @@ import qualified Data.ByteString.Lazy as L
 
 devArbitrary ''PngRawImage
 devShow ''PngRawImage
+devNFData ''PngRawImage
 
 pngencode :: PngRawImage -> L.ByteString
 pngencode = Data.Binary.encode

@@ -8,6 +8,7 @@ module Test.QuickFuzz.Gen.Code.Go where
 import Data.Default
 
 import Test.QuickCheck
+import Control.DeepSeq
 import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.State
@@ -20,6 +21,7 @@ import Text.PrettyPrint (render)
 import Test.QuickFuzz.Derive.Arbitrary
 import Test.QuickFuzz.Derive.Fixable
 import Test.QuickFuzz.Derive.Show
+import Test.QuickFuzz.Derive.NFData
 import Test.QuickFuzz.Gen.FormatInfo
 import Test.QuickFuzz.Gen.Base.ByteString
 import Test.QuickFuzz.Gen.Base.String
@@ -27,6 +29,7 @@ import Test.QuickFuzz.Gen.Base.String
 import qualified Data.ByteString.Lazy.Char8 as L8
 
 devArbitrary ''GoSource
+devNFData ''GoSource
 
 goInfo :: FormatInfo GoSource NoActions
 goInfo = def 

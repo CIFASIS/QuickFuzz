@@ -7,6 +7,8 @@ module Utils
 ) where
 
 import Utils.Generation
+import Utils.Decoding
+import Utils.Mutation
 import Utils.Patch
 import Utils.Console
 import Utils.Shrink

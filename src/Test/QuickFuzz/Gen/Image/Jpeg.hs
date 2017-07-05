@@ -21,6 +21,7 @@ import Codec.Picture.Jpg.DefaultTable
 
 import Test.QuickCheck
 import Control.Monad
+import Control.DeepSeq
 import Control.Monad.Trans
 import Control.Monad.Trans.State
 import Data.List
@@ -30,6 +31,8 @@ import Data.Word(Word8, Word16, Word32)
 import Test.QuickFuzz.Derive.Arbitrary
 import Test.QuickFuzz.Derive.Actions
 import Test.QuickFuzz.Derive.Show
+import Test.QuickFuzz.Derive.NFData
+
 import Test.QuickFuzz.Gen.FormatInfo
 import Test.QuickFuzz.Gen.Base.ByteString
 import Test.QuickFuzz.Gen.Base.String
@@ -52,6 +55,10 @@ $(devArbitraryWithActions False ''HuffmanTable)
 
 devArbitrary ''JpgImage
 devShow ''JpgImage
+--devNFData ''JpgImage
+
+instance NFData JpgImage where
+    rnf _ = ()
 
 jpegencode :: JpgImage -> L.ByteString
 jpegencode = Data.Binary.encode

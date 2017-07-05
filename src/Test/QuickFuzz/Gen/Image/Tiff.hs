@@ -19,14 +19,16 @@ import Codec.Picture.VectorByteConversion( toByteString )
 
 import Test.QuickCheck
 import Control.Monad
+import Control.DeepSeq
 import Control.Monad.Trans
 import Control.Monad.Trans.State
 import Data.List
 import Data.Monoid 
 
 import Test.QuickFuzz.Derive.Arbitrary
-
+import Test.QuickFuzz.Derive.NFData
 import Test.QuickFuzz.Derive.Show
+
 import Test.QuickFuzz.Gen.FormatInfo
 import Test.QuickFuzz.Gen.Base.ByteString
 import Test.QuickFuzz.Gen.Base.String
@@ -47,6 +49,7 @@ instance Arbitrary TiffHeader where
 
 devArbitrary ''TiffImage
 devShow ''TiffImage
+devNFData ''TiffImage
 
 tiffencode :: TiffImage -> L.ByteString
 tiffencode (Tiff0 (hdr, img)) = runPut $ putP rawPixelData hdr

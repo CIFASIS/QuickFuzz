@@ -10,11 +10,12 @@ import Data.Text.Encoding (encodeUtf8)
 
 import Network.HTTP.Headers
 import Network.HTTP.Base
-
+import Control.DeepSeq
 import Test.QuickCheck
 
 import Test.QuickFuzz.Derive.Arbitrary
 import Test.QuickFuzz.Derive.Show
+import Test.QuickFuzz.Derive.NFData
 import Test.QuickFuzz.Gen.FormatInfo
 import Test.QuickFuzz.Gen.Base.ByteString
 import qualified Data.ByteString.Lazy.Char8 as L8
@@ -22,7 +23,7 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 
 devArbitrary ''Request
 devShow ''Request
-
+devNFData ''Request
 
 httpRequestInfo :: FormatInfo (Request String) NoActions
 httpRequestInfo = def 
@@ -34,6 +35,7 @@ httpRequestInfo = def
 
 devArbitrary ''Response
 devShow ''Response
+devNFData ''Response
 
 httpResponseInfo :: FormatInfo (Response String) NoActions
 httpResponseInfo = def

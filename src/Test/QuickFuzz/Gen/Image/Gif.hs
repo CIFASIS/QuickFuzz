@@ -14,12 +14,15 @@ import Codec.Picture.ColorQuant
 
 import Test.QuickCheck
 import Control.Monad
+import Control.DeepSeq
+
 import Control.Monad.Trans
 import Control.Monad.Trans.State
 import Data.List
 import Data.Monoid 
 
 import Test.QuickFuzz.Derive.Arbitrary
+import Test.QuickFuzz.Derive.NFData
 
 import Test.QuickFuzz.Derive.Show
 import Test.QuickFuzz.Gen.FormatInfo
@@ -31,6 +34,7 @@ import qualified Data.ByteString.Lazy as L
 
 devShow ''GifFile
 devArbitrary ''GifFile
+devNFData ''GifFile
 
 gifencode :: GifFile -> L.ByteString
 gifencode = Data.Binary.encode
