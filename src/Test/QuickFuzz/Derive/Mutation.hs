@@ -10,23 +10,18 @@ import Language.Haskell.TH.Syntax
 
 import Test.QuickCheck
 import Control.Monad
---import Control.Monad.Free
---import Control.Monad.Trans.Free as FT
 import Control.Arrow
 import Control.Applicative
 import Data.List
 
 import Megadeth.Prim
+import Test.QuickFuzz.Derive.Mutators
 
 #if MIN_VERSION_template_haskell(2,11,0)
 #    define TH211MBKIND _maybe_kind
 #else
 #    define TH211MBKIND
 #endif
-
-insertAt :: Int -> a -> [a] -> [a] 
-insertAt z y xs = as ++ (y:bs)
-                  where (as,bs) = splitAt z xs
 
 --import Mutation
 --
@@ -37,12 +32,13 @@ class  Mutation a where
     --mutt = mutt' 10
     --mut :: Gen a
 
-instance {-#OVERLAPS#-} Mutation a => Mutation [a] where
-    mutt x = frequency $ [(20,mapM mutt x), {-- (100, expand x), --} (1, return x)]
-             --where expand xs = do
-             --            idx <- arbitrary 
-             --            y   <- arbitrary
-             --            return $ insertAt (mod idx (length xs)) y xs
+instance {-#OVERLAPS#-} (Mutation a, Arbitrary a) => Mutation [a] where
+    mutt xs = frequency $ [(10, mapM mutt xs), 
+                           (1, expander xs), 
+                           (1, deleter xs), 
+                           (1, swaper xs), 
+                           (1, repeater xs), 
+                           (1, return xs)]
 
 instance {-#OVERLAPS#-} Arbitrary a => Mutation a where
     mutt a = frequency $ [ (20, return a), (1,arbitrary)]

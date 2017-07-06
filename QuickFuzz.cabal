@@ -64,6 +64,7 @@ library
         Test.QuickFuzz.Derive
         Test.QuickFuzz.Derive.Actions
         Test.QuickFuzz.Derive.Mutation
+        Test.QuickFuzz.Derive.Mutators
         Test.QuickFuzz.Derive.Arbitrary
         Test.QuickFuzz.Derive.Generator
         Test.QuickFuzz.Derive.Show
