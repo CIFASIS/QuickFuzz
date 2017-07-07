@@ -45,6 +45,6 @@ test:
     - QuickFuzz gentest gif "/usr/bin/giflip" -f radamsa -q 100 -l 1 -u 10
   post:
    - mkdir -p $CIRCLE_ARTIFACTS/build/
-   - bzexe /home/ubuntu/.local/bin/QuickFuzz
-   - cp /home/ubuntu/.local/bin/QuickFuzz $CIRCLE_ARTIFACTS/build/QuickFuzz.bzexe
-   - cp /home/ubuntu/.local/bin/QuickFuzz~ $CIRCLE_ARTIFACTS/build/QuickFuzz
+   - cp /home/ubuntu/.local/bin/QuickFuzz $CIRCLE_ARTIFACTS/build/QuickFuzz
+   - bzip2 /home/ubuntu/.local/bin/QuickFuzz
+   - cp /home/ubuntu/.local/bin/QuickFuzz.bz2 $CIRCLE_ARTIFACTS/build/QuickFuzz.bz2
