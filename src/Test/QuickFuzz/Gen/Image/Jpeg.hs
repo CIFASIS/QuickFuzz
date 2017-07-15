@@ -11,13 +11,8 @@ import qualified Data.Binary
 
 import Codec.Picture.Jpg
 import Codec.Picture.Jpg.Types
+import Codec.Picture.Tiff.Types
 import Codec.Picture.Jpg.DefaultTable
-
---import Codec.Picture.Png
---import Codec.Picture.Png.Type
---import Codec.Picture.Png.Export
---import Codec.Picture.Metadata
---import Codec.Picture.ColorQuant
 
 import Test.QuickCheck
 import Control.Monad
@@ -29,6 +24,7 @@ import Data.Monoid
 import Data.Word(Word8, Word16, Word32)
 
 import Test.QuickFuzz.Derive.Arbitrary
+import Test.QuickFuzz.Derive.Mutation
 import Test.QuickFuzz.Derive.Actions
 import Test.QuickFuzz.Derive.Show
 import Test.QuickFuzz.Derive.NFData
@@ -54,18 +50,21 @@ $(devArbitrary ''HuffmanTableAction)
 $(devArbitraryWithActions False ''HuffmanTable)
 
 devArbitrary ''JpgImage
+devMutation ''JpgImage
 devShow ''JpgImage
---devNFData ''JpgImage
-
-instance NFData JpgImage where
-    rnf _ = ()
+devNFData ''JpgImage
 
 jpegencode :: JpgImage -> L.ByteString
 jpegencode = Data.Binary.encode
 
+jpegdecode :: L.ByteString -> JpgImage
+jpegdecode = Data.Binary.decode
+
 jpegInfo :: FormatInfo JpgImage NoActions
 jpegInfo = def 
     { encode = jpegencode
+    , decode = jpegdecode
+    , mutate = mutt
     , random = arbitrary
     , value = show
     , ext = "jpg" 
