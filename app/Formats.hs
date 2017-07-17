@@ -85,6 +85,7 @@ formats = [
     ("py", 'pyInfo),
     ("go", 'goInfo),
     ("lua", 'luaInfo),
+    ("glsl", 'glslInfo),
 #endif
 
 -- PKI
