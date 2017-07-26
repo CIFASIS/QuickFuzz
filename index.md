@@ -86,9 +86,9 @@ Finished!
 
 ## Downloads
 
-Pre-compiled and compressed (bzexe) binaries supporting all the file formats are available here:
+Pre-compiled and compressed (bzip2) binaries supporting all the file formats are available here:
 
-* [Linux x86_64](https://circleci.com/api/v1/project/CIFASIS/QuickFuzz/latest/artifacts/0/$CIRCLE_ARTIFACTS/build/QuickFuzz.bzexe?filter=successful&branch=master)
+* [Linux x86_64](https://circleci.com/api/v1/project/CIFASIS/QuickFuzz/latest/artifacts/0/$CIRCLE_ARTIFACTS/build/QuickFuzz.bz2?filter=successful&branch=master)
 
 Otherwise QuickFuzz can be [easily compiled](https://github.com/CIFASIS/QuickFuzz#instalation) using [stack](http://docs.haskellstack.org/en/stable/README/#how-to-install).
 
