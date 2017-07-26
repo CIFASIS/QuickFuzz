@@ -9,7 +9,7 @@ code repository. QuickFuzz is open-source (GPL3) and it can use other bug detect
 
 ## News
 
-* We will be presenting QuickFuzz in [C◦mp◦se 2017](http://www.composeconference.org/)!
+* We presented QuickFuzz in [C◦mp◦se 2017 - NYC](http://www.composeconference.org/)!
 * Our intern, Franco Costantini improved a lot the generation of random source code [enforcing variable coherence](https://github.com/CIFASIS/QuickFuzz/blob/gh-pages/variable-fix.md). This feature is enabled in Javascript, Lua, Python and Bash, but it can easily extended for other languages.
 * QuickFuzz is now included in [Gentoo](https://packages.gentoo.org/packages/app-forensics/quickfuzz)!
 * An academic article on QuickFuzz will be presented at the Haskell Symposium 2016 ([preprint](https://github.com/CIFASIS/QuickFuzz/releases/download/haskell16-draft/draft-haskell16.pdf))!
@@ -42,7 +42,7 @@ code repository. QuickFuzz is open-source (GPL3) and it can use other bug detect
 In this example, we uncover a null pointer dereference in gif2webp from [libwebp 0.5](https://github.com/webmproject/libwebp/releases/tag/v0.5.0):
 
 ```
-$ QuickFuzz test gif "./gif2webp @@ -o /dev/null" -l 1 -u 10 -f radamsa
+$ QuickFuzz gentest gif "./gif2webp @@ -o /dev/null" -l 1 -u 10 -f radamsa
 ...
 Test case number 4481 has failed. 
 Moving to outdir/QuickFuzz.68419739009.4481.3692945303624111961.1.gif
@@ -62,10 +62,10 @@ AddressSanitizer can not provide additional info.
 ==10953== ABORTING
 ```
 
-Finally, we can shrink the crashing input to obtain a smaller file:
+Finally, we can shrink the crashing input to obtain a smaller file. We must re-generate the failing test case using the seed (3692945303624111961) and the size (1):
 
 ```
-$ QuickFuzz test gif "./gif2webp @@ -o /dev/null" -l 1 -s 3692945303624111961 -f radamsa -r
+$ QuickFuzz gentest gif "./gif2webp @@ -o /dev/null" -l 1 -s 3692945303624111961 -f radamsa -r
 Test case number 1 has failed. 
 Moving to outdir/QuickFuzz.68997856397.1.3692945303624111961.1.gif
 Shrinking over bytes has begun...
@@ -90,9 +90,7 @@ Pre-compiled and compressed (bzip2) binaries supporting all the file formats are
 
 * [Linux x86_64](https://circleci.com/api/v1/project/CIFASIS/QuickFuzz/latest/artifacts/0/$CIRCLE_ARTIFACTS/build/QuickFuzz.bz2?filter=successful&branch=master)
 
-Otherwise QuickFuzz can be [easily compiled](https://github.com/CIFASIS/QuickFuzz#instalation) using [stack](http://docs.haskellstack.org/en/stable/README/#how-to-install).
-
-[![CircleCI](https://circleci.com/gh/CIFASIS/QuickFuzz.svg?style=svg)](https://circleci.com/gh/CIFASIS/QuickFuzz)
+Otherwise QuickFuzz can be [easily compiled](https://github.com/CIFASIS/QuickFuzz#instalation) using [stack](http://docs.haskellstack.org/en/stable/README/#how-to-install). All the CI tests are  [![CircleCI](https://circleci.com/gh/CIFASIS/QuickFuzz.svg?style=svg)](https://circleci.com/gh/CIFASIS/QuickFuzz)
 
 ## Mailing list
 
