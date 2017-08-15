@@ -39,11 +39,10 @@ decodeFile decf file = do
     !buf <- Data.ByteString.Lazy.readFile file
     forceEvaluation (decf buf)
 
--- Generate a reproductible value, retrying when the generated value fails to
--- enconde
-strictDecode :: (Show base, NFData base) => QFCommand -> FormatInfo base actions 
+-- Decode the files inside a directory
+strictDecodeDir :: (Show base, NFData base) => QFCommand -> FormatInfo base actions 
                -> IO [base]
-strictDecode cmd fmt = do
+strictDecodeDir cmd fmt = do
     fs <- listDirectory (inDir cmd)
     xs <- mapM makeRelativeToCurrentDirectory fs
     bsnfs <- withCurrentDirectory (inDir cmd) (mapM (decodeFile (decode fmt)) xs)
@@ -55,4 +54,28 @@ strictDecode cmd fmt = do
     Prelude.putStrLn $ "Loaded " ++ (show (Prelude.length bsnfs)) ++ " of " ++ (show (Prelude.length fs)) ++ " files to mutate."
     return bsnfs
 
+
+-- Decode a single file
+strictDecodeFile :: (Show base, NFData base) => QFCommand -> FormatInfo base actions 
+               -> IO [base]
+strictDecodeFile cmd fmt = do
+    let filename = inDir cmd 
+    xs <- return [filename]
+    bsnfs <- mapM (decodeFile (decode fmt)) xs
+    bsnfs <- return $ Prelude.filter isJust bsnfs
+    bsnfs <- return $ Prelude.map fromJust bsnfs
+    --Prelude.putStrLn $ "Loaded " ++ (show (Prelude.length bsnfs)) ++ " of " ++ (show (Prelude.length fs)) ++ " files to mutate."
+    return bsnfs
+
+
+
+strictDecode :: (Show base, NFData base) => QFCommand -> FormatInfo base actions 
+               -> IO [base]
+strictDecode cmd fmt = do
+                       b <- System.Directory.doesFileExist (inDir cmd)
+                       ys <- (if b then strictDecodeFile cmd fmt 
+                                   else strictDecodeDir  cmd fmt)
+                       if Prelude.null ys then (error $ "Impossible to load " ++ (inDir cmd))
+                                   else return ys
+ 
 

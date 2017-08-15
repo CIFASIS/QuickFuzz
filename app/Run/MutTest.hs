@@ -100,6 +100,4 @@ runMutTest cmd fmt = do
     
     -- Clean up the mess
     cleanup
-    printFinished
-
-
+    when (not $ verbose cmd) printFinished
