@@ -27,7 +27,7 @@ import Test.QuickFuzz.Derive.Arbitrary
 
 import Test.QuickFuzz.Derive.Show
 import Test.QuickFuzz.Derive.NFData
-
+import Test.QuickFuzz.Derive.Mutation
 import Test.QuickFuzz.Gen.FormatInfo
 import Test.QuickFuzz.Gen.Base.ByteString
 import Test.QuickFuzz.Gen.Base.String
@@ -78,6 +78,7 @@ svgInfo = def
     { encode = L8.pack . ppcTopElement prettyConfigPP . xmlOfDocument . mkDocument
     , decode = getElements . fromJust . (parseSvgFile ".") . BS.pack . L.unpack -- . L8.pack . L.unpack 
     , random = arbitrary
+    , mutate = mutt
     , value = show
     , ext = "svg" 
     } 
