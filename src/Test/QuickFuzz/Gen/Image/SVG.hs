@@ -20,6 +20,7 @@ import Control.DeepSeq
 import Control.Monad.Trans
 import Control.Monad.Trans.State
 import Data.List
+import Data.Maybe
 import Data.Monoid 
 
 import Test.QuickFuzz.Derive.Arbitrary
@@ -32,6 +33,13 @@ import Test.QuickFuzz.Gen.Base.ByteString
 import Test.QuickFuzz.Gen.Base.String
 
 import qualified Data.ByteString.Lazy.Char8 as L8
+import qualified Data.ByteString.Lazy as L
+
+import qualified Data.ByteString as BS
+
+
+--import Data.Text (unpack)
+--import Data.Text.Encoding (decodeUtf8)
 
 instance Arbitrary PixelRGBA8 where
   arbitrary = do
@@ -60,9 +68,15 @@ mkDocument ts = Document { _viewBox= Just (0.0,0.0,128.0,128.0),
                            _documentLocation="." 
                           }
 
+getElements (Document { _elements = ts }) = ts 
+
+--rdDocument bs = let fromJust (parseSvgFile "." bs)
+--                in f (Just x) = x
+
 svgInfo :: FormatInfo [Tree] NoActions
 svgInfo = def 
     { encode = L8.pack . ppcTopElement prettyConfigPP . xmlOfDocument . mkDocument
+    , decode = getElements . fromJust . (parseSvgFile ".") . BS.pack . L.unpack -- . L8.pack . L.unpack 
     , random = arbitrary
     , value = show
     , ext = "svg" 
