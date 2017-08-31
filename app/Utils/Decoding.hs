@@ -18,6 +18,7 @@ import Test.QuickFuzz.Gen.FormatInfo
 import Args
 import Debug
 import Exception
+import Utils.Generation
 
 import System.Directory hiding (listDirectory, withCurrentDirectory)
 import Control.Exception ( bracket )
@@ -68,6 +69,9 @@ strictDecodeFile cmd fmt = do
     return bsnfs
 
 
+quickGen cmd fmt = let baseGen = resize (maxSize cmd) (random fmt)
+                       baseVal = unGen baseGen (mkQCGen 0) 0
+                   in return [baseVal]
 
 strictDecode :: (Show base, NFData base) => QFCommand -> FormatInfo base actions 
                -> IO [base]
@@ -75,7 +79,7 @@ strictDecode cmd fmt = do
                        b <- System.Directory.doesFileExist (inDir cmd)
                        ys <- (if b then strictDecodeFile cmd fmt 
                                    else strictDecodeDir  cmd fmt)
-                       if Prelude.null ys then (error $ "Impossible to load " ++ (inDir cmd))
-                                   else return ys
+                       if Prelude.null ys then (quickGen cmd fmt) --(error $ "Impossible to load " ++ (inDir cmd))
+                                          else return ys
  
 
