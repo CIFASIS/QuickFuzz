@@ -71,6 +71,8 @@ extra-deps:
 - language-css-0.0.3
 - language-lua-0.10.0
 - language-glsl-0.2.1
+- ethereum-analyzer-deps-1.3.0
+- global-lock-0.1
 
 explicit-setup-deps:
   ! '*': true

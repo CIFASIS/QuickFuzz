@@ -4,7 +4,8 @@ module Test.QuickFuzz.Gen.Code
   module Test.QuickFuzz.Gen.Code.Python,
   module Test.QuickFuzz.Gen.Code.Go,
   module Test.QuickFuzz.Gen.Code.Lua,
-  module Test.QuickFuzz.Gen.Code.GLSL
+  module Test.QuickFuzz.Gen.Code.GLSL,
+  module Test.QuickFuzz.Gen.Code.Evm
 ) where
 
 import Test.QuickFuzz.Gen.Code.C
@@ -13,3 +14,4 @@ import Test.QuickFuzz.Gen.Code.Python
 import Test.QuickFuzz.Gen.Code.Go
 import Test.QuickFuzz.Gen.Code.Lua
 import Test.QuickFuzz.Gen.Code.GLSL
+import Test.QuickFuzz.Gen.Code.Evm

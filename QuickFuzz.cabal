@@ -129,10 +129,11 @@ library
             Test.QuickFuzz.Gen.Code.Python
             Test.QuickFuzz.Gen.Code.Go
             Test.QuickFuzz.Gen.Code.Lua
+            Test.QuickFuzz.Gen.Code.Evm
             Test.QuickFuzz.Gen.Code.GLSL
 
         build-depends:
-            language-c, language-ecmascript, language-python, language-go, language-lua, language-glsl, pretty
+            language-c, language-ecmascript, language-python, language-go, language-lua, ethereum-analyzer-deps, language-glsl, pretty
     
     if flag(image) || flag(all)
         cpp-options: -DIMAGE

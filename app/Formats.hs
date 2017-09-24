@@ -85,6 +85,7 @@ formats = [
     ("py", 'pyInfo),
     ("go", 'goInfo),
     ("lua", 'luaInfo),
+    ("evm", 'evmInfo),
     ("glsl", 'glslInfo),
 #endif
 

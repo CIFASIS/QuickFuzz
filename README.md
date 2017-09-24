@@ -73,7 +73,7 @@ Because *QuickFuzz* generates a lot of dependencies that may not be necessary to
 |  image | svg, png, gif, tiff, jpeg    |
 |   arch | tar, zip                     |
 |    doc | html, css, pdf, ps, eps, xml |
-|   code | c, js, py, go, lua           |
+|   code | c, js, py, go, lua, evm      |
 |  media | wav                          |
 |    net | http                         |
 |    pki | asn1, crl, x509              | 
