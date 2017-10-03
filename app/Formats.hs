@@ -43,6 +43,11 @@ import Test.QuickFuzz.Gen.Pki
 import Test.QuickFuzz.Gen.Network
 #endif
 
+-- BNFC
+#ifdef BNFC
+import Test.QuickFuzz.Gen.Bnfc
+#endif
+
 
 formats = [
 
@@ -75,7 +80,6 @@ formats = [
     ("tiff", 'tiffInfo),
     ("jpeg", 'jpegInfo),
     ("tga", 'tgaInfo),
-
 #endif
 
 -- Source Code
@@ -100,6 +104,11 @@ formats = [
 -- Network
 #ifdef NET
     ("http", 'httpResponseInfo),
+#endif
+
+-- Bnfc
+#ifdef BNFC
+    ("default", 'bnfcInfo),
 #endif
 
 -- Base

@@ -52,6 +52,11 @@ flag net
   Default:     False
   Manual:      True
 
+flag bnfc
+  Description: Supports arbitrary grammer formats.
+  Default:     False
+  Manual:      True
+
 flag all
   Description: Enables all file formats
   Default:     False
@@ -146,6 +151,7 @@ library
             Test.QuickFuzz.Gen.Image.Tiff
             Test.QuickFuzz.Gen.Image.Jpeg
             Test.QuickFuzz.Gen.Image.Tga
+            Test.QuickFuzz.Gen.Image.FMT
 
         build-depends:
             JuicyPixels, svg-tree, xml
@@ -169,6 +175,16 @@ library
 
         build-depends:
             HTTP
+
+
+    if flag(bnfc) || flag(all)
+        cpp-options: -DBNFC
+        exposed-modules:
+            Test.QuickFuzz.Gen.Bnfc
+            Test.QuickFuzz.Gen.Bnfc.Grammer
+
+        build-depends:
+            BNFC
    
     default-language: Haskell2010
     ghc-options: -O2 -optc-O3 -threaded -rtsopts
@@ -215,6 +231,8 @@ executable QuickFuzz
         cpp-options: -DIMAGE
     if flag(pki) || flag(all)
         cpp-options: -DPKI
+    if flag(bnfc) || flag(all)
+        cpp-options: -DBNFC
     if flag(net) || flag(all)
         cpp-options: -DNET
         build-depends:
