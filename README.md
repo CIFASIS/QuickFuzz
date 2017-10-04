@@ -64,6 +64,7 @@ After [installing stack](http://docs.haskellstack.org/en/stable/README/#how-to-i
 
     $ git clone https://github.com/CIFASIS/QuickFuzz --depth 1
     $ cd QuickFuzz
+    $ install_fuzzers.sh
     $ stack setup
 
 Because *QuickFuzz* generates a lot of dependencies that may not be necessary to test an specific category of files, we modularized the project with different activation flags. Currently we have 7 flags:
@@ -76,13 +77,13 @@ Because *QuickFuzz* generates a lot of dependencies that may not be necessary to
 |   code | c, js, py, go, lua, evm      |
 |  media | wav                          |
 |    net | http                         |
-|    pki | asn1, crl, x509              | 
-
+|    pki | asn1, crl, x509              |
+|   bnfc | cf, grammer format           |
 
 For instance, to compile only with image generation (Bmp, Gif, Png, Ico, ..):
 
     $ stack install --flag QuickFuzz:image
-    
+
 Because of a Stack issue, you must install `alex` and `happy` manually before enabling the `code` flag:
 
     $ stack install alex happy

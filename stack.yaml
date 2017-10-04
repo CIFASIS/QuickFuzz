@@ -8,6 +8,7 @@ flags:
     code : false
     media : false
     pki : false
+    bnfc : false
     all : false
 
 extra-package-dbs: []
@@ -73,6 +74,7 @@ extra-deps:
 - language-glsl-0.2.1
 - ethereum-analyzer-deps-1.3.0
 - global-lock-0.1
+- BNFC-2.8.1
 
 explicit-setup-deps:
   ! '*': true
