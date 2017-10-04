@@ -108,7 +108,7 @@ formats = [
 
 -- Bnfc
 #ifdef BNFC
-    ("default", 'bnfcInfo),
+    ("bnfc", 'bnfcInfo),
 #endif
 
 -- Base

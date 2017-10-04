@@ -53,7 +53,7 @@ flag net
   Manual:      True
 
 flag bnfc
-  Description: Supports arbitrary grammer formats.
+  Description: Supports bnfc grammer formats.
   Default:     False
   Manual:      True
 
@@ -151,7 +151,6 @@ library
             Test.QuickFuzz.Gen.Image.Tiff
             Test.QuickFuzz.Gen.Image.Jpeg
             Test.QuickFuzz.Gen.Image.Tga
-            Test.QuickFuzz.Gen.Image.FMT
 
         build-depends:
             JuicyPixels, svg-tree, xml
@@ -182,7 +181,8 @@ library
         exposed-modules:
             Test.QuickFuzz.Gen.Bnfc
             Test.QuickFuzz.Gen.Bnfc.Grammer
-
+            Test.QuickFuzz.Gen.Bnfc.AbsGrammer
+            Test.QuickFuzz.Gen.Bnfc.PrintGrammer
         build-depends:
             BNFC
    
