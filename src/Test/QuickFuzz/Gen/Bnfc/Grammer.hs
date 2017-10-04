@@ -7,8 +7,8 @@
 
 module Test.QuickFuzz.Gen.Bnfc.Grammer where
 
-import Test.QuickFuzz.Gen.Bnfc.PrintGrammer as G1
-import Test.QuickFuzz.Gen.Bnfc.AbsGrammer as G2
+import Test.QuickFuzz.Gen.Bnfc.PrintGrammer as Print
+import Test.QuickFuzz.Gen.Bnfc.AbsGrammer as Abstract
 
 import Data.Char
 import Data.Default
@@ -23,15 +23,15 @@ import Test.QuickFuzz.Gen.FormatInfo
 import Test.QuickFuzz.Gen.Base.ByteString
 import qualified Data.ByteString.Lazy.Char8 as L8
 
-devShow ''G2.Exp
-devArbitrary ''G2.Exp
-devNFData ''G2.Exp
---devMutation ''G2.Exp
+devShow ''Abstract.Exp
+devArbitrary ''Abstract.Exp
+devNFData ''Abstract.Exp
+--devMutation ''Abstract.Exp
 
 
 bnfcInfo :: FormatInfo Exp NoActions
 bnfcInfo = def
-  { encode  =  L8.pack . G1.printTree
+  { encode  =  L8.pack . Print.printTree
   , random = arbitrary
   , value = show
   , ext = "ext"
