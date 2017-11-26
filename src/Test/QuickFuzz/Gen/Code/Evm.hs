@@ -48,7 +48,7 @@ disasmBSAt bs base limit =
   where
     (op, next) = getOperationAt' bs 0
 
-decode' x = disasmBSAt (L.toStrict x) 0 0
+decode' x = disasmBSAt (L.toStrict x) 0 10240
 
 evmInfo :: FormatInfo EvmBytecode NoActions
 evmInfo = def 
