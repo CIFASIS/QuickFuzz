@@ -5,10 +5,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 
-module Test.QuickFuzz.Gen.Bnfc.Grammer where
+module Test.QuickFuzz.Gen.Bnfc.Grammar where
 
-import Test.QuickFuzz.Gen.Bnfc.PrintGrammer as Print
-import Test.QuickFuzz.Gen.Bnfc.AbsGrammer as Abstract
+import Test.QuickFuzz.Gen.Bnfc.PrintGrammar as Print
+import Test.QuickFuzz.Gen.Bnfc.AbsGrammar as Abstract
 
 import Data.Char
 import Data.Default
@@ -37,3 +37,4 @@ bnfcInfo = def
   , ext = "ext"
   }
 
+-- ./install_fuzzers.sh ; rm -rf outdir ; stack install --flag QuickFuzz:all ; QuickFuzz gen bnfc

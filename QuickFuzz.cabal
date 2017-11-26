@@ -180,9 +180,9 @@ library
         cpp-options: -DBNFC
         exposed-modules:
             Test.QuickFuzz.Gen.Bnfc
-            Test.QuickFuzz.Gen.Bnfc.Grammer
-            Test.QuickFuzz.Gen.Bnfc.AbsGrammer
-            Test.QuickFuzz.Gen.Bnfc.PrintGrammer
+            Test.QuickFuzz.Gen.Bnfc.Grammar
+            Test.QuickFuzz.Gen.Bnfc.AbsGrammar
+            Test.QuickFuzz.Gen.Bnfc.PrintGrammar
         build-depends:
             BNFC
    
