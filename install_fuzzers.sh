@@ -1,6 +1,6 @@
 # sudo apt-get install bnfc
 cd src/Test/QuickFuzz/Gen/Bnfc/
-bnfc --haskell Grammer.cf -p Test.QuickFuzz.Gen.Bnfc
+bnfc --haskell Grammar.cf -p Test.QuickFuzz.Gen.Bnfc
 mv Test/QuickFuzz/Gen/Bnfc/* .
 rm -rf Test
 cd ../../../../../
