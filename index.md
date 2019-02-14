@@ -1,3 +1,9 @@
+---
+layout: home
+---
+
+
+
 # QuickFuzz
 
 QuickFuzz, a tool written in Haskell designed for testing unexpected inputs of common file formats on third-party software,
@@ -118,3 +124,4 @@ You can join the [QuickFuzz mailing group](https://groups.google.com/forum/#!for
 * [ayberkt](https://github.com/ayberkt) and [NineFx](http://ninefx.com/) for the bug reports and pull requests.
 * [Sergei Trofimovich](https://github.com/trofi) for adding QuickFuzz to the official Gentoo repository and porting it to GHC8!
 * Special thanks go to all the developers of the Hackage packages that make it possible for QuickFuzz to generate several complex file-formats.
+

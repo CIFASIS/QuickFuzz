@@ -1,8 +1,14 @@
 title: QuickFuzz
 description: An experimental grammar fuzzer in Haskell using QuickCheck
+
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "quickfuzz.cifasis-conicet.gov.ar" # the base hostname & protocol for your site, e.g. http://example.com
+
 google_analytics: 
 show_downloads: true
-theme: jekyll-theme-architect
+markdown: kramdown
+theme: minima
+plugins:
+  - jekyll-feed
 
-gems:
-  - jekyll-mentions
+
