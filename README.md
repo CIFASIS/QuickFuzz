@@ -6,7 +6,7 @@ taking advantage of off-the-shelf, well known fuzzers.
 Unlike other generational fuzzers, QuickFuzz does not require
 to write specifications for the file formats in question since it relies
 on existing file-format-handling libraries available on the Haskell
-code repository. There is more information in its [website](http://QuickFuzz.org/).
+code repository. There is more information in its [website](http://quickfuzz.cifasis-conicet.gov.ar/).
 
 [![CircleCI](https://circleci.com/gh/CIFASIS/QuickFuzz.svg?style=svg)](https://circleci.com/gh/CIFASIS/QuickFuzz)
 
