@@ -53,7 +53,7 @@ flag net
   Manual:      True
 
 flag bnfc
-  Description: Supports bnfc grammer formats.
+  Description: Supports bnfc grammar formats.
   Default:     False
   Manual:      True
 
